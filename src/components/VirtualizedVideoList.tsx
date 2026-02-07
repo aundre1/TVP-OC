@@ -102,8 +102,8 @@ function VideoRow({
       style={{
         ...style,
         display: 'grid',
-        // v5.5: Preview+Artist combined, Label after Title
-        gridTemplateColumns: '40px 160px 2fr 100px 70px 60px 70px 80px 120px',
+        // Feb 2026: Replit design match - includes Genre column
+        gridTemplateColumns: '40px 50px 100px 1.5fr 120px 100px 70px 60px 70px 80px 120px',
         alignItems: 'center',
         gap: '12px',
         paddingLeft: '16px',
@@ -130,26 +130,26 @@ function VideoRow({
         </button>
       </div>
 
-      {/* Preview + Artist Combined */}
-      <div className="flex items-center gap-2 min-w-0">
-        <div className="relative group flex-shrink-0">
-          <img
-            src={track.thumbnailUrl || `https://picsum.photos/60/34?random=${track.id}`}
-            alt=""
-            className="w-[60px] h-[34px] rounded object-cover"
-            loading="lazy"
-          />
-          <button
-            onClick={handlePlay}
-            className="absolute inset-0 flex items-center justify-center bg-black/60 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <Play className="w-4 h-4 text-white" fill="white" />
-          </button>
-        </div>
-        <span className="text-sm text-tvp-text-secondary truncate">
-          {track.artist}
-        </span>
+      {/* Thumbnail */}
+      <div className="relative group flex-shrink-0">
+        <img
+          src={track.thumbnailUrl || `https://picsum.photos/60/34?random=${track.id}`}
+          alt=""
+          className="w-[50px] h-[28px] rounded object-cover"
+          loading="lazy"
+        />
+        <button
+          onClick={handlePlay}
+          className="absolute inset-0 flex items-center justify-center bg-black/60 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Play className="w-4 h-4 text-white" fill="white" />
+        </button>
       </div>
+
+      {/* Artist */}
+      <span className="text-xs text-tvp-text-muted truncate">
+        {track.artist}
+      </span>
 
       {/* Title + Badges (includes EXCLUSIVE) */}
       <div className="min-w-0 flex items-center gap-2">
@@ -173,9 +173,14 @@ function VideoRow({
         )}
       </div>
 
-      {/* Label - v5.5: Right after Title */}
+      {/* Label */}
       <div className="text-xs text-tvp-text-muted truncate">
         {track.label || '—'}
+      </div>
+
+      {/* Genre */}
+      <div className="text-xs text-tvp-text-muted truncate">
+        {track.genre || '—'}
       </div>
 
       {/* BPM */}
@@ -242,19 +247,21 @@ function VideoRow({
 }
 
 // Header row (non-virtualized, sticky)
-// v5.5 Header - Preview+Artist combined, Label after Title
+// Feb 2026: Replit design match - separate Artist column, Genre added
 function ListHeader() {
   return (
     <div
       className="grid items-center gap-3 px-4 py-3 border-b border-tvp-border-subtle text-xs font-semibold text-tvp-text-muted uppercase tracking-wider bg-tvp-bg-secondary sticky top-0 z-10"
       style={{
-        gridTemplateColumns: '40px 160px 2fr 100px 70px 60px 70px 80px 120px',
+        gridTemplateColumns: '40px 50px 100px 1.5fr 120px 100px 70px 60px 70px 80px 120px',
       }}
     >
       <div className="text-center">#</div>
-      <div>Preview / Artist</div>
+      <div></div>
+      <div>Artist</div>
       <div>Title</div>
       <div>Label</div>
+      <div>Genre</div>
       <div className="text-center">BPM</div>
       <div className="text-center">Key</div>
       <div className="text-center">Duration</div>

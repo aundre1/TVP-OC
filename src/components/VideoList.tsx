@@ -53,15 +53,13 @@ function QualityBadge({ quality }: { quality: VideoQuality }) {
   );
 }
 
-// Responsive grid columns - hide less important columns on smaller screens
-// Mobile: #, Preview+Artist, Title, Actions
-// Tablet: + Label, BPM, Key, Quality
-// Desktop: + Duration
-// v5.5 Grid columns - Preview+Artist combined, Label after Title
+// Responsive grid columns - Replit design match (Feb 2026)
+// Desktop: #, Thumbnail, Artist, Title, Label, Genre, BPM, Key, Quality, Duration, Actions
+// Mobile: Simplified version with fewer columns
 const GRID_COLUMNS = {
-  mobile: '32px 80px 1fr 80px',
-  tablet: '36px 90px 2fr 90px 60px 50px 70px 80px', // Preview+Artist, Title, Label, BPM, Key, Quality, Actions
-  desktop: '40px 100px 2fr 100px 70px 60px 70px 80px 120px', // + Duration
+  mobile: '32px 50px 1fr 80px',
+  tablet: '36px 50px 100px 1.5fr 120px 60px 50px 70px 80px',
+  desktop: '40px 50px 100px 1.5fr 120px 100px 70px 60px 70px 80px 120px', // Full Replit layout
 };
 
 // Single list row
@@ -113,8 +111,8 @@ function VideoListItem({ track, index }: { track: Track; index: number }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        'group grid items-center gap-2 md:gap-4 px-2 md:px-4 py-2 cursor-pointer text-xs transition-colors',
-        'grid-cols-[30px_50px_80px_1.5fr_1.5fr_1fr_100px_80px_100px]',
+        'group grid items-center gap-2 md:gap-3 px-2 md:px-4 py-2 cursor-pointer text-xs transition-colors',
+        'grid-cols-[40px_50px_100px_1.5fr_120px_100px_70px_60px_70px_80px_120px]',
         isSelected && 'bg-cyan-400/10'
       )}
       style={{
@@ -192,6 +190,11 @@ function VideoListItem({ track, index }: { track: Track; index: number }) {
       {/* Label */}
       <div className="truncate" style={{ color: 'var(--text-muted)' }}>
         {track.label || '—'}
+      </div>
+
+      {/* Genre */}
+      <div className="truncate" style={{ color: 'var(--text-muted)' }}>
+        {track.genre || '—'}
       </div>
 
       {/* BPM */}
@@ -294,11 +297,11 @@ export default function VideoList({
       {/* Header Row */}
       {showHeader && (
         <div
-          className="grid items-center gap-4 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider"
+          className="grid items-center gap-3 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider"
           style={{
             color: 'var(--text-muted)',
             borderBottom: '1px solid var(--border-subtle)',
-            gridTemplateColumns: '30px 50px 80px 1.5fr 1.5fr 1fr 100px 80px 100px',
+            gridTemplateColumns: '40px 50px 100px 1.5fr 120px 100px 70px 60px 70px 80px 120px',
           }}
         >
           <div className="text-center">#</div>
@@ -306,10 +309,12 @@ export default function VideoList({
           <div>Artist</div>
           <div>Title</div>
           <div>Label</div>
+          <div>Genre</div>
           <div className="text-center">BPM</div>
           <div className="text-center">Key</div>
           <div className="text-center">Quality</div>
           <div className="text-center">Duration</div>
+          <div></div>
         </div>
       )}
 
