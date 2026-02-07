@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Social Cards Demo</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a0f'/><polygon points='10,8 10,24 24,16' fill='%2300d4ff'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111116;
+      --bg-tertiary: #1a1a22;
+      --bg-elevated: #222230;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #6b6b76;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.1);
+      --accent-cyan: #00d4ff;
+      --accent-cyan-hover: #33ddff;
+      --accent-cyan-glow: rgba(0, 212, 255, 0.3);
+      --accent-cyan-subtle: rgba(0, 212, 255, 0.1);
+      --accent-gold: #ffd700;
+      --accent-coral: #ff6b4a;
+      --accent-purple: #a855f7;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .page-header h1 {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .page-header h1 span {
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 18px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Quick Wins Badge */
+    .quick-wins {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+
+    .quick-win {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 999px;
+      font-size: 14px;
+    }
+
+    .quick-win .check {
+      width: 20px;
+      height: 20px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: black;
+      font-size: 12px;
+    }
+
+    /* Cards Grid */
+    .cards-section {
+      margin-bottom: 80px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .section-header h2 {
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-header h2 .badge {
+      font-size: 12px;
+      padding: 4px 12px;
+      background: var(--accent-cyan-subtle);
+      color: var(--accent-cyan);
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 32px;
+    }
+
+    /* Social Card Container */
+    .card-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .card-container:hover {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 40px var(--accent-cyan-glow);
+      transform: translateY(-4px);
+    }
+
+    .card-label {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-label h3 {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .card-label .size {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+
+    /* ===== SOCIAL CARD STYLES ===== */
+    .social-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .social-card.instagram {
+      aspect-ratio: 1 / 1;
+    }
+
+    .social-card.twitter {
+      aspect-ratio: 1200 / 630;
+    }
+
+    .social-card.story {
+      aspect-ratio: 9 / 16;
+      max-height: 500px;
+    }
+
+    /* Card Background */
+    .card-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
+    }
+
+    /* Card Content */
+    .card-content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+    }
+
+    /* Set Card Template */
+    .set-card .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .set-card .card-header .icon {
+      color: var(--accent-cyan);
+    }
+
+    .set-card .card-header span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .set-card .set-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .set-card .set-author {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 20px;
+    }
+
+    /* Thumbnail Grid */
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .thumb-item {
+      aspect-ratio: 16/9;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .thumb-item .play-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.4);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .thumb-item:hover .play-icon {
+      opacity: 1;
+    }
+
+    .thumb-item.more {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.6);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .stats-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .download-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent-cyan);
+    }
+
+    .download-stat .count {
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .track-info {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .bpm-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent-cyan);
+    }
+
+    /* Camelot Wheel */
+    .camelot-section {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .camelot-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .camelot-wheel {
+      width: 60px;
+      height: 60px;
+      position: relative;
+    }
+
+    .camelot-wheel svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .camelot-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* Branding */
+    .branding {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .branding .logo {
+      width: 24px;
+      height: 24px;
+      background: var(--accent-cyan);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .branding .url {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* Stats Card Template */
+    .stats-card .card-content {
+      text-align: center;
+      justify-content: center;
+    }
+
+    .stats-card .avatar {
+      width: 80px;
+      height: 80px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 28px;
+      font-weight: 700;
+      color: black;
+    }
+
+    .stats-card .dj-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .stats-card .member-since {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 32px;
+    }
+
+    .stats-card .big-number {
+      font-size: 56px;
+      font-weight: 700;
+      color: white;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stats-card .big-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 24px;
+    }
+
+    .stats-card .genre-tags {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .stats-card .genre-tag {
+      padding: 6px 16px;
+      background: var(--accent-cyan-subtle);
+      color: var(--accent-cyan);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Track Card Template */
+    .track-card .badge-top {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      padding: 6px 14px;
+      background: var(--accent-cyan);
+      color: black;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 999px;
+      z-index: 10;
+    }
+
+    .track-card .card-content {
+      justify-content: flex-end;
+    }
+
+    .track-card .waveform {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 48px;
+      margin-bottom: 16px;
+    }
+
+    .track-card .waveform .bar {
+      flex: 1;
+      border-radius: 2px 2px 0 0;
+    }
+
+    .track-card .track-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .track-card .track-artist {
+      font-size: 18px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 20px;
+    }
+
+    .track-card .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .track-card .meta-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .track-card .bpm {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--accent-cyan);
+    }
+
+    .track-card .key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--accent-cyan);
+    }
+
+    .track-card .downloads {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+    }
+
+    .track-card .mini-camelot {
+      width: 40px;
+      height: 40px;
+    }
+
+    .track-card .branding-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .track-card .dj-tag {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* Customization Panel */
+    .customization-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 60px;
+    }
+
+    .customization-section h2 {
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+
+    .custom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    @media (max-width: 768px) {
+      .custom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--border-default);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--accent-cyan);
+      background: var(--accent-cyan-subtle);
+    }
+
+    .upload-zone .icon {
+      width: 48px;
+      height: 48px;
+      background: var(--accent-cyan-subtle);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      color: var(--accent-cyan);
+    }
+
+    .upload-zone h3 {
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .upload-zone p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .controls {
+      space-y: 20px;
+    }
+
+    .control-group {
+      margin-bottom: 24px;
+    }
+
+    .control-group label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .control-group label span {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-cyan);
+    }
+
+    .slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--bg-tertiary);
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      cursor: pointer;
+    }
+
+    .position-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .position-btn {
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .position-btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--text-primary);
+    }
+
+    .position-btn.active {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+      color: black;
+    }
+
+    .preset-images {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .preset-img {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-img:hover {
+      border-color: var(--accent-cyan);
+    }
+
+    .preset-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Export Buttons */
+    .export-section {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .export-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .export-btn.primary {
+      background: var(--accent-cyan);
+      color: black;
+    }
+
+    .export-btn.primary:hover {
+      box-shadow: 0 0 20px var(--accent-cyan-glow);
+    }
+
+    .export-btn.secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-default);
+    }
+
+    .export-btn.secondary:hover {
+      border-color: var(--accent-cyan);
+    }
+
+    /* Animated Counter */
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .count-animate {
+      animation: countUp 0.6s ease-out;
+    }
+
+    /* Camelot Colors */
+    .camelot-1b { fill: #00d4ff; }
+    .camelot-2b { fill: #00e5cc; }
+    .camelot-3b { fill: #00e676; }
+    .camelot-4b { fill: #76ff03; }
+    .camelot-5b { fill: #c6ff00; }
+    .camelot-6b { fill: #ffea00; }
+    .camelot-7b { fill: #ffc400; }
+    .camelot-8b { fill: #ff9100; }
+    .camelot-9b { fill: #ff5722; }
+    .camelot-10b { fill: #f44336; }
+    .camelot-11b { fill: #e040fb; }
+    .camelot-12b { fill: #7c4dff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="page-header">
+      <h1>Social <span>Share Cards</span></h1>
+      <p>Create shareable cards for social media featuring your DJ sets, stats, and favorite tracks. Customize with your own images.</p>
+
+      <div class="quick-wins">
+        <div class="quick-win">
+          <span class="check">✓</span>
+          Video Preview Grid
+        </div>
+        <div class="quick-win">
+          <span class="check">✓</span>
+          Download Counter (Social Proof)
+        </div>
+        <div class="quick-win">
+          <span class="check">✓</span>
+          Camelot Wheel (Key Viz)
+        </div>
+        <div class="quick-win">
+          <span class="check">✓</span>
+          Custom Image Upload
+        </div>
+      </div>
+    </header>
+
+    <!-- Set Card Section -->
+    <section class="cards-section">
+      <div class="section-header">
+        <h2>Set Card <span class="badge">TEMPLATE 1</span></h2>
+      </div>
+      <div class="cards-grid">
+        <!-- Instagram Set Card -->
+        <div class="card-container">
+          <div class="card-label">
+            <h3>Instagram Post</h3>
+            <span class="size">1080 × 1080</span>
+          </div>
+          <div class="social-card set-card instagram">
+            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1571266028243-e4733b0f0bb0?w=600'); opacity: 0.3;"></div>
+            <div class="card-overlay"></div>
+            <div class="card-content">
+              <div class="card-header">
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18V5l12-2v13"/>
+                  <circle cx="6" cy="18" r="3"/>
+                  <circle cx="18" cy="16" r="3"/>
+                </svg>
+                <span>DJ Set</span>
+              </div>
+
+              <h3 class="set-title">Weekend Vibes Mix</h3>
+              <p class="set-author">by DJ Demo</p>
+
+              <div class="thumb-grid">
+                <div class="thumb-item">
+                  <img src="https://picsum.photos/160/90?random=11" alt="">
+                  <div class="play-icon">▶</div>
+                </div>
+                <div class="thumb-item">
+                  <img src="https://picsum.photos/160/90?random=12" alt="">
+                  <div class="play-icon">▶</div>
+                </div>
+                <div class="thumb-item">
+                  <img src="https://picsum.photos/160/90?random=13" alt="">
+                  <div class="play-icon">▶</div>
+                </div>
+                <div class="thumb-item">
+                  <img src="https://picsum.photos/160/90?random=14" alt="">
+                  <div class="play-icon">▶</div>
+                </div>
+                <div class="thumb-item">
+                  <img src="https://picsum.photos/160/90?random=15" alt="">
+                  <div class="play-icon">▶</div>
+                </div>
+                <div class="thumb-item more">+8</div>
+              </div>
+
+              <div class="stats-row">
+                <div class="stats-left">
+                  <div class="download-stat">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                      <polyline points="17 6 23 6 23 12"/>
+                    </svg>
+                    <span class="count count-animate">2.4K</span>
+                  </div>
+                  <span class="track-info">13 tracks • 52 min</span>
+                </div>
+                <span class="bpm-display">124-128 BPM</span>
+              </div>
+
+              <div class="camelot-section">
+                <div class="camelot-wrapper">
+                  <div class="camelot-wheel">
+                    <svg viewBox="0 0 60 60">
+                      <circle cx="30" cy="30" r="28" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                      <circle cx="30" cy="30" r="16" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                      <!-- Active keys highlighted -->
+                      <circle cx="30" cy="6" r="4" class="camelot-5b"/>
+                      <circle cx="45" cy="12" r="4" class="camelot-6b"/>
+                      <circle cx="52" cy="26" r="4" fill="rgba(255,255,255,0.2)"/>
+                      <circle cx="52" cy="34" r="4" fill="rgba(255,255,255,0.2)"/>
+                      <circle cx="45" cy="48" r="4" fill="rgba(255,255,255,0.2)"/>
+                      <circle cx="30" cy="54" r="4" fill="rgba(255,255,255,0.2)"/>
+                      <circle cx="15" cy="48" r="4" fill="rgba(255,255,255,0.2)"/>
+                      <circle cx="8" cy="34" r="4" fill="rgba(255,255,255,0.2)"/>
+                      <circle cx="8" cy="26" r="4" fill="rgba(255,255,255,0.2)"/>
+                      <circle cx="15" cy="12" r="4" class="camelot-4b"/>
+                      <circle cx="30" cy="30" r="3" fill="var(--accent-cyan)"/>
+                    </svg>
+                  </div>
+                  <span class="camelot-label">Key Range</span>
+                </div>
+
+                <div class="branding">
+                  <div class="logo">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="black">
+                      <polygon points="8,5 8,19 19,12"/>
+                    </svg>
+                  </div>
+                  <span class="url">thevideopool.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Twitter Set Card -->
+        <div class="card-container">
+          <div class="card-label">
+            <h3>Twitter/X</h3>
+            <span class="size">1200 × 630</span>
+          </div>
+          <div class="social-card set-card twitter">
+            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600'); opacity: 0.25;"></div>
+            <div class="card-overlay"></div>
+            <div class="card-content" style="flex-direction: row; align-items: center; gap: 32px;">
+              <div style="flex: 1;">
+                <div class="card-header">
+                  <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18V5l12-2v13"/>
+                    <circle cx="6" cy="18" r="3"/>
+                    <circle cx="18" cy="16" r="3"/>
+                  </svg>
+                  <span>DJ Set</span>
+                </div>
+                <h3 class="set-title" style="font-size: 20px;">Friday Night Live</h3>
+                <p class="set-author" style="margin-bottom: 12px;">by DJ Demo</p>
+                <div class="stats-left" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                  <div class="download-stat">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                    </svg>
+                    <span class="count">1.8K downloads</span>
+                  </div>
+                  <span class="track-info">8 tracks • 35 min • 118-124 BPM</span>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 200px;">
+                <div class="thumb-item" style="border-radius: 6px;">
+                  <img src="https://picsum.photos/100/56?random=21" alt="">
+                </div>
+                <div class="thumb-item" style="border-radius: 6px;">
+                  <img src="https://picsum.photos/100/56?random=22" alt="">
+                </div>
+                <div class="thumb-item" style="border-radius: 6px;">
+                  <img src="https://picsum.photos/100/56?random=23" alt="">
+                </div>
+                <div class="thumb-item more" style="border-radius: 6px;">+5</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Card Section -->
+    <section class="cards-section">
+      <div class="section-header">
+        <h2>Stats Card <span class="badge">TEMPLATE 2</span></h2>
+      </div>
+      <div class="cards-grid">
+        <!-- Instagram Stats Card -->
+        <div class="card-container">
+          <div class="card-label">
+            <h3>Instagram Post</h3>
+            <span class="size">1080 × 1080</span>
+          </div>
+          <div class="social-card stats-card instagram">
+            <div class="card-bg" style="background: radial-gradient(circle at 30% 30%, rgba(0,212,255,0.3) 0%, transparent 50%), radial-gradient(circle at 70% 70%, rgba(168,85,247,0.3) 0%, transparent 50%), #0a0a0f;"></div>
+            <div class="card-content">
+              <div class="avatar">DJ</div>
+              <h3 class="dj-name">DJ Demo</h3>
+              <p class="member-since">DJ since 2019</p>
+
+              <div class="big-number count-animate">12,847</div>
+              <p class="big-label">Total Downloads</p>
+
+              <div class="genre-tags">
+                <span class="genre-tag">Hip-Hop</span>
+                <span class="genre-tag">House</span>
+                <span class="genre-tag">Latin</span>
+              </div>
+
+              <p style="font-size: 12px; color: rgba(255,255,255,0.5);">
+                Favorites: Drake, Bad Bunny, Dua Lipa
+              </p>
+
+              <div class="branding" style="justify-content: center; margin-top: auto; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div class="logo">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="black">
+                    <polygon points="8,5 8,19 19,12"/>
+                  </svg>
+                </div>
+                <span class="url">thevideopool.com</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Track Card Section -->
+    <section class="cards-section">
+      <div class="section-header">
+        <h2>Track Card <span class="badge">TEMPLATE 3</span></h2>
+      </div>
+      <div class="cards-grid">
+        <!-- Instagram Track Card -->
+        <div class="card-container">
+          <div class="card-label">
+            <h3>Instagram Post</h3>
+            <span class="size">1080 × 1080</span>
+          </div>
+          <div class="social-card track-card instagram">
+            <div class="card-bg" style="background-image: url('https://picsum.photos/600/600?random=30'); opacity: 0.4;"></div>
+            <div class="card-overlay"></div>
+            <span class="badge-top">▶ NOW PLAYING</span>
+            <div class="card-content">
+              <div class="waveform">
+                <script>
+                  // Generate random waveform bars
+                  document.currentScript.insertAdjacentHTML('beforebegin',
+                    Array.from({length: 40}, () => {
+                      const h = Math.random() * 100;
+                      const op = Math.random() > 0.5 ? 'cc' : '66';
+                      return `<div class="bar" style="height: ${h}%; background: var(--accent-cyan)${op};"></div>`;
+                    }).join('')
+                  );
+                </script>
+              </div>
+
+              <h3 class="track-title">Die With A Smile</h3>
+              <p class="track-artist">Lady Gaga & Bruno Mars</p>
+
+              <div class="meta-row">
+                <div class="meta-left">
+                  <span class="bpm">158 BPM</span>
+                  <span class="key">F Minor</span>
+                  <span class="downloads">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    15.2K
+                  </span>
+                </div>
+                <div class="mini-camelot">
+                  <svg viewBox="0 0 40 40">
+                    <circle cx="20" cy="20" r="18" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                    <circle cx="20" cy="4" r="3" class="camelot-1b"/>
+                    <circle cx="20" cy="20" r="2" fill="var(--accent-cyan)"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="branding-row">
+                <span class="dj-tag">DJ Demo</span>
+                <div class="branding">
+                  <div class="logo">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="black">
+                      <polygon points="8,5 8,19 19,12"/>
+                    </svg>
+                  </div>
+                  <span class="url">thevideopool.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Story Track Card -->
+        <div class="card-container">
+          <div class="card-label">
+            <h3>Instagram Story</h3>
+            <span class="size">1080 × 1920</span>
+          </div>
+          <div class="social-card track-card story">
+            <div class="card-bg" style="background-image: url('https://picsum.photos/400/700?random=31'); opacity: 0.35;"></div>
+            <div class="card-overlay"></div>
+            <span class="badge-top">⬇ JUST DOWNLOADED</span>
+            <div class="card-content">
+              <div class="waveform" style="height: 80px;">
+                <script>
+                  document.currentScript.insertAdjacentHTML('beforebegin',
+                    Array.from({length: 50}, () => {
+                      const h = Math.random() * 100;
+                      const op = Math.random() > 0.5 ? 'cc' : '66';
+                      return `<div class="bar" style="height: ${h}%; background: var(--accent-cyan)${op};"></div>`;
+                    }).join('')
+                  );
+                </script>
+              </div>
+
+              <h3 class="track-title" style="font-size: 32px;">APT.</h3>
+              <p class="track-artist" style="font-size: 20px;">ROSÉ & Bruno Mars</p>
+
+              <div class="meta-row" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+                <div class="meta-left" style="gap: 20px;">
+                  <span class="bpm" style="font-size: 20px;">148 BPM</span>
+                  <span class="key" style="font-size: 18px;">A Major</span>
+                </div>
+                <span class="downloads" style="font-size: 16px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  8.7K downloads
+                </span>
+              </div>
+
+              <div class="branding-row">
+                <span class="dj-tag">DJ Demo</span>
+                <div class="branding">
+                  <div class="logo">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="black">
+                      <polygon points="8,5 8,19 19,12"/>
+                    </svg>
+                  </div>
+                  <span class="url">thevideopool.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Customization Demo -->
+    <section class="customization-section">
+      <h2>Customize Your Card</h2>
+      <div class="custom-grid">
+        <div>
+          <div class="upload-zone">
+            <div class="icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <h3>Upload Custom Image</h3>
+            <p>Drag & drop or click to browse • PNG, JPG up to 5MB</p>
+          </div>
+
+          <div class="preset-images">
+            <div class="preset-img">
+              <img src="https://images.unsplash.com/photo-1571266028243-e4733b0f0bb0?w=100&h=100&fit=crop" alt="">
+            </div>
+            <div class="preset-img">
+              <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop" alt="">
+            </div>
+            <div class="preset-img">
+              <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&h=100&fit=crop" alt="">
+            </div>
+            <div class="preset-img">
+              <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100&h=100&fit=crop" alt="">
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="control-group">
+            <label>
+              Opacity
+              <span>30%</span>
+            </label>
+            <input type="range" class="slider" min="0" max="100" value="30">
+          </div>
+
+          <div class="control-group">
+            <label>
+              Blur
+              <span>0px</span>
+            </label>
+            <input type="range" class="slider" min="0" max="20" value="0">
+          </div>
+
+          <div class="control-group">
+            <label>Position</label>
+            <div class="position-grid">
+              <button class="position-btn">↖</button>
+              <button class="position-btn">↑</button>
+              <button class="position-btn">↗</button>
+              <button class="position-btn">←</button>
+              <button class="position-btn active">●</button>
+              <button class="position-btn">→</button>
+              <button class="position-btn">↙</button>
+              <button class="position-btn">↓</button>
+              <button class="position-btn">↘</button>
+            </div>
+          </div>
+
+          <div class="export-section">
+            <button class="export-btn secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy to Clipboard
+            </button>
+            <button class="export-btn primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Download PNG
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

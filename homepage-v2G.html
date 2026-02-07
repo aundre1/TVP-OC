@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<!--
+  THE VIDEO POOL - Public Homepage v2.1 (DJ City Inspired)
+  Version: 2.1 | January 2026
+
+  UX/UI COUNCIL APPROVED DESIGN (v2.1):
+  ✓ Compact hero (60vh) - get to content fast like DJcity
+  ✓ Real content preview using v5.5 components (Trending + New Releases)
+  ✓ Genre showcase cards
+  ✓ 6-feature grid (scannable)
+  ✓ Live CSS-based Dashboard Mockups (No images needed)
+  ✓ Dark theme matching v5.5 dashboard
+  ✓ Dedicated pricing section
+
+  INSPIRATION: DJcity's informative, organized approach
+  IMPROVEMENT: Hybrid marketing + content preview
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Professional Video DJ Platform | 30,000+ Music Videos</title>
+  <meta name="description" content="The #1 video DJ pool. 30,000+ music videos in 4K. Unlimited downloads, Set Builder, BPM/Key matching. Trusted by 10,000+ DJs worldwide.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a0f'/><polygon points='10,8 10,24 24,16' fill='%2300d4ff'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS VARIABLES (Matching v5.5 Dashboard)
+       ============================================ */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111116;
+      --bg-tertiary: #1a1a22;
+      --bg-elevated: #222230;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #6b6b76;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.1);
+      --accent-cyan: #00d4ff;
+      --accent-cyan-hover: #33ddff;
+      --accent-cyan-glow: rgba(0, 212, 255, 0.3);
+      --accent-cyan-subtle: rgba(0, 212, 255, 0.1);
+      --accent-gold: #ffd700;
+      --accent-coral: #ff6b4a;
+      --accent-purple: #a855f7;
+      --success: #00e676;
+      --warning: #ffab00;
+      --error: #ff4757;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.5);
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 150ms;
+      --duration-normal: 200ms;
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================================
+       NAVBAR
+       ============================================ */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      padding: 0 32px;
+      background: rgba(10, 10, 15, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .logo__image {
+      height: 32px;
+      width: auto;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    @keyframes logoGlow {
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(0, 212, 255, 0.3)); }
+      50% { filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.5)); }
+    }
+
+    .logo__image { animation: logoGlow 4s ease-in-out infinite; }
+    .logo:hover .logo__image { animation: none; filter: drop-shadow(0 0 12px var(--accent-cyan-glow)); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      padding: 8px 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* ============================================
+       BUTTONS
+       ============================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn--primary {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .btn--primary:hover {
+      background: var(--accent-cyan-hover);
+      box-shadow: 0 4px 20px var(--accent-cyan-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn--secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
+    }
+
+    .btn--secondary:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .btn--large {
+      padding: 14px 28px;
+      font-size: 15px;
+      border-radius: 10px;
+    }
+
+    .btn--ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 8px 14px;
+    }
+
+    .btn--ghost:hover {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    /* ============================================
+       HERO SECTION (Compact - 60vh)
+       ============================================ */
+    .hero {
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      padding: 100px 0 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--accent-cyan-glow) 0%, transparent 60%);
+      transform: translateX(-50%);
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .hero__container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero__content {
+      flex: 1;
+      max-width: 560px;
+    }
+
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: var(--accent-cyan-subtle);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      margin-bottom: 20px;
+    }
+
+    .hero__title {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero__title span {
+      color: var(--accent-cyan);
+    }
+
+    .hero__subtitle {
+      font-size: 17px;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .hero__ctas {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .hero__stats {
+      display: flex;
+      gap: 32px;
+    }
+
+    .hero__stat {
+      text-align: left;
+    }
+
+    .hero__stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .hero__stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .hero__visual {
+      flex-shrink: 0;
+      width: 420px;
+      position: relative;
+      perspective: 1000px;
+    }
+
+    /* CSS-Based Dashboard Mockup */
+    .hero__mockup {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-elevated), 0 0 40px rgba(0, 212, 255, 0.1);
+      border: 1px solid var(--border-default);
+      background: var(--bg-primary);
+      transform: rotateY(-5deg) rotateX(2deg);
+      transition: transform 0.5s var(--ease-out);
+      position: relative;
+    }
+
+    .hero__mockup:hover {
+      transform: rotateY(0) rotateX(0);
+    }
+
+    /* Mockup Header */
+    .mock-header {
+      height: 48px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 16px;
+    }
+    .mock-logo { width: 24px; height: 24px; background: var(--accent-cyan); border-radius: 4px; }
+    .mock-search { flex: 1; height: 28px; background: var(--bg-tertiary); border-radius: 6px; border: 1px solid var(--border-subtle); }
+    .mock-user { width: 28px; height: 28px; background: var(--bg-elevated); border-radius: 50%; }
+
+    /* Mockup Content */
+    .mock-body {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .mock-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .mock-card-thumb {
+      aspect-ratio: 16/9;
+      background: var(--bg-tertiary);
+      position: relative;
+    }
+    .mock-card-thumb::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      width: 24px;
+      height: 12px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 2px;
+    }
+    .mock-card-info { padding: 8px; }
+    .mock-line { height: 8px; background: var(--bg-elevated); border-radius: 4px; margin-bottom: 4px; width: 80%; }
+    .mock-line.short { width: 50%; }
+
+    /* Full Dashboard Preview (Browser Window Style) */
+    .browser-window {
+      border-radius: 12px;
+      border: 1px solid var(--border-default);
+      background: var(--bg-primary);
+      box-shadow: var(--shadow-elevated);
+      overflow: hidden;
+      position: relative;
+    }
+    .browser-bar {
+      background: var(--bg-secondary);
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .browser-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .browser-dot.red { background: #ff5f56; }
+    .browser-dot.yellow { background: #ffbd2e; }
+    .browser-dot.green { background: #27c93f; }
+
+    .browser-content {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: var(--bg-primary);
+      overflow: hidden;
+    }
+    
+    /* Scale down the dashboard UI for the preview */
+    .dashboard-scale-wrapper {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none; /* Non-interactive screenshot */
+    }
+
+    /* ============================================
+       CONTENT PREVIEW SECTION
+       ============================================ */
+    .content-preview {
+      padding: 60px 0;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .content-preview__container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .content-preview__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .content-preview__title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .content-preview__link {
+      font-size: 13px;
+      color: var(--accent-cyan);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .content-preview__link:hover {
+      text-decoration: underline;
+    }
+
+    .content-preview__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    /* Trending Column */
+    .trending-list {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+
+    .trending-list__header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .trending-list__header svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent-coral);
+    }
+
+    .trending-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background var(--duration-fast) var(--ease-out);
+    }
+
+    .trending-item:last-child {
+      border-bottom: none;
+    }
+
+    .trending-item:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .trending-item__rank {
+      width: 24px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .trending-item__thumb {
+      width: 60px;
+      height: 34px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--bg-elevated);
+      position: relative;
+    }
+
+    .trending-item__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .trending-item__info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .trending-item__title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .trending-item__artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .trending-item__meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-primary);
+    }
+
+    .trending-item__quality {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* Matching v5.5 Quality Colors */
+    .quality--4k { background: var(--accent-cyan); color: #000; }
+    .quality--1080 { background: var(--accent-purple); color: #fff; }
+    .quality--720 { background: rgba(255,255,255,0.3); color: #fff; }
+
+    /* New Releases Column */
+    .releases-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* Matching v5.5 Video Card */
+    .release-card {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+      transition: all var(--duration-fast) var(--ease-out);
+      position: relative;
+    }
+
+    .release-card:hover {
+      border-color: var(--border-default);
+      transform: scale(1.02);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .release-card__thumb {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: var(--bg-tertiary);
+      overflow: hidden;
+    }
+
+    .release-card__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s var(--ease-out);
+    }
+
+    .release-card:hover .release-card__thumb img {
+      transform: scale(1.05);
+    }
+
+    .release-card__badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      padding: 3px 8px;
+      background: var(--accent-coral);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .release-card__quality {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      padding: 3px 8px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .release-card__info {
+      padding: 14px;
+    }
+
+    .release-card__title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .release-card__artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ============================================
+       GENRE SHOWCASE
+       ============================================ */
+    .genres {
+      padding: 60px 0;
+    }
+
+    .genres__container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .genres__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .genres__title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .genres__grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+    }
+
+    .genre-card {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .genre-card:hover {
+      transform: scale(1.03);
+    }
+
+    .genre-card__bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-elevated) 100%);
+    }
+
+    .genre-card--hiphop .genre-card__bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+    .genre-card--pop .genre-card__bg { background: linear-gradient(135deg, #2d1f3d 0%, #1f1f3d 100%); }
+    .genre-card--latin .genre-card__bg { background: linear-gradient(135deg, #2d2d1f 0%, #3d2d1f 100%); }
+    .genre-card--edm .genre-card__bg { background: linear-gradient(135deg, #1f2d2d 0%, #0a2a2a 100%); }
+    .genre-card--rnb .genre-card__bg { background: linear-gradient(135deg, #2d1f2d 0%, #1f1a2d 100%); }
+    .genre-card--country .genre-card__bg { background: linear-gradient(135deg, #2d2a1f 0%, #2d251f 100%); }
+
+    .genre-card__content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .genre-card__icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .genre-card__name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .genre-card__count {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ============================================
+       FEATURES SECTION (6-column grid)
+       ============================================ */
+    .features {
+      padding: 80px 0;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .features__container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .features__header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .features__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 28px;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-default);
+      transform: translateY(-2px);
+    }
+
+    .feature-card__icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-cyan-subtle);
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+
+    .feature-card__icon svg {
+      width: 24px;
+      height: 24px;
+      color: var(--accent-cyan);
+    }
+
+    .feature-card__title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .feature-card__description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ============================================
+       DASHBOARD PREVIEW SECTION
+       ============================================ */
+    .dashboard-preview {
+      padding: 80px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-preview::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 1000px;
+      height: 500px;
+      background: radial-gradient(ellipse, var(--accent-cyan-glow) 0%, transparent 70%);
+      transform: translateX(-50%);
+      opacity: 0.2;
+      pointer-events: none;
+    }
+
+    .dashboard-preview__container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .dashboard-preview__header {
+      margin-bottom: 40px;
+    }
+
+    /* ============================================
+       PRICING SECTION
+       ============================================ */
+    .pricing {
+      padding: 80px 0;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .pricing__container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .pricing__header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .pricing__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .pricing-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .pricing-card:hover {
+      border-color: var(--border-default);
+    }
+
+    .pricing-card--featured {
+      background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-tertiary) 100%);
+      border-color: var(--accent-cyan);
+      transform: scale(1.02);
+      box-shadow: 0 0 40px var(--accent-cyan-glow);
+      position: relative;
+    }
+
+    .pricing-card--featured::before {
+      content: 'Most Popular';
+      position: absolute;
+      top: -11px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent-cyan);
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 5px 14px;
+      border-radius: 100px;
+    }
+
+    .pricing-card__name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .pricing-card__price {
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+      margin-bottom: 4px;
+    }
+
+    .pricing-card__currency {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .pricing-card__amount {
+      font-size: 40px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .pricing-card__period {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .pricing-card__description {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .pricing-card__features {
+      list-style: none;
+      margin-bottom: 24px;
+    }
+
+    .pricing-card__features li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .pricing-card__features li svg {
+      width: 16px;
+      height: 16px;
+      color: var(--success);
+      flex-shrink: 0;
+    }
+
+    .pricing-card__cta {
+      width: 100%;
+    }
+
+    /* ============================================
+       TESTIMONIALS
+       ============================================ */
+    .testimonials {
+      padding: 80px 0;
+    }
+
+    .testimonials__container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .testimonials__header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .testimonials__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .testimonial-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .testimonial-card__stars {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 16px;
+    }
+
+    .testimonial-card__stars svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--accent-gold);
+    }
+
+    .testimonial-card__quote {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .testimonial-card__author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .testimonial-card__avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      font-size: 14px;
+    }
+
+    .testimonial-card__name {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .testimonial-card__role {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       FINAL CTA
+       ============================================ */
+    .final-cta {
+      padding: 80px 0;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-subtle);
+      text-align: center;
+    }
+
+    .final-cta__container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .final-cta__title {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .final-cta__subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .final-cta__buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    .footer {
+      background: var(--bg-primary);
+      border-top: 1px solid var(--border-subtle);
+      padding: 60px 0 32px;
+    }
+
+    .footer__container {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .footer__brand {
+      max-width: 260px;
+    }
+
+    .footer__logo {
+      margin-bottom: 16px;
+    }
+
+    .footer__logo img {
+      height: 28px;
+      width: auto;
+    }
+
+    .footer__tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .footer__column h4 {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .footer__links {
+      list-style: none;
+    }
+
+    .footer__links li {
+      margin-bottom: 10px;
+    }
+
+    .footer__links a {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color var(--duration-fast) var(--ease-out);
+    }
+
+    .footer__links a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer__bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 48px auto 0;
+      padding: 20px 32px 0;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .footer__copyright {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .footer__socials {
+      display: flex;
+      gap: 12px;
+    }
+
+    .footer__socials a {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      color: var(--text-muted);
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .footer__socials a:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .footer__socials svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 1024px) {
+      .hero__container {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .hero__content {
+        max-width: 600px;
+      }
+
+      .hero__ctas {
+        justify-content: center;
+      }
+
+      .hero__stats {
+        justify-content: center;
+      }
+
+      .hero__visual {
+        width: 100%;
+        max-width: 500px;
+      }
+
+      .content-preview__grid {
+        grid-template-columns: 1fr;
+      }
+
+      .genres__grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .features__grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .pricing__grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .pricing-card--featured {
+        transform: none;
+      }
+
+      .testimonials__grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer__container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 16px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding: 80px 0 40px;
+        min-height: auto;
+      }
+
+      .hero__title {
+        font-size: 32px;
+      }
+
+      .hero__stats {
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .hero__visual {
+        display: none;
+      }
+
+      .genres__grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .features__grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pricing__grid {
+        grid-template-columns: 1fr;
+        max-width: 360px;
+        margin: 0 auto;
+      }
+
+      .section-title {
+        font-size: 26px;
+      }
+
+      .final-cta__title {
+        font-size: 28px;
+      }
+
+      .final-cta__buttons {
+        flex-direction: column;
+      }
+
+      .footer__container {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .footer__brand {
+        max-width: 100%;
+      }
+
+      .footer__bottom {
+        flex-direction: column;
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .releases-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero__ctas {
+        flex-direction: column;
+      }
+
+      .btn--large {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="logo">
+      <img src="The Video Pool Logo 2.0.png" alt="The Video Pool" class="logo__image">
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="index-v5.5-pro.html" class="btn btn--ghost">Log In</a>
+      <a href="#pricing" class="btn btn--primary">Get Started Free</a>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION (Compact) -->
+  <section class="hero">
+    <div class="hero__container">
+      <div class="hero__content">
+        <div class="hero__badge">The #1 Video DJ Pool</div>
+        <h1 class="hero__title">
+          Your Library. Your Way.<br>
+          <span>30,000+ Videos in 4K.</span>
+        </h1>
+        <p class="hero__subtitle">
+          The professional video DJ platform trusted by 10,000+ DJs.
+          Unlimited downloads, Set Builder, and every format you need.
+        </p>
+        <div class="hero__ctas">
+          <a href="#pricing" class="btn btn--primary btn--large">Get Started Free</a>
+          <a href="#preview" class="btn btn--secondary btn--large">See What's Inside</a>
+        </div>
+        <div class="hero__stats">
+          <div class="hero__stat">
+            <div class="hero__stat-value">30K+</div>
+            <div class="hero__stat-label">Music Videos</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-value">4K</div>
+            <div class="hero__stat-label">Max Quality</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-value">50+</div>
+            <div class="hero__stat-label">New Daily</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <div class="hero__mockup">
+          <!-- CSS-Based Dashboard Mockup (No Image Needed) -->
+          <div class="mock-header">
+            <div class="mock-logo"></div>
+            <div class="mock-search"></div>
+            <div class="mock-user"></div>
+          </div>
+          <div class="mock-body">
+            <div class="mock-card">
+              <div class="mock-card-thumb"></div>
+              <div class="mock-card-info"><div class="mock-line"></div><div class="mock-line short"></div></div>
+            </div>
+            <div class="mock-card">
+              <div class="mock-card-thumb"></div>
+              <div class="mock-card-info"><div class="mock-line"></div><div class="mock-line short"></div></div>
+            </div>
+            <div class="mock-card">
+              <div class="mock-card-thumb"></div>
+              <div class="mock-card-info"><div class="mock-line"></div><div class="mock-line short"></div></div>
+            </div>
+            <div class="mock-card">
+              <div class="mock-card-thumb"></div>
+              <div class="mock-card-info"><div class="mock-line"></div><div class="mock-line short"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT PREVIEW -->
+  <section class="content-preview" id="preview">
+    <div class="content-preview__container">
+      <div class="content-preview__header">
+        <div class="content-preview__title">What's Inside</div>
+        <a href="#" class="content-preview__link">Browse Full Library &rarr;</a>
+      </div>
+      <div class="content-preview__grid">
+        <!-- Trending -->
+        <div class="trending-list">
+          <div class="trending-list__header">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            Trending This Week
+          </div>
+          <div class="trending-item">
+            <div class="trending-item__rank">1</div>
+            <div class="trending-item__thumb">
+              <img src="https://picsum.photos/48/48?random=101" alt="">
+            </div>
+            <div class="trending-item__info">
+              <div class="trending-item__title">Die With A Smile</div>
+              <div class="trending-item__artist">Lady Gaga & Bruno Mars</div>
+            </div>
+            <div class="trending-item__meta">
+              <span>158 BPM</span>
+              <span class="trending-item__quality quality--1080">HD</span>
+            </div>
+          </div>
+          <div class="trending-item">
+            <div class="trending-item__rank">2</div>
+            <div class="trending-item__thumb">
+              <img src="https://picsum.photos/48/48?random=102" alt="">
+            </div>
+            <div class="trending-item__info">
+              <div class="trending-item__title">APT.</div>
+              <div class="trending-item__artist">ROSE & Bruno Mars</div>
+            </div>
+            <div class="trending-item__meta">
+              <span>148 BPM</span>
+              <span class="trending-item__quality quality--4k">4K</span>
+            </div>
+          </div>
+          <div class="trending-item">
+            <div class="trending-item__rank">3</div>
+            <div class="trending-item__thumb">
+              <img src="https://picsum.photos/48/48?random=103" alt="">
+            </div>
+            <div class="trending-item__info">
+              <div class="trending-item__title">Birds of a Feather</div>
+              <div class="trending-item__artist">Billie Eilish</div>
+            </div>
+            <div class="trending-item__meta">
+              <span>105 BPM</span>
+              <span class="trending-item__quality quality--4k">4K</span>
+            </div>
+          </div>
+          <div class="trending-item">
+            <div class="trending-item__rank">4</div>
+            <div class="trending-item__thumb">
+              <img src="https://picsum.photos/48/48?random=104" alt="">
+            </div>
+            <div class="trending-item__info">
+              <div class="trending-item__title">Espresso</div>
+              <div class="trending-item__artist">Sabrina Carpenter</div>
+            </div>
+            <div class="trending-item__meta">
+              <span>126 BPM</span>
+              <span class="trending-item__quality quality--1080">HD</span>
+            </div>
+          </div>
+          <div class="trending-item">
+            <div class="trending-item__rank">5</div>
+            <div class="trending-item__thumb">
+              <img src="https://picsum.photos/48/48?random=105" alt="">
+            </div>
+            <div class="trending-item__info">
+              <div class="trending-item__title">A Bar Song (Tipsy)</div>
+              <div class="trending-item__artist">Shaboozey</div>
+            </div>
+            <div class="trending-item__meta">
+              <span>82 BPM</span>
+              <span class="trending-item__quality quality--720">SD</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- New Releases -->
+        <div>
+          <div class="content-preview__title" style="margin-bottom: 16px;">New This Week</div>
+          <div class="releases-grid">
+            <div class="release-card">
+              <div class="release-card__thumb">
+                <img src="https://picsum.photos/300/169?random=201" alt="">
+                <span class="release-card__badge">New</span>
+                <span class="release-card__quality quality--4k">4K</span>
+              </div>
+              <div class="release-card__info">
+                <div class="release-card__title">Moonlit Floor</div>
+                <div class="release-card__artist">Lisa</div>
+              </div>
+            </div>
+            <div class="release-card">
+              <div class="release-card__thumb">
+                <img src="https://picsum.photos/300/169?random=202" alt="">
+                <span class="release-card__badge">New</span>
+                <span class="release-card__quality quality--4k">4K</span>
+              </div>
+              <div class="release-card__info">
+                <div class="release-card__title">LUNCH</div>
+                <div class="release-card__artist">Billie Eilish</div>
+              </div>
+            </div>
+            <div class="release-card">
+              <div class="release-card__thumb">
+                <img src="https://picsum.photos/300/169?random=203" alt="">
+                <span class="release-card__badge">New</span>
+                <span class="release-card__quality quality--1080">1080p</span>
+              </div>
+              <div class="release-card__info">
+                <div class="release-card__title">Nasty</div>
+                <div class="release-card__artist">Tinashe</div>
+              </div>
+            </div>
+            <div class="release-card">
+              <div class="release-card__thumb">
+                <img src="https://picsum.photos/300/169?random=204" alt="">
+                <span class="release-card__badge">New</span>
+                <span class="release-card__quality quality--1080">1080p</span>
+              </div>
+              <div class="release-card__info">
+                <div class="release-card__title">Guess</div>
+                <div class="release-card__artist">Charli XCX ft. Billie Eilish</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GENRE SHOWCASE -->
+  <section class="genres">
+    <div class="genres__container">
+      <div class="genres__header">
+        <h2 class="genres__title">Browse by Genre</h2>
+      </div>
+      <div class="genres__grid">
+        <div class="genre-card genre-card--hiphop">
+          <div class="genre-card__bg"></div>
+          <div class="genre-card__content">
+            <div class="genre-card__icon">🎤</div>
+            <div class="genre-card__name">Hip-Hop</div>
+            <div class="genre-card__count">8,500+ videos</div>
+          </div>
+        </div>
+        <div class="genre-card genre-card--pop">
+          <div class="genre-card__bg"></div>
+          <div class="genre-card__content">
+            <div class="genre-card__icon">🎵</div>
+            <div class="genre-card__name">Pop</div>
+            <div class="genre-card__count">7,200+ videos</div>
+          </div>
+        </div>
+        <div class="genre-card genre-card--latin">
+          <div class="genre-card__bg"></div>
+          <div class="genre-card__content">
+            <div class="genre-card__icon">💃</div>
+            <div class="genre-card__name">Latin</div>
+            <div class="genre-card__count">4,800+ videos</div>
+          </div>
+        </div>
+        <div class="genre-card genre-card--edm">
+          <div class="genre-card__bg"></div>
+          <div class="genre-card__content">
+            <div class="genre-card__icon">🎧</div>
+            <div class="genre-card__name">EDM</div>
+            <div class="genre-card__count">3,600+ videos</div>
+          </div>
+        </div>
+        <div class="genre-card genre-card--rnb">
+          <div class="genre-card__bg"></div>
+          <div class="genre-card__content">
+            <div class="genre-card__icon">🎹</div>
+            <div class="genre-card__name">R&B</div>
+            <div class="genre-card__count">3,200+ videos</div>
+          </div>
+        </div>
+        <div class="genre-card genre-card--country">
+          <div class="genre-card__bg"></div>
+          <div class="genre-card__content">
+            <div class="genre-card__icon">🤠</div>
+            <div class="genre-card__name">Country</div>
+            <div class="genre-card__count">2,700+ videos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="features__container">
+      <div class="features__header">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything You Need to Prep Like a Pro</h2>
+        <p class="section-subtitle">Built by DJs, for DJs. Every feature designed for your workflow.</p>
+      </div>
+      <div class="features__grid">
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="M7 15l3-3 2 2 5-5"/>
+            </svg>
+          </div>
+          <div class="feature-card__title">4K Quality Downloads</div>
+          <div class="feature-card__description">Crystal clear 4K, 1080p, and 720p options. Every video looks incredible on the big screen.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </div>
+          <div class="feature-card__title">Smart Set Builder</div>
+          <div class="feature-card__description">Build perfect sets with BPM and key matching. Get intelligent next-track recommendations.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </div>
+          <div class="feature-card__title">Customizable Dashboard</div>
+          <div class="feature-card__description">Drag-and-drop sections. Switch between Club Mode, Prep Mode, or create your own layout.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 3v12M8 11l4 4 4-4"/>
+              <path d="M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2"/>
+            </svg>
+          </div>
+          <div class="feature-card__title">Lightning Fast Downloads</div>
+          <div class="feature-card__description">High-speed CDN delivery. Batch download entire sets with one click.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div class="feature-card__title">All Video Versions</div>
+          <div class="feature-card__description">Clean, Explicit, Intro, Outro, Quick Hit, and Extended versions. Every edit you need.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          <div class="feature-card__title">Powerful Search</div>
+          <div class="feature-card__description">Find any track instantly. Filter by BPM, key, genre, and quality. Autocomplete suggestions.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD PREVIEW -->
+  <section class="dashboard-preview">
+    <div class="dashboard-preview__container">
+      <div class="dashboard-preview__header">
+        <div class="section-label">Dashboard</div>
+        <h2 class="section-title">See What You Get</h2>
+        <p class="section-subtitle">A professional interface designed for working DJs.</p>
+      </div>
+      <div class="browser-window">
+        <div class="browser-bar">
+          <div class="browser-dot red"></div>
+          <div class="browser-dot yellow"></div>
+          <div class="browser-dot green"></div>
+        </div>
+        <div class="browser-content">
+          <!-- Using iframe to load the actual dashboard file as a preview -->
+          <div class="dashboard-scale-wrapper">
+            <iframe src="index-v5.5-pro.html" style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(1); transform-origin: top left;"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="pricing__container">
+      <div class="pricing__header">
+        <div class="section-label">Pricing</div>
+        <h2 class="section-title">Simple, Transparent Pricing</h2>
+        <p class="section-subtitle">Start free, upgrade when you need more.</p>
+      </div>
+      <div class="pricing__grid">
+        <!-- Free -->
+        <div class="pricing-card">
+          <div class="pricing-card__name">Free</div>
+          <div class="pricing-card__price">
+            <span class="pricing-card__currency">$</span>
+            <span class="pricing-card__amount">0</span>
+          </div>
+          <div class="pricing-card__description">Try it out</div>
+          <ul class="pricing-card__features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> 1 download / month</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> 720p max quality</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> Browse full library</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> Set Builder access</li>
+          </ul>
+          <a href="#" class="btn btn--secondary pricing-card__cta">Get Started</a>
+        </div>
+
+        <!-- Starter -->
+        <div class="pricing-card">
+          <div class="pricing-card__name">Starter</div>
+          <div class="pricing-card__price">
+            <span class="pricing-card__currency">$</span>
+            <span class="pricing-card__amount">14</span>
+            <span class="pricing-card__period">.99/mo</span>
+          </div>
+          <div class="pricing-card__description">For occasional gigs</div>
+          <ul class="pricing-card__features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> 50 downloads / month</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> 1080p max quality</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> All video versions</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> Priority support</li>
+          </ul>
+          <a href="#" class="btn btn--secondary pricing-card__cta">Get Started</a>
+        </div>
+
+        <!-- Pro (Featured) -->
+        <div class="pricing-card pricing-card--featured">
+          <div class="pricing-card__name">Pro</div>
+          <div class="pricing-card__price">
+            <span class="pricing-card__currency">$</span>
+            <span class="pricing-card__amount">29</span>
+            <span class="pricing-card__period">.99/mo</span>
+          </div>
+          <div class="pricing-card__description">For working DJs</div>
+          <ul class="pricing-card__features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> 200 downloads / month</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> 4K max quality</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> All video versions</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> Batch downloads</li>
+          </ul>
+          <a href="#" class="btn btn--primary pricing-card__cta">Get Started</a>
+        </div>
+
+        <!-- Elite -->
+        <div class="pricing-card">
+          <div class="pricing-card__name">Elite</div>
+          <div class="pricing-card__price">
+            <span class="pricing-card__currency">$</span>
+            <span class="pricing-card__amount">49</span>
+            <span class="pricing-card__period">.99/mo</span>
+          </div>
+          <div class="pricing-card__description">For power users</div>
+          <ul class="pricing-card__features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> <strong>Unlimited</strong> downloads</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> 4K max quality</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> Early access</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg> Request priority</li>
+          </ul>
+          <a href="#" class="btn btn--secondary pricing-card__cta">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="testimonials" id="testimonials">
+    <div class="testimonials__container">
+      <div class="testimonials__header">
+        <div class="section-label">Reviews</div>
+        <h2 class="section-title">Trusted by 10,000+ DJs</h2>
+      </div>
+      <div class="testimonials__grid">
+        <div class="testimonial-card">
+          <div class="testimonial-card__stars">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="testimonial-card__quote">"The Set Builder changed how I prep. BPM and key matching saves me hours every week. Best video pool I've used."</p>
+          <div class="testimonial-card__author">
+            <div class="testimonial-card__avatar">DM</div>
+            <div>
+              <div class="testimonial-card__name">DJ Marcus</div>
+              <div class="testimonial-card__role">Club DJ, Las Vegas</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-card__stars">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="testimonial-card__quote">"4K quality makes a huge difference on big screens. My clients notice. Switched from SmashVision and never looked back."</p>
+          <div class="testimonial-card__author">
+            <div class="testimonial-card__avatar">SK</div>
+            <div>
+              <div class="testimonial-card__name">Sarah K.</div>
+              <div class="testimonial-card__role">Wedding DJ, Miami</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-card__stars">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="testimonial-card__quote">"The customizable dashboard is a game changer. Club Mode for gigs, Prep Mode at home. Everything exactly where I need it."</p>
+          <div class="testimonial-card__author">
+            <div class="testimonial-card__avatar">TR</div>
+            <div>
+              <div class="testimonial-card__name">Tony R.</div>
+              <div class="testimonial-card__role">Mobile DJ, Chicago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta">
+    <div class="final-cta__container">
+      <h2 class="final-cta__title">Ready to Level Up Your Sets?</h2>
+      <p class="final-cta__subtitle">Join 10,000+ DJs who trust The Video Pool. Start free today.</p>
+      <div class="final-cta__buttons">
+        <a href="#pricing" class="btn btn--primary btn--large">Get Started Free</a>
+        <a href="index-v5.5-pro.html" class="btn btn--secondary btn--large">Try the Demo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer__container">
+      <div class="footer__brand">
+        <div class="footer__logo">
+          <img src="The Video Pool Logo 2.0.png" alt="The Video Pool">
+        </div>
+        <p class="footer__tagline">The professional video DJ platform. 30,000+ music videos in 4K with unlimited downloads.</p>
+      </div>
+      <div class="footer__column">
+        <h4>Product</h4>
+        <ul class="footer__links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#">Roadmap</a></li>
+        </ul>
+      </div>
+      <div class="footer__column">
+        <h4>Company</h4>
+        <ul class="footer__links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer__column">
+        <h4>Legal</h4>
+        <ul class="footer__links">
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">DMCA</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p class="footer__copyright">&copy; 2026 The Video Pool. All rights reserved.</p>
+      <div class="footer__socials">
+        <a href="#" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg>
+        </a>
+        <a href="#" aria-label="Twitter">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+        </a>
+        <a href="#" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.25 29 29 0 00-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

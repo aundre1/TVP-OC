@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool v6.0 - UI Reskin Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables - Dark Theme */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a24;
+      --bg-elevated: #22222e;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0b0;
+      --text-muted: #6b6b7b;
+      --border-default: #2a2a3a;
+      --border-subtle: #1f1f2a;
+      --accent-cyan: #00d4ff;
+      --accent-cyan-hover: #00b8e6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 64px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent-cyan), #0066ff);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-bar {
+      flex: 1;
+      max-width: 600px;
+      margin: 0 32px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-cyan-hover);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff6b6b, #feca57);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* Genre Navigation */
+    .genre-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      overflow-x: auto;
+    }
+
+    .genre-pill {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+    }
+
+    .genre-pill:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .genre-pill.active {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    /* Main Layout */
+    .main-layout {
+      display: flex;
+      min-height: calc(100vh - 128px);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      padding: 20px 0;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: 24px;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      padding: 0 20px;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar-item:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .sidebar-item.active {
+      color: var(--accent-cyan);
+      background: rgba(0, 212, 255, 0.1);
+      border-right: 2px solid var(--accent-cyan);
+    }
+
+    .sidebar-icon {
+      width: 20px;
+      height: 20px;
+      opacity: 0.7;
+    }
+
+    .download-widget {
+      margin: 20px;
+      padding: 16px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .download-widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .download-widget-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .download-count {
+      font-size: 12px;
+      color: var(--accent-cyan);
+    }
+
+    .download-progress {
+      height: 6px;
+      background: var(--bg-elevated);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .download-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-cyan), #00ff88);
+      border-radius: 3px;
+      width: 65%;
+      transition: width 0.3s;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    /* AI Search Hero */
+    .ai-hero {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(102, 0, 255, 0.1));
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .ai-hero h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #fff, var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .ai-hero p {
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .ai-search-input {
+      max-width: 500px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .ai-search-input input {
+      width: 100%;
+      padding: 16px 24px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 15px;
+      outline: none;
+    }
+
+    .ai-search-input input:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .see-all {
+      color: var(--accent-cyan);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .see-all:hover {
+      text-decoration: underline;
+    }
+
+    /* Video Grid */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    /* Video Card */
+    .video-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .video-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .video-thumbnail {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: var(--bg-tertiary);
+      overflow: hidden;
+    }
+
+    .video-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+
+    .video-card:hover .video-thumbnail img {
+      transform: scale(1.05);
+    }
+
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .video-card:hover .video-overlay {
+      opacity: 1;
+    }
+
+    .play-btn {
+      width: 48px;
+      height: 48px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+      transform: scale(0.9);
+      transition: transform 0.2s;
+    }
+
+    .video-card:hover .play-btn {
+      transform: scale(1);
+    }
+
+    .play-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: #000;
+      margin-left: 2px;
+    }
+
+    .video-badges {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-new {
+      background: #ff6b00;
+      color: #fff;
+    }
+
+    .badge-hot {
+      background: #ff0040;
+      color: #fff;
+    }
+
+    .badge-exclusive {
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      color: #000;
+    }
+
+    .quality-badge {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .quality-4k {
+      background: #ffd700;
+      color: #000;
+    }
+
+    .quality-1080p {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .duration-badge {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-family: monospace;
+    }
+
+    .video-info {
+      padding: 12px;
+    }
+
+    .video-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .video-card:hover .video-title {
+      color: var(--accent-cyan);
+    }
+
+    .video-artist {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .video-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .video-meta .bpm {
+      color: var(--text-primary);
+    }
+
+    .video-meta .key {
+      color: var(--accent-cyan);
+    }
+
+    .video-meta .divider {
+      width: 1px;
+      height: 12px;
+      background: var(--border-subtle);
+    }
+
+    .video-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .add-to-set {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .add-to-set:hover {
+      color: var(--accent-cyan);
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .action-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: none;
+      border: none;
+    }
+
+    .action-btn:hover {
+      color: var(--accent-cyan);
+      background: var(--bg-tertiary);
+    }
+
+    .action-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Set Builder Panel */
+    .set-builder {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 400px;
+      height: 100%;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      transform: translateX(100%);
+      transition: transform 0.3s;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .set-builder.open {
+      transform: translateX(0);
+    }
+
+    .set-builder-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .set-builder-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .set-builder-title svg {
+      color: var(--accent-cyan);
+    }
+
+    .set-builder-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .set-builder-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .set-track {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .drag-handle {
+      color: var(--text-muted);
+      cursor: grab;
+    }
+
+    .track-number {
+      width: 24px;
+      text-align: center;
+      font-size: 12px;
+      font-family: monospace;
+      color: var(--text-muted);
+    }
+
+    .track-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .track-title {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-artist {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .track-meta {
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--text-muted);
+    }
+
+    .track-meta .key {
+      color: var(--accent-cyan);
+    }
+
+    .recommendations {
+      margin-top: 24px;
+    }
+
+    .recommendations-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      margin-bottom: 12px;
+    }
+
+    .recommendation-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .match-score {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .match-score.high {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .match-score.medium {
+      background: rgba(234, 179, 8, 0.2);
+      color: #eab308;
+    }
+
+    .match-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .match-tag {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+    }
+
+    .match-tag.highlight {
+      background: rgba(0, 212, 255, 0.2);
+      color: var(--accent-cyan);
+    }
+
+    .add-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--accent-cyan);
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+    }
+
+    .add-btn:hover {
+      background: var(--accent-cyan-hover);
+    }
+
+    .set-builder-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 12px;
+    }
+
+    .set-builder-footer .btn {
+      flex: 1;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    /* Overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 150;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .view-toggle {
+      display: flex;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .view-btn {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .view-btn.active {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .sort-select {
+      padding: 8px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* Version Badge */
+    .version-badge {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      z-index: 1000;
+    }
+
+    .version-badge strong {
+      color: var(--accent-cyan);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .sidebar {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .search-bar {
+        display: none;
+      }
+      .video-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      </div>
+      <span>The Video Pool</span>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" class="search-input" placeholder="Search 30,000+ music videos by title, artist, BPM, or key...">
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="toggleSetBuilder()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18V5l12-2v13"></path>
+          <circle cx="6" cy="18" r="3"></circle>
+          <circle cx="18" cy="16" r="3"></circle>
+        </svg>
+        My Set (3)
+      </button>
+      <button class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Downloads
+      </button>
+      <div class="avatar">DJ</div>
+    </div>
+  </header>
+
+  <!-- Genre Navigation -->
+  <nav class="genre-nav">
+    <div class="genre-pill active">All Genres</div>
+    <div class="genre-pill">Pop</div>
+    <div class="genre-pill">Hip Hop</div>
+    <div class="genre-pill">R&B</div>
+    <div class="genre-pill">EDM</div>
+    <div class="genre-pill">House</div>
+    <div class="genre-pill">Latin</div>
+    <div class="genre-pill">Rock</div>
+    <div class="genre-pill">Country</div>
+    <div class="genre-pill">80s</div>
+    <div class="genre-pill">90s</div>
+    <div class="genre-pill">2000s</div>
+    <div class="genre-pill">2010s</div>
+    <div class="genre-pill">2020s</div>
+  </nav>
+
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Navigate</div>
+        <div class="sidebar-item active">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Home
+        </div>
+        <div class="sidebar-item">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Search
+        </div>
+        <div class="sidebar-item">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
+          Browse
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Library</div>
+        <div class="sidebar-item">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          Favorites
+        </div>
+        <div class="sidebar-item">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Downloads
+        </div>
+        <div class="sidebar-item">
+          <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          History
+        </div>
+      </div>
+
+      <div class="download-widget">
+        <div class="download-widget-header">
+          <span class="download-widget-title">Monthly Downloads</span>
+          <span class="download-count">65/100</span>
+        </div>
+        <div class="download-progress">
+          <div class="download-progress-bar"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- AI Search Hero -->
+      <div class="ai-hero">
+        <h2>AI-Powered Music Discovery</h2>
+        <p>Describe what you're looking for in plain English</p>
+        <div class="ai-search-input">
+          <input type="text" placeholder="Try: 'upbeat summer hits around 120 BPM for a pool party'">
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar" style="margin: -24px -24px 24px -24px;">
+        <div class="toolbar-left">
+          <div class="view-toggle">
+            <button class="view-btn active">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              Grid
+            </button>
+            <button class="view-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              List
+            </button>
+          </div>
+          <select class="sort-select">
+            <option>Sort: Newest First</option>
+            <option>Sort: Most Popular</option>
+            <option>Sort: BPM Low-High</option>
+            <option>Sort: BPM High-Low</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Trending Section -->
+      <section>
+        <div class="section-header">
+          <h2 class="section-title">Trending Now</h2>
+          <a class="see-all">See All</a>
+        </div>
+        <div class="video-grid">
+          <!-- Video Card 1 -->
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=1" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-hot">HOT</span>
+              </div>
+              <span class="quality-badge quality-4k">4K</span>
+              <span class="duration-badge">3:42</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">Die With A Smile</div>
+              <div class="video-artist">Lady Gaga & Bruno Mars</div>
+              <div class="video-meta">
+                <span class="bpm">158 BPM</span>
+                <span class="divider"></span>
+                <span class="key">G Major</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 2 -->
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=2" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-new">NEW</span>
+              </div>
+              <span class="quality-badge quality-1080p">1080p</span>
+              <span class="duration-badge">4:15</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">APT.</div>
+              <div class="video-artist">Rose & Bruno Mars</div>
+              <div class="video-meta">
+                <span class="bpm">148 BPM</span>
+                <span class="divider"></span>
+                <span class="key">E Minor</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 3 -->
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=3" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-exclusive">EXCLUSIVE</span>
+              </div>
+              <span class="quality-badge quality-4k">4K</span>
+              <span class="duration-badge">3:28</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">Espresso</div>
+              <div class="video-artist">Sabrina Carpenter</div>
+              <div class="video-meta">
+                <span class="bpm">104 BPM</span>
+                <span class="divider"></span>
+                <span class="key">C# Minor</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 4 -->
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=4" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <span class="quality-badge quality-1080p">1080p</span>
+              <span class="duration-badge">2:56</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">Birds of a Feather</div>
+              <div class="video-artist">Billie Eilish</div>
+              <div class="video-meta">
+                <span class="bpm">105 BPM</span>
+                <span class="divider"></span>
+                <span class="key">A Major</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 5 -->
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=5" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-hot">HOT</span>
+              </div>
+              <span class="quality-badge quality-4k">4K</span>
+              <span class="duration-badge">3:15</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">Good Luck, Babe!</div>
+              <div class="video-artist">Chappell Roan</div>
+              <div class="video-meta">
+                <span class="bpm">120 BPM</span>
+                <span class="divider"></span>
+                <span class="key">F Major</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Latest Releases Section -->
+      <section>
+        <div class="section-header">
+          <h2 class="section-title">Latest Releases</h2>
+          <a class="see-all">See All</a>
+        </div>
+        <div class="video-grid">
+          <!-- Video Cards for Latest -->
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=6" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-new">NEW</span>
+              </div>
+              <span class="quality-badge quality-4k">4K</span>
+              <span class="duration-badge">3:45</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">Texas Hold 'Em</div>
+              <div class="video-artist">Beyonce</div>
+              <div class="video-meta">
+                <span class="bpm">132 BPM</span>
+                <span class="divider"></span>
+                <span class="key">D Major</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=7" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-new">NEW</span>
+              </div>
+              <span class="quality-badge quality-1080p">1080p</span>
+              <span class="duration-badge">4:02</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">Lovin On Me</div>
+              <div class="video-artist">Jack Harlow</div>
+              <div class="video-meta">
+                <span class="bpm">116 BPM</span>
+                <span class="divider"></span>
+                <span class="key">A Minor</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=8" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <span class="quality-badge quality-4k">4K</span>
+              <span class="duration-badge">3:33</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">Taste</div>
+              <div class="video-artist">Sabrina Carpenter</div>
+              <div class="video-meta">
+                <span class="bpm">111 BPM</span>
+                <span class="divider"></span>
+                <span class="key">Bb Major</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=9" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <span class="quality-badge quality-1080p">1080p</span>
+              <span class="duration-badge">2:48</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">Please Please Please</div>
+              <div class="video-artist">Sabrina Carpenter</div>
+              <div class="video-meta">
+                <span class="bpm">107 BPM</span>
+                <span class="divider"></span>
+                <span class="key">E Major</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img src="https://picsum.photos/320/180?random=10" alt="Video thumbnail">
+              <div class="video-overlay">
+                <div class="play-btn">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+              </div>
+              <span class="quality-badge quality-4k">4K</span>
+              <span class="duration-badge">3:22</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">Fortnight (feat. Post Malone)</div>
+              <div class="video-artist">Taylor Swift</div>
+              <div class="video-meta">
+                <span class="bpm">80 BPM</span>
+                <span class="divider"></span>
+                <span class="key">D Minor</span>
+              </div>
+              <div class="video-actions">
+                <span class="add-to-set">+ Add to Set</span>
+                <div class="action-btns">
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay" onclick="toggleSetBuilder()"></div>
+
+  <!-- Set Builder Panel -->
+  <div class="set-builder" id="setBuilder">
+    <div class="set-builder-header">
+      <div class="set-builder-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18V5l12-2v13"></path>
+          <circle cx="6" cy="18" r="3"></circle>
+          <circle cx="18" cy="16" r="3"></circle>
+        </svg>
+        Friday Night Set
+      </div>
+      <div class="set-builder-meta">3 tracks | 10m 42s</div>
+    </div>
+
+    <div class="set-builder-content">
+      <!-- Set Tracks -->
+      <div class="set-track">
+        <div class="drag-handle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </div>
+        <div class="track-number">1</div>
+        <div class="track-info">
+          <div class="track-title">Die With A Smile</div>
+          <div class="track-artist">Lady Gaga & Bruno Mars</div>
+        </div>
+        <div class="track-meta">
+          <span>158</span>
+          <span class="key">G</span>
+        </div>
+      </div>
+
+      <div class="set-track">
+        <div class="drag-handle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </div>
+        <div class="track-number">2</div>
+        <div class="track-info">
+          <div class="track-title">Espresso</div>
+          <div class="track-artist">Sabrina Carpenter</div>
+        </div>
+        <div class="track-meta">
+          <span>104</span>
+          <span class="key">C#m</span>
+        </div>
+      </div>
+
+      <div class="set-track">
+        <div class="drag-handle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </div>
+        <div class="track-number">3</div>
+        <div class="track-info">
+          <div class="track-title">Good Luck, Babe!</div>
+          <div class="track-artist">Chappell Roan</div>
+        </div>
+        <div class="track-meta">
+          <span>120</span>
+          <span class="key">F</span>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="recommendations">
+        <div class="recommendations-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          Recommended Next
+        </div>
+
+        <div class="recommendation-item">
+          <div class="match-score high">78</div>
+          <div class="track-info">
+            <div class="track-title">APT.</div>
+            <div class="track-artist">Rose & Bruno Mars</div>
+            <div class="match-tags">
+              <span class="match-tag highlight">Harmonic</span>
+              <span class="match-tag">Similar BPM</span>
+            </div>
+          </div>
+          <button class="add-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="recommendation-item">
+          <div class="match-score medium">62</div>
+          <div class="track-info">
+            <div class="track-title">Taste</div>
+            <div class="track-artist">Sabrina Carpenter</div>
+            <div class="match-tags">
+              <span class="match-tag highlight">Same Artist</span>
+              <span class="match-tag">Same Genre</span>
+            </div>
+          </div>
+          <button class="add-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="set-builder-footer">
+      <button class="btn btn-outline">Clear</button>
+      <button class="btn btn-primary">Download Set</button>
+    </div>
+  </div>
+
+  <!-- Version Badge -->
+  <div class="version-badge">
+    <strong>The Video Pool v6.0</strong> | UI Reskin Demo
+  </div>
+
+  <script>
+    function toggleSetBuilder() {
+      const setBuilder = document.getElementById('setBuilder');
+      const overlay = document.getElementById('overlay');
+      setBuilder.classList.toggle('open');
+      overlay.classList.toggle('open');
+    }
+
+    // Genre pill selection
+    document.querySelectorAll('.genre-pill').forEach(pill => {
+      pill.addEventListener('click', function() {
+        document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // View toggle
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Sidebar item selection
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

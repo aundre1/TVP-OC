@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<!--
+  THE VIDEO POOL - Professional DJ Platform v5.6
+  Version: 5.6 | January 2026
+
+  NEW IN V5.6 (Council Approved):
+  - Heart/Favorites button on cards and list view
+  - Download count display (1.2K format)
+  - Context menu (Add to Crate, Share, More Like This, Report)
+  - Record Label field added to card and list views
+  - List view column order: Preview, Artist, Title, Label, BPM, Key...
+  - Fixed drag-drop section reordering
+  - Metadata API integration recommendations (MusicBrainz, AcoustID, Spotify)
+
+  PRESERVED FROM V5.5:
+  - Stacked card layout (Title first, Artist second)
+  - Minimal pill notifications (bottom center)
+  - Quality color system (320p=Bronze, 480p=Tan, 720p=Olive, 1080p=Cyan, 4K=Gold)
+  - Professional polish: reduced cyan, softer hovers, better typography
+  - Monospace font for BPM/Key/Duration metadata
+  - All v5.5 styling and spacing
+
+  PRICING TIERS:
+  - Free: $0 (2 downloads/month for 6 months trial)
+  - Paid: $34.99/month (Unlimited, all quality levels)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Professional Video DJ Platform</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a0f'/><polygon points='10,8 10,24 24,16' fill='%2300d4ff'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS VARIABLES (v5.5 preserved)
+       ============================================ */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111116;
+      --bg-tertiary: #1a1a22;
+      --bg-elevated: #222230;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #6b6b76;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.1);
+      --accent-cyan: #00d4ff;
+      --accent-cyan-hover: #33ddff;
+      --accent-cyan-glow: rgba(0, 212, 255, 0.3);
+      --accent-cyan-subtle: rgba(0, 212, 255, 0.1);
+      --accent-gold: #ffd700;
+      --accent-coral: #ff6b4a;
+      --accent-purple: #a855f7;
+      --success: #00e676;
+      --warning: #ffab00;
+      --error: #ff4757;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.5);
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 150ms;
+      --duration-normal: 200ms;
+      --duration-slow: 300ms;
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ============================================
+       LOGO (v5.5 preserved)
+       ============================================ */
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo__image {
+      height: 36px;
+      width: auto;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    @keyframes logoGlow {
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(0, 212, 255, 0.3)); }
+      50% { filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.6)); }
+    }
+
+    .logo__image { animation: logoGlow 4s ease-in-out infinite; }
+    .logo:hover .logo__image {
+      animation: none;
+      filter: drop-shadow(0 0 15px var(--accent-cyan-glow));
+      transform: scale(1.03);
+    }
+
+    /* ============================================
+       HEADER (v5.5 preserved)
+       ============================================ */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      height: 72px;
+      padding: 0 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .search-bar { flex: 1; max-width: 550px; margin: 0 auto; position: relative; }
+
+    .search-bar__container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-width: 300px;
+      padding: 10px 16px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-subtle);
+      border-radius: 10px;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .search-bar__container:focus-within {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 4px var(--accent-cyan-subtle);
+    }
+
+    .search-bar__icon { width: 20px; height: 20px; color: var(--text-muted); flex-shrink: 0; }
+    .search-bar__input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      min-width: 0;
+    }
+    .search-bar__input::placeholder { color: var(--text-muted); }
+    .search-bar__kbd {
+      padding: 3px 7px;
+      background: var(--bg-primary);
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header__nav { display: flex; gap: 2px; }
+
+    .nav__link {
+      padding: 8px 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .nav__link:hover { background: var(--accent-cyan-subtle); color: var(--text-primary); }
+    .nav__link--active { background: var(--accent-cyan-subtle); color: var(--accent-cyan); }
+
+    .header__actions { display: flex; align-items: center; gap: 10px; }
+
+    .header-btn {
+      width: 38px;
+      height: 38px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .header-btn:hover {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .header-btn svg { width: 18px; height: 18px; }
+
+    .header-btn__badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      background: var(--accent-coral);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 13px;
+      color: #000;
+      cursor: pointer;
+    }
+
+    .user-avatar:hover { box-shadow: 0 0 15px var(--accent-cyan-glow); }
+
+    /* View Toggle */
+    .view-toggle {
+      display: flex;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .view-toggle__btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .view-toggle__btn:hover { color: var(--text-primary); }
+    .view-toggle__btn--active { background: var(--accent-cyan); color: #000; }
+    .view-toggle__btn svg { width: 18px; height: 18px; }
+
+    /* ============================================
+       GENRE NAV (v5.5 preserved)
+       ============================================ */
+    .genre-nav {
+      position: sticky;
+      top: 72px;
+      z-index: 90;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 24px;
+    }
+
+    .genre-nav__inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .genre-nav__inner::-webkit-scrollbar { display: none; }
+
+    .genre-chip {
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .genre-chip:hover { border-color: var(--accent-cyan); color: var(--text-primary); }
+    .genre-chip--active { background: var(--accent-cyan); border-color: var(--accent-cyan); color: #000; }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main { display: flex; min-height: calc(100vh - 122px); }
+    .main__content { flex: 1; padding: 24px; }
+
+    /* ============================================
+       SECTIONS WITH DRAG HANDLES (v5.6 fixed)
+       ============================================ */
+    .section {
+      margin-bottom: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+      position: relative;
+    }
+
+    .section:first-child { border-top: none; padding-top: 0; }
+
+    .section__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .section__header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* v5.6: Drag handle for section reordering */
+    .section__drag-handle {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+      touch-action: none;
+    }
+
+    .section__drag-handle:hover {
+      background: var(--bg-elevated);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .section__drag-handle:active {
+      cursor: grabbing;
+      background: var(--accent-cyan-subtle);
+    }
+
+    .section__drag-handle svg { width: 16px; height: 16px; }
+
+    .section--dragging {
+      opacity: 0.5;
+      border: 2px dashed var(--accent-cyan);
+    }
+
+    .section__title {
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section__count {
+      padding: 4px 10px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .section__see-all {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .section__see-all:hover { text-decoration: underline; }
+
+    /* ============================================
+       VIDEO GRID (v5.5 preserved)
+       ============================================ */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .video-grid--hidden { display: none; }
+
+    .video-card {
+      position: relative;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover {
+      border-color: var(--border-default);
+      transform: scale(1.02);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .video-card--selected {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 2px var(--accent-cyan);
+    }
+
+    .video-card__checkbox {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 10;
+      width: 24px;
+      height: 24px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-default);
+      border-radius: 6px;
+      cursor: pointer;
+      opacity: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__checkbox,
+    .video-card--selected .video-card__checkbox { opacity: 1; }
+
+    .video-card__checkbox--checked {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .video-card__checkbox svg { width: 14px; height: 14px; color: #000; display: none; }
+    .video-card__checkbox--checked svg { display: block; }
+
+    /* v5.6: Heart/Favorite button */
+    .video-card__heart {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 10;
+      width: 32px;
+      height: 32px;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__heart { opacity: 1; }
+
+    .video-card__heart:hover {
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+    }
+
+    .video-card__heart--active {
+      opacity: 1;
+      background: var(--accent-coral);
+      color: #fff;
+    }
+
+    .video-card__heart svg { width: 16px; height: 16px; }
+
+    .video-card__thumb {
+      position: relative;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      background: var(--bg-tertiary);
+    }
+
+    .video-card__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s var(--ease-out);
+    }
+
+    .video-card:hover .video-card__thumb img { transform: scale(1.05); }
+
+    .video-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__overlay { opacity: 1; }
+
+    .video-card__play {
+      width: 52px;
+      height: 52px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: scale(0.8);
+      opacity: 0;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__play { transform: scale(1); opacity: 1; }
+    .video-card__play svg { width: 22px; height: 22px; margin-left: 2px; }
+
+    .badge {
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .badge--new { background: var(--accent-coral); color: #fff; }
+    .badge--hot { background: linear-gradient(135deg, #ff6b4a, #ffab00); color: #fff; }
+    .badge--exclusive { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+
+    .video-card__badges { position: absolute; top: 8px; left: 44px; display: flex; gap: 6px; }
+
+    .video-card__quality {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      padding: 3px 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+      min-width: 36px;
+      text-align: center;
+    }
+
+    .video-card__quality--4k { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; font-weight: 800; }
+    .video-card__quality--1080p { background: var(--accent-cyan); color: #000; }
+    .video-card__quality--720p { background: #6B8E23; color: #fff; }
+    .video-card__quality--480p { background: #CD853F; color: #000; }
+    .video-card__quality--320p { background: #8B7355; color: #fff; }
+
+    .video-card__duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      padding: 3px 6px;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      border-radius: 4px;
+    }
+
+    /* v5.5 PRESERVED: Stacked card content layout */
+    .video-card__content { padding: 14px; }
+
+    .video-card__title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 36px;
+    }
+
+    .video-card__artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* v5.6 NEW: Record Label display */
+    .video-card__label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-card__meta {
+      display: flex;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .video-card__meta-key { color: var(--accent-cyan); }
+
+    /* v5.6 NEW: Download count display */
+    .video-card__downloads {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .video-card__downloads svg { width: 12px; height: 12px; }
+
+    .video-card__actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    /* ============================================
+       CONTEXT MENU (v5.6 NEW)
+       ============================================ */
+    .video-card__more-btn {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-card__more-btn:hover {
+      border-color: var(--border-default);
+      color: var(--text-primary);
+    }
+
+    .video-card__more-btn svg { width: 16px; height: 16px; }
+
+    .context-menu {
+      position: absolute;
+      bottom: 100%;
+      right: 0;
+      width: 180px;
+      padding: 6px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      box-shadow: var(--shadow-elevated);
+      z-index: 100;
+      display: none;
+      margin-bottom: 8px;
+    }
+
+    .context-menu--visible { display: block; }
+
+    .context-menu__item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+      text-align: left;
+    }
+
+    .context-menu__item:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .context-menu__item--cyan:hover { color: var(--accent-cyan); }
+    .context-menu__item--red:hover { color: var(--error); }
+
+    .context-menu__item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .context-menu__divider {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 4px 0;
+    }
+
+    /* ============================================
+       VIDEO LIST VIEW (v5.6 column order updated)
+       ============================================ */
+    .video-list { display: none; }
+    .video-list--visible { display: block; }
+
+    /* v5.6: New column order - #, Preview, Artist, Title, Label, BPM, Key, Duration, Quality, Actions */
+    .video-list__header {
+      display: grid;
+      grid-template-columns: 40px 60px 1fr 1.5fr 1fr 70px 60px 70px 80px 120px;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border-radius: 10px 10px 0 0;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .video-list__header-cell {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .video-list__header-cell:hover { color: var(--text-primary); }
+    .video-list__header-cell svg { width: 12px; height: 12px; }
+
+    .video-list__row {
+      display: grid;
+      grid-template-columns: 40px 60px 1fr 1.5fr 1fr 70px 60px 70px 80px 120px;
+      gap: 12px;
+      padding: 10px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid transparent;
+      border-top: none;
+      align-items: center;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-list__row:nth-child(odd) { background: var(--bg-tertiary); }
+
+    .video-list__row:hover {
+      background: var(--bg-elevated);
+      border-color: var(--accent-cyan);
+    }
+
+    .video-list__row--selected {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+    }
+
+    .video-list__checkbox {
+      width: 20px;
+      height: 20px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-default);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-list__checkbox:hover { border-color: var(--accent-cyan); }
+
+    .video-list__checkbox--checked {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .video-list__checkbox svg { width: 12px; height: 12px; color: #000; display: none; }
+    .video-list__checkbox--checked svg { display: block; }
+
+    .video-list__thumb {
+      width: 60px;
+      height: 34px;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .video-list__thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .video-list__thumb-play {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--duration-fast) var(--ease-out);
+    }
+
+    .video-list__row:hover .video-list__thumb-play { opacity: 1; }
+    .video-list__thumb-play svg { width: 20px; height: 20px; color: #fff; }
+
+    /* v5.6: Artist column comes before Title */
+    .video-list__artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-list__title {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* v5.6 NEW: Label column */
+    .video-list__label {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-list__bpm {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .video-list__key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .video-list__duration {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .video-list__quality {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .video-list__actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    /* v5.6: Heart button in list view */
+    .video-list__heart {
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-list__heart:hover {
+      border-color: var(--accent-coral);
+      color: var(--accent-coral);
+    }
+
+    .video-list__heart--active {
+      background: var(--accent-coral);
+      border-color: var(--accent-coral);
+      color: #fff;
+    }
+
+    .video-list__heart svg { width: 14px; height: 14px; }
+
+    /* ============================================
+       BUTTONS (v5.5 preserved)
+       ============================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn--primary { background: var(--accent-cyan); color: #000; }
+    .btn--primary:hover { background: var(--accent-cyan-hover); }
+
+    .btn--secondary {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .btn--secondary:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .btn--icon {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+    }
+
+    .btn svg { width: 16px; height: 16px; }
+
+    /* ============================================
+       TOAST NOTIFICATIONS (v5.5 pill style)
+       ============================================ */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: 100px;
+      box-shadow: var(--shadow-elevated);
+      font-size: 13px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      animation: toastIn 0.3s var(--ease-out);
+    }
+
+    .toast--success { border-color: var(--success); }
+    .toast--success .toast__icon { color: var(--success); }
+
+    .toast--error { border-color: var(--error); }
+    .toast--error .toast__icon { color: var(--error); }
+
+    .toast--info { border-color: var(--accent-cyan); }
+    .toast--info .toast__icon { color: var(--accent-cyan); }
+
+    .toast__icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================
+       SET BUILDER PANEL (v5.5 preserved)
+       ============================================ */
+    .set-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 420px;
+      max-width: 100%;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      z-index: 400;
+      transform: translateX(100%);
+      transition: transform var(--duration-slow) var(--ease-out);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .set-panel--open { transform: translateX(0); }
+
+    .set-panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .set-panel__title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .set-panel__subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .set-panel__close {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .set-panel__close:hover { background: var(--bg-elevated); }
+
+    .set-panel__content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .set-panel__empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .set-panel__empty-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: var(--bg-tertiary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .set-panel__empty-icon svg { width: 28px; height: 28px; color: var(--text-muted); }
+
+    /* ============================================
+       RESPONSIVE (v5.5 preserved)
+       ============================================ */
+    @media (max-width: 768px) {
+      .header { padding: 0 16px; gap: 12px; }
+      .logo__image { height: 28px; }
+      .search-bar__container { padding: 8px 12px; min-width: unset; }
+      .main__content { padding: 16px; }
+      .video-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .video-card__content { padding: 12px; }
+      .video-card__title { font-size: 13px; }
+      .video-card__artist { font-size: 11px; }
+      .section__title { font-size: 18px; }
+      .genre-nav { padding: 0 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .video-grid { grid-template-columns: 1fr; }
+      .header__nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <a href="#" class="logo">
+      <img src="https://thevideopool.com/wp-content/uploads/2018/02/logoheader.png" alt="The Video Pool" class="logo__image">
+    </a>
+
+    <div class="search-bar">
+      <div class="search-bar__container">
+        <svg class="search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" class="search-bar__input" placeholder="Search videos, artists, labels...">
+        <span class="search-bar__kbd">/</span>
+      </div>
+    </div>
+
+    <nav class="header__nav">
+      <a class="nav__link nav__link--active">Browse</a>
+      <a class="nav__link">Library</a>
+      <a class="nav__link">Downloads</a>
+    </nav>
+
+    <div class="header__actions">
+      <!-- View Toggle -->
+      <div class="view-toggle">
+        <button class="view-toggle__btn view-toggle__btn--active" onclick="toggleView('grid')" title="Grid View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+          </svg>
+        </button>
+        <button class="view-toggle__btn" onclick="toggleView('list')" title="List View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <button class="header-btn" title="Set Builder" onclick="toggleSetPanel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        <span class="header-btn__badge">3</span>
+      </button>
+
+      <button class="header-btn" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+      </button>
+
+      <div class="user-avatar">JS</div>
+    </div>
+  </header>
+
+  <!-- Genre Navigation -->
+  <nav class="genre-nav">
+    <div class="genre-nav__inner">
+      <button class="genre-chip genre-chip--active">All</button>
+      <button class="genre-chip">Hip-Hop/R&B</button>
+      <button class="genre-chip">Pop</button>
+      <button class="genre-chip">EDM/Dance</button>
+      <button class="genre-chip">Latin</button>
+      <button class="genre-chip">Rock</button>
+      <button class="genre-chip">Country</button>
+      <button class="genre-chip">Throwbacks</button>
+      <button class="genre-chip">Clean Edits</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="main__content">
+
+      <!-- Trending Section -->
+      <section class="section" draggable="true" id="section-trending">
+        <div class="section__header">
+          <div class="section__header-left">
+            <button class="section__drag-handle" title="Drag to reorder">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="9" cy="5" r="1.5"></circle>
+                <circle cx="15" cy="5" r="1.5"></circle>
+                <circle cx="9" cy="12" r="1.5"></circle>
+                <circle cx="15" cy="12" r="1.5"></circle>
+                <circle cx="9" cy="19" r="1.5"></circle>
+                <circle cx="15" cy="19" r="1.5"></circle>
+              </svg>
+            </button>
+            <h2 class="section__title">
+              Trending Now
+              <span class="section__count">24</span>
+            </h2>
+          </div>
+          <a href="#" class="section__see-all">See All</a>
+        </div>
+
+        <!-- Grid View -->
+        <div class="video-grid" id="grid-trending">
+          <!-- Card 1 -->
+          <div class="video-card" onclick="openPreview(1)">
+            <div class="video-card__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <button class="video-card__heart" onclick="event.stopPropagation(); toggleHeart(this)" title="Add to Favorites">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/320/180?random=1" alt="APT.">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="black"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                </div>
+              </div>
+              <div class="video-card__badges">
+                <span class="badge badge--hot">HOT</span>
+              </div>
+              <span class="video-card__quality video-card__quality--4k">4K</span>
+              <span class="video-card__duration">3:42</span>
+            </div>
+            <div class="video-card__content">
+              <div class="video-card__title">APT.</div>
+              <div class="video-card__artist">Rose & Bruno Mars</div>
+              <div class="video-card__label">Atlantic Records</div>
+              <div class="video-card__meta">
+                <span>118 BPM</span>
+                <span class="video-card__meta-key">Dm</span>
+                <span class="video-card__downloads">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  15.2K
+                </span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" style="flex:1" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add to Set
+                </button>
+                <div style="position:relative">
+                  <button class="video-card__more-btn" onclick="event.stopPropagation(); toggleContextMenu(this)">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  <div class="context-menu">
+                    <button class="context-menu__item" onclick="event.stopPropagation(); showToast('info', 'Add to Crate coming soon')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        <line x1="12" y1="11" x2="12" y2="17"></line>
+                        <line x1="9" y1="14" x2="15" y2="14"></line>
+                      </svg>
+                      Add to Crate
+                    </button>
+                    <button class="context-menu__item" onclick="event.stopPropagation(); showToast('success', 'Link copied!')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                      </svg>
+                      Share
+                    </button>
+                    <button class="context-menu__item context-menu__item--cyan" onclick="event.stopPropagation(); showToast('info', 'Finding similar tracks...')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                      </svg>
+                      More Like This
+                    </button>
+                    <div class="context-menu__divider"></div>
+                    <button class="context-menu__item context-menu__item--red" onclick="event.stopPropagation(); showToast('info', 'Report submitted')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                        <line x1="4" y1="22" x2="4" y2="15"></line>
+                      </svg>
+                      Report Issue
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="video-card" onclick="openPreview(2)">
+            <div class="video-card__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <button class="video-card__heart video-card__heart--active" onclick="event.stopPropagation(); toggleHeart(this)">
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/320/180?random=2" alt="Die With A Smile">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="black"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                </div>
+              </div>
+              <div class="video-card__badges">
+                <span class="badge badge--exclusive">EXCLUSIVE</span>
+              </div>
+              <span class="video-card__quality video-card__quality--1080p">1080p</span>
+              <span class="video-card__duration">4:11</span>
+            </div>
+            <div class="video-card__content">
+              <div class="video-card__title">Die With A Smile</div>
+              <div class="video-card__artist">Lady Gaga & Bruno Mars</div>
+              <div class="video-card__label">Interscope Records</div>
+              <div class="video-card__meta">
+                <span>158 BPM</span>
+                <span class="video-card__meta-key">F</span>
+                <span class="video-card__downloads">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  8.7K
+                </span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" style="flex:1" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add to Set
+                </button>
+                <div style="position:relative">
+                  <button class="video-card__more-btn" onclick="event.stopPropagation(); toggleContextMenu(this)">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  <div class="context-menu">
+                    <button class="context-menu__item">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                      Add to Crate
+                    </button>
+                    <button class="context-menu__item">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                      Share
+                    </button>
+                    <button class="context-menu__item context-menu__item--cyan">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                      More Like This
+                    </button>
+                    <div class="context-menu__divider"></div>
+                    <button class="context-menu__item context-menu__item--red">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                      Report Issue
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="video-card" onclick="openPreview(3)">
+            <div class="video-card__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <button class="video-card__heart" onclick="event.stopPropagation(); toggleHeart(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/320/180?random=3" alt="That's So True">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="black"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                </div>
+              </div>
+              <div class="video-card__badges">
+                <span class="badge badge--new">NEW</span>
+              </div>
+              <span class="video-card__quality video-card__quality--1080p">1080p</span>
+              <span class="video-card__duration">2:58</span>
+            </div>
+            <div class="video-card__content">
+              <div class="video-card__title">That's So True</div>
+              <div class="video-card__artist">Gracie Abrams</div>
+              <div class="video-card__label">Interscope Records</div>
+              <div class="video-card__meta">
+                <span>112 BPM</span>
+                <span class="video-card__meta-key">C</span>
+                <span class="video-card__downloads">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  3.4K
+                </span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" style="flex:1" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add to Set
+                </button>
+                <div style="position:relative">
+                  <button class="video-card__more-btn" onclick="event.stopPropagation(); toggleContextMenu(this)">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  <div class="context-menu">
+                    <button class="context-menu__item">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                      Add to Crate
+                    </button>
+                    <button class="context-menu__item">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                      Share
+                    </button>
+                    <button class="context-menu__item context-menu__item--cyan">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                      More Like This
+                    </button>
+                    <div class="context-menu__divider"></div>
+                    <button class="context-menu__item context-menu__item--red">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                      Report Issue
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="video-card" onclick="openPreview(4)">
+            <div class="video-card__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <button class="video-card__heart" onclick="event.stopPropagation(); toggleHeart(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/320/180?random=4" alt="Taste">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="black"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                </div>
+              </div>
+              <span class="video-card__quality video-card__quality--720p">720p</span>
+              <span class="video-card__duration">3:15</span>
+            </div>
+            <div class="video-card__content">
+              <div class="video-card__title">Taste</div>
+              <div class="video-card__artist">Sabrina Carpenter</div>
+              <div class="video-card__label">Island Records</div>
+              <div class="video-card__meta">
+                <span>111 BPM</span>
+                <span class="video-card__meta-key">A</span>
+                <span class="video-card__downloads">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  5.1K
+                </span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" style="flex:1" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add to Set
+                </button>
+                <div style="position:relative">
+                  <button class="video-card__more-btn" onclick="event.stopPropagation(); toggleContextMenu(this)">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  <div class="context-menu">
+                    <button class="context-menu__item">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                      Add to Crate
+                    </button>
+                    <button class="context-menu__item">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                      Share
+                    </button>
+                    <button class="context-menu__item context-menu__item--cyan">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                      More Like This
+                    </button>
+                    <div class="context-menu__divider"></div>
+                    <button class="context-menu__item context-menu__item--red">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                      Report Issue
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- List View (v5.6: New column order) -->
+        <div class="video-list" id="list-trending">
+          <div class="video-list__header">
+            <div class="video-list__header-cell">#</div>
+            <div class="video-list__header-cell">Preview</div>
+            <div class="video-list__header-cell">Artist</div>
+            <div class="video-list__header-cell">Title</div>
+            <div class="video-list__header-cell">Label</div>
+            <div class="video-list__header-cell">BPM</div>
+            <div class="video-list__header-cell">Key</div>
+            <div class="video-list__header-cell">Duration</div>
+            <div class="video-list__header-cell">Quality</div>
+            <div class="video-list__header-cell"></div>
+          </div>
+
+          <div class="video-list__row" onclick="openPreview(1)">
+            <div class="video-list__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="video-list__thumb">
+              <img src="https://picsum.photos/60/34?random=1" alt="">
+              <div class="video-list__thumb-play">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              </div>
+            </div>
+            <div class="video-list__artist">Rose & Bruno Mars</div>
+            <div class="video-list__title">APT.</div>
+            <div class="video-list__label">Atlantic Records</div>
+            <div class="video-list__bpm">118</div>
+            <div class="video-list__key">Dm</div>
+            <div class="video-list__duration">3:42</div>
+            <div class="video-list__quality video-card__quality--4k">4K</div>
+            <div class="video-list__actions">
+              <button class="video-list__heart" onclick="event.stopPropagation(); toggleHeart(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+              <button class="btn btn--primary btn--icon" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="video-list__row" onclick="openPreview(2)">
+            <div class="video-list__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="video-list__thumb">
+              <img src="https://picsum.photos/60/34?random=2" alt="">
+              <div class="video-list__thumb-play">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              </div>
+            </div>
+            <div class="video-list__artist">Lady Gaga & Bruno Mars</div>
+            <div class="video-list__title">Die With A Smile</div>
+            <div class="video-list__label">Interscope Records</div>
+            <div class="video-list__bpm">158</div>
+            <div class="video-list__key">F</div>
+            <div class="video-list__duration">4:11</div>
+            <div class="video-list__quality video-card__quality--1080p">1080p</div>
+            <div class="video-list__actions">
+              <button class="video-list__heart video-list__heart--active" onclick="event.stopPropagation(); toggleHeart(this)">
+                <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+              <button class="btn btn--primary btn--icon" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="video-list__row" onclick="openPreview(3)">
+            <div class="video-list__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="video-list__thumb">
+              <img src="https://picsum.photos/60/34?random=3" alt="">
+              <div class="video-list__thumb-play">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              </div>
+            </div>
+            <div class="video-list__artist">Gracie Abrams</div>
+            <div class="video-list__title">That's So True</div>
+            <div class="video-list__label">Interscope Records</div>
+            <div class="video-list__bpm">112</div>
+            <div class="video-list__key">C</div>
+            <div class="video-list__duration">2:58</div>
+            <div class="video-list__quality video-card__quality--1080p">1080p</div>
+            <div class="video-list__actions">
+              <button class="video-list__heart" onclick="event.stopPropagation(); toggleHeart(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+              <button class="btn btn--primary btn--icon" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="video-list__row" onclick="openPreview(4)">
+            <div class="video-list__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="video-list__thumb">
+              <img src="https://picsum.photos/60/34?random=4" alt="">
+              <div class="video-list__thumb-play">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              </div>
+            </div>
+            <div class="video-list__artist">Sabrina Carpenter</div>
+            <div class="video-list__title">Taste</div>
+            <div class="video-list__label">Island Records</div>
+            <div class="video-list__bpm">111</div>
+            <div class="video-list__key">A</div>
+            <div class="video-list__duration">3:15</div>
+            <div class="video-list__quality video-card__quality--720p">720p</div>
+            <div class="video-list__actions">
+              <button class="video-list__heart" onclick="event.stopPropagation(); toggleHeart(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+              <button class="btn btn--primary btn--icon" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Latest Section -->
+      <section class="section" draggable="true" id="section-latest">
+        <div class="section__header">
+          <div class="section__header-left">
+            <button class="section__drag-handle" title="Drag to reorder">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="9" cy="5" r="1.5"></circle>
+                <circle cx="15" cy="5" r="1.5"></circle>
+                <circle cx="9" cy="12" r="1.5"></circle>
+                <circle cx="15" cy="12" r="1.5"></circle>
+                <circle cx="9" cy="19" r="1.5"></circle>
+                <circle cx="15" cy="19" r="1.5"></circle>
+              </svg>
+            </button>
+            <h2 class="section__title">
+              Latest Releases
+              <span class="section__count">156</span>
+            </h2>
+          </div>
+          <a href="#" class="section__see-all">See All</a>
+        </div>
+
+        <div class="video-grid" id="grid-latest">
+          <div class="video-card" onclick="openPreview(5)">
+            <div class="video-card__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <button class="video-card__heart" onclick="event.stopPropagation(); toggleHeart(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/320/180?random=5" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="black"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                </div>
+              </div>
+              <div class="video-card__badges">
+                <span class="badge badge--new">NEW</span>
+              </div>
+              <span class="video-card__quality video-card__quality--1080p">1080p</span>
+              <span class="video-card__duration">3:28</span>
+            </div>
+            <div class="video-card__content">
+              <div class="video-card__title">Birds of a Feather</div>
+              <div class="video-card__artist">Billie Eilish</div>
+              <div class="video-card__label">Darkroom/Interscope</div>
+              <div class="video-card__meta">
+                <span>104 BPM</span>
+                <span class="video-card__meta-key">Am</span>
+                <span class="video-card__downloads">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  892
+                </span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" style="flex:1" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add to Set
+                </button>
+                <div style="position:relative">
+                  <button class="video-card__more-btn" onclick="event.stopPropagation(); toggleContextMenu(this)">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  <div class="context-menu">
+                    <button class="context-menu__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>Add to Crate</button>
+                    <button class="context-menu__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>Share</button>
+                    <button class="context-menu__item context-menu__item--cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>More Like This</button>
+                    <div class="context-menu__divider"></div>
+                    <button class="context-menu__item context-menu__item--red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>Report Issue</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-card" onclick="openPreview(6)">
+            <div class="video-card__checkbox" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <button class="video-card__heart" onclick="event.stopPropagation(); toggleHeart(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/320/180?random=6" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="black"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                </div>
+              </div>
+              <span class="video-card__quality video-card__quality--4k">4K</span>
+              <span class="video-card__duration">2:56</span>
+            </div>
+            <div class="video-card__content">
+              <div class="video-card__title">Good Luck, Babe!</div>
+              <div class="video-card__artist">Chappell Roan</div>
+              <div class="video-card__label">Island Records</div>
+              <div class="video-card__meta">
+                <span>120 BPM</span>
+                <span class="video-card__meta-key">G</span>
+                <span class="video-card__downloads">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  1.8K
+                </span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" style="flex:1" onclick="event.stopPropagation(); showToast('success', 'Added to Set')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add to Set
+                </button>
+                <div style="position:relative">
+                  <button class="video-card__more-btn" onclick="event.stopPropagation(); toggleContextMenu(this)">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  <div class="context-menu">
+                    <button class="context-menu__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>Add to Crate</button>
+                    <button class="context-menu__item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>Share</button>
+                    <button class="context-menu__item context-menu__item--cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>More Like This</button>
+                    <div class="context-menu__divider"></div>
+                    <button class="context-menu__item context-menu__item--red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>Report Issue</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Set Builder Panel -->
+  <aside class="set-panel" id="setPanel">
+    <div class="set-panel__header">
+      <div>
+        <div class="set-panel__title">Set Builder</div>
+        <div class="set-panel__subtitle">3 tracks in your set</div>
+      </div>
+      <button class="set-panel__close" onclick="toggleSetPanel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="set-panel__content">
+      <div class="set-panel__empty">
+        <div class="set-panel__empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+        </div>
+        <p>Your set is empty</p>
+        <p style="font-size:12px;margin-top:8px">Click "Add to Set" on any video to start building</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // View Toggle
+    let currentView = 'grid';
+
+    function toggleView(view) {
+      currentView = view;
+      const grids = document.querySelectorAll('.video-grid');
+      const lists = document.querySelectorAll('.video-list');
+      const btns = document.querySelectorAll('.view-toggle__btn');
+
+      grids.forEach(g => g.classList.toggle('video-grid--hidden', view === 'list'));
+      lists.forEach(l => l.classList.toggle('video-list--visible', view === 'list'));
+      btns.forEach((btn, i) => btn.classList.toggle('view-toggle__btn--active', (i === 0 && view === 'grid') || (i === 1 && view === 'list')));
+    }
+
+    // Selection
+    function toggleSelect(el) {
+      el.classList.toggle('video-card__checkbox--checked');
+      el.classList.toggle('video-list__checkbox--checked');
+      const card = el.closest('.video-card, .video-list__row');
+      if (card) card.classList.toggle('video-card--selected');
+      if (card) card.classList.toggle('video-list__row--selected');
+    }
+
+    // Heart/Favorite
+    function toggleHeart(el) {
+      const isActive = el.classList.toggle('video-card__heart--active') || el.classList.toggle('video-list__heart--active');
+      const svg = el.querySelector('svg');
+      if (isActive) {
+        svg.setAttribute('fill', 'currentColor');
+        showToast('success', 'Added to Favorites');
+      } else {
+        svg.setAttribute('fill', 'none');
+        showToast('info', 'Removed from Favorites');
+      }
+    }
+
+    // Context Menu
+    function toggleContextMenu(btn) {
+      // Close all other menus first
+      document.querySelectorAll('.context-menu--visible').forEach(m => {
+        if (m !== btn.nextElementSibling) m.classList.remove('context-menu--visible');
+      });
+      btn.nextElementSibling.classList.toggle('context-menu--visible');
+    }
+
+    // Close context menus on outside click
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.video-card__more-btn')) {
+        document.querySelectorAll('.context-menu--visible').forEach(m => m.classList.remove('context-menu--visible'));
+      }
+    });
+
+    // Set Panel
+    function toggleSetPanel() {
+      document.getElementById('setPanel').classList.toggle('set-panel--open');
+    }
+
+    // Preview Modal (placeholder)
+    function openPreview(id) {
+      showToast('info', `Opening preview for track ${id}...`);
+    }
+
+    // Toast Notifications (v5.5 pill style)
+    function showToast(type, message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast--${type}`;
+
+      const icons = {
+        success: '<svg class="toast__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+        error: '<svg class="toast__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+        info: '<svg class="toast__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>'
+      };
+
+      toast.innerHTML = `${icons[type] || icons.info}<span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Drag and Drop for Sections (v5.6 fixed)
+    let draggedSection = null;
+
+    document.querySelectorAll('.section').forEach(section => {
+      const handle = section.querySelector('.section__drag-handle');
+
+      handle.addEventListener('mousedown', (e) => {
+        section.setAttribute('draggable', 'true');
+      });
+
+      handle.addEventListener('mouseup', (e) => {
+        section.setAttribute('draggable', 'false');
+      });
+
+      section.addEventListener('dragstart', (e) => {
+        if (!e.target.closest('.section__drag-handle')) {
+          e.preventDefault();
+          return;
+        }
+        draggedSection = section;
+        section.classList.add('section--dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      section.addEventListener('dragend', () => {
+        section.classList.remove('section--dragging');
+        section.setAttribute('draggable', 'false');
+        draggedSection = null;
+      });
+
+      section.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (draggedSection && draggedSection !== section) {
+          const rect = section.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          if (e.clientY < midY) {
+            section.parentNode.insertBefore(draggedSection, section);
+          } else {
+            section.parentNode.insertBefore(draggedSection, section.nextSibling);
+          }
+        }
+      });
+    });
+
+    // Initialize
+    console.log('The Video Pool v5.6 loaded');
+    console.log('New features: Heart button, Download count, Context menu, Record Label, List view reordered');
+  </script>
+</body>
+</html>

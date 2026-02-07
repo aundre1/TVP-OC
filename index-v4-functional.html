@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<!--
+  THE VIDEO POOL - Fully Functional Prototype v4.0
+  Version: 4.0 | January 2026
+
+  COUNCIL-APPROVED FEATURES:
+  ✓ Cyan color scheme (reverted from crimson)
+  ✓ Text logo: "THE VIDEO POOL" - Bebas Neue, VIDEO in cyan
+  ✓ Collapsible sections with localStorage
+  ✓ Drag-and-drop section reordering
+  ✓ Hover preview popup modal (60-sec from 0:30)
+  ✓ Full dropdown categories (BPM 50-200)
+  ✓ Browse/New Releases/Charts/Playlists nav
+  ✓ "See All" slide-in panels
+  ✓ Weekly Discovery Pack (collapsible, top song image)
+  ✓ Custom genre nav (user's top 4)
+  ✓ Download counts per TRACK (not per version)
+
+  PRICING TIERS:
+  - Free: $0 (1 download/month, 720p)
+  - Starter: $14.99/month (50 downloads, 1080p)
+  - Pro: $29.99/month (200 downloads, 4K)
+  - Elite: $49.99/month (UNLIMITED, 4K)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Professional Video DJ Platform</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a0f'/><polygon points='10,8 10,24 24,16' fill='%2300d4ff'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CYAN COLOR SCHEME (REVERTED)
+       ============================================ */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111116;
+      --bg-tertiary: #1a1a22;
+      --bg-elevated: #222230;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #6b6b76;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.1);
+      --accent-cyan: #00d4ff;
+      --accent-cyan-hover: #33ddff;
+      --accent-cyan-glow: rgba(0, 212, 255, 0.3);
+      --accent-cyan-subtle: rgba(0, 212, 255, 0.1);
+      --accent-gold: #ffd700;
+      --accent-coral: #ff6b4a;
+      --success: #00e676;
+      --warning: #ffab00;
+      --error: #ff4757;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.5);
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 150ms;
+      --duration-normal: 200ms;
+      --duration-slow: 300ms;
+    }
+
+    .light {
+      --bg-primary: #f5f5f7;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #e8e8ed;
+      --bg-elevated: #ffffff;
+      --text-primary: #0a0a0f;
+      --text-secondary: #52525b;
+      --text-muted: #71717a;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --border-default: rgba(0, 0, 0, 0.1);
+      --accent-cyan: #0099cc;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ============================================
+       LOGO - ICON + TEXT (Inspired by Original TVP)
+       ============================================ */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo__icon {
+      width: 40px;
+      height: 40px;
+      position: relative;
+    }
+
+    .logo__icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .logo:hover .logo__icon svg {
+      filter: drop-shadow(0 0 8px var(--accent-cyan-glow));
+    }
+
+    .logo__text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      display: flex;
+      align-items: baseline;
+    }
+
+    .logo__text-accent {
+      color: var(--accent-cyan);
+    }
+
+    .logo:hover .logo__text-accent {
+      text-shadow: 0 0 15px var(--accent-cyan-glow);
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      height: 72px;
+      padding: 0 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* PROMINENT SEARCH */
+    .search-bar {
+      flex: 1;
+      max-width: 550px;
+      margin: 0 auto;
+    }
+
+    .search-bar__container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-width: 400px;
+      padding: 10px 16px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-subtle);
+      border-radius: 10px;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .search-bar__container:focus-within {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 4px var(--accent-cyan-subtle);
+    }
+
+    .search-bar__icon { width: 20px; height: 20px; color: var(--text-muted); }
+    .search-bar__input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+    }
+    .search-bar__input::placeholder { color: var(--text-muted); }
+    .search-bar__kbd {
+      padding: 3px 7px;
+      background: var(--bg-primary);
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* HEADER NAV */
+    .header__nav { display: flex; gap: 2px; }
+
+    .nav__link {
+      padding: 8px 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .nav__link:hover { background: var(--accent-cyan-subtle); color: var(--text-primary); }
+    .nav__link--active { background: var(--accent-cyan-subtle); color: var(--accent-cyan); }
+
+    .header__actions { display: flex; align-items: center; gap: 10px; }
+
+    .header-btn {
+      width: 38px;
+      height: 38px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .header-btn:hover {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .header-btn svg { width: 18px; height: 18px; }
+
+    .header-btn__badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      background: var(--accent-coral);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 13px;
+      color: #000;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .user-avatar:hover {
+      box-shadow: 0 0 15px var(--accent-cyan-glow);
+    }
+
+    /* ============================================
+       CUSTOM GENRE NAV (User's Top 4)
+       ============================================ */
+    .genre-nav {
+      position: sticky;
+      top: 72px;
+      z-index: 90;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 24px;
+    }
+
+    .genre-nav__inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .genre-nav__inner::-webkit-scrollbar { display: none; }
+
+    .genre-chip {
+      position: relative;
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .genre-chip:hover { border-color: var(--accent-cyan); color: var(--text-primary); }
+    .genre-chip--active {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+      color: #000;
+    }
+
+    .genre-chip__arrow { margin-left: 4px; font-size: 10px; }
+
+    /* Genre Mega Menu */
+    .genre-mega {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 420px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      box-shadow: var(--shadow-elevated);
+      z-index: 100;
+      display: none;
+      margin-top: 8px;
+    }
+
+    .genre-chip:hover .genre-mega { display: block; }
+
+    .genre-mega__section { margin-bottom: 12px; }
+    .genre-mega__section:last-child { margin-bottom: 0; }
+
+    .genre-mega__title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .genre-mega__grid { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .genre-mega__item {
+      padding: 6px 12px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .genre-mega__item:hover {
+      background: var(--accent-cyan-subtle);
+      color: var(--accent-cyan);
+    }
+
+    .genre-nav__customize {
+      padding: 8px 12px;
+      background: transparent;
+      border: 1px dashed var(--border-default);
+      border-radius: 20px;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .genre-nav__customize:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* ============================================
+       FILTER BAR
+       ============================================ */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+
+    .filter-dropdown {
+      position: relative;
+    }
+
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .filter-btn:hover { border-color: var(--accent-cyan); color: var(--text-primary); }
+    .filter-btn--active {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .filter-btn svg { width: 14px; height: 14px; }
+
+    .filter-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 200px;
+      padding: 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      box-shadow: var(--shadow-elevated);
+      z-index: 50;
+      display: none;
+      margin-top: 4px;
+    }
+
+    .filter-dropdown:hover .filter-menu,
+    .filter-menu:hover { display: block; }
+
+    .filter-menu__item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background var(--duration-fast) var(--ease-out);
+    }
+
+    .filter-menu__item:hover {
+      background: var(--accent-cyan-subtle);
+      color: var(--text-primary);
+    }
+
+    .filter-menu__item--active {
+      background: var(--accent-cyan-subtle);
+      color: var(--accent-cyan);
+    }
+
+    .filter-bar__spacer { flex: 1; }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main {
+      padding: 24px;
+      min-height: calc(100vh - 200px);
+    }
+
+    /* ============================================
+       COLLAPSIBLE & DRAGGABLE SECTIONS
+       ============================================ */
+    .section {
+      margin-bottom: 32px;
+      border-radius: 16px;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .section--dragging {
+      opacity: 0.5;
+      transform: scale(0.98);
+    }
+
+    .section--drag-over {
+      border: 2px dashed var(--accent-cyan);
+      background: var(--accent-cyan-subtle);
+    }
+
+    .section__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .section__drag-handle {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: grab;
+      opacity: 0;
+      transition: opacity var(--duration-fast) var(--ease-out);
+    }
+
+    .section:hover .section__drag-handle { opacity: 1; }
+    .section__drag-handle:active { cursor: grabbing; }
+
+    .section__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .section__title-icon { font-size: 20px; }
+
+    .section__toggle {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: transform var(--duration-fast) var(--ease-out);
+    }
+
+    .section--collapsed .section__toggle {
+      transform: rotate(-90deg);
+    }
+
+    .section__link {
+      color: var(--accent-cyan);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .section__link:hover { text-decoration: underline; }
+
+    .section__content {
+      max-height: 2000px;
+      overflow: hidden;
+      transition: max-height var(--duration-slow) var(--ease-out),
+                  opacity var(--duration-normal) var(--ease-out);
+    }
+
+    .section--collapsed .section__content {
+      max-height: 0;
+      opacity: 0;
+    }
+
+    /* ============================================
+       WEEKLY DISCOVERY PACK
+       ============================================ */
+    .discovery-pack {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--accent-cyan-subtle) 0%, rgba(255, 107, 74, 0.1) 100%);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    .discovery-pack__image {
+      width: 200px;
+      height: 112px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .discovery-pack__image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .discovery-pack__image-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      padding: 4px 8px;
+      background: var(--accent-cyan);
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+
+    .discovery-pack__content { flex: 1; }
+
+    .discovery-pack__label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .discovery-pack__title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .discovery-pack__subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .discovery-pack__meta {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .discovery-pack__actions { display: flex; gap: 10px; }
+
+    /* ============================================
+       VIDEO GRID
+       ============================================ */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    /* ============================================
+       VIDEO CARD
+       ============================================ */
+    .video-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--accent-cyan-glow);
+    }
+
+    .video-card__thumb {
+      position: relative;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      background: var(--bg-tertiary);
+    }
+
+    .video-card__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s var(--ease-out);
+    }
+
+    .video-card:hover .video-card__thumb img { transform: scale(1.05); }
+
+    .video-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+      opacity: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__overlay { opacity: 1; }
+
+    .video-card__play {
+      width: 52px;
+      height: 52px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      transform: scale(0.8);
+      opacity: 0;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__play { transform: scale(1); opacity: 1; }
+    .video-card__play svg { width: 22px; height: 22px; margin-left: 2px; }
+
+    /* Badges */
+    .video-card__badges {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .badge {
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+
+    .badge--new { background: var(--accent-coral); color: #fff; }
+    .badge--hot { background: linear-gradient(135deg, #ff6b4a, #ffab00); color: #fff; }
+    .badge--exclusive { background: linear-gradient(135deg, var(--accent-cyan), #00e676); color: #000; }
+    .badge--clean { background: var(--success); color: #000; }
+
+    .video-card__quality {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .video-card__quality--4k { background: var(--accent-cyan); color: #000; }
+    .video-card__quality--hd { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .video-card__duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      padding: 3px 7px;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      border-radius: 4px;
+    }
+
+    .video-card__versions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 7px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .video-card__content { padding: 14px; }
+
+    .video-card__title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 36px;
+    }
+
+    .video-card__artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-card__meta {
+      display: flex;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .video-card__meta span { display: flex; align-items: center; gap: 4px; }
+
+    .video-card__actions { display: flex; gap: 8px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn svg { width: 16px; height: 16px; }
+
+    .btn--primary { flex: 1; background: var(--accent-cyan); color: #000; }
+    .btn--primary:hover { background: var(--accent-cyan-hover); box-shadow: 0 4px 15px var(--accent-cyan-glow); }
+
+    .btn--secondary { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+    .btn--secondary:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+    .btn--icon { width: 38px; height: 38px; padding: 0; }
+
+    /* ============================================
+       PREVIEW MODAL (Popup from screenshot)
+       ============================================ */
+    .preview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .preview-modal--open { display: flex; }
+
+    .preview-modal__content {
+      display: flex;
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      overflow: hidden;
+      max-width: 900px;
+      width: 100%;
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .preview-modal__video {
+      width: 55%;
+      aspect-ratio: 16/9;
+      background: #000;
+      position: relative;
+    }
+
+    .preview-modal__video video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-modal__video-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-tertiary);
+    }
+
+    .preview-modal__video-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-modal__play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70px;
+      height: 70px;
+      background: var(--accent-cyan);
+      border: none;
+      border-radius: 50%;
+      color: #000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .preview-modal__play-btn:hover { transform: translate(-50%, -50%) scale(1.1); }
+    .preview-modal__play-btn svg { width: 30px; height: 30px; margin-left: 4px; }
+
+    .preview-modal__info {
+      width: 45%;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-modal__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .preview-modal__badge {
+      padding: 4px 10px;
+      background: var(--accent-coral);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+
+    .preview-modal__close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-modal__close:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+    .preview-modal__title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .preview-modal__artist {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .preview-modal__stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .preview-modal__stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-modal__stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .preview-modal__stat-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    .preview-modal__divider {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 16px 0;
+    }
+
+    .preview-modal__section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .preview-modal__option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background var(--duration-fast) var(--ease-out);
+    }
+
+    .preview-modal__option:hover { background: var(--bg-elevated); }
+
+    .preview-modal__option-check {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--accent-cyan);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .preview-modal__option-check--checked {
+      background: var(--accent-cyan);
+    }
+
+    .preview-modal__option-check svg { width: 14px; height: 14px; color: #000; display: none; }
+    .preview-modal__option-check--checked svg { display: block; }
+
+    .preview-modal__option-info { flex: 1; }
+
+    .preview-modal__option-name { font-size: 14px; font-weight: 500; }
+
+    .preview-modal__option-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .preview-modal__footer {
+      margin-top: auto;
+      display: flex;
+      gap: 10px;
+    }
+
+    .preview-modal__footer .btn { flex: 1; }
+
+    /* ============================================
+       SLIDE PANEL (See All)
+       ============================================ */
+    .slide-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 600px;
+      max-width: 100%;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      z-index: 400;
+      transform: translateX(100%);
+      transition: transform var(--duration-slow) var(--ease-out);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .slide-panel--open { transform: translateX(0); }
+
+    .slide-panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .slide-panel__title { font-size: 20px; font-weight: 700; }
+
+    .slide-panel__close {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slide-panel__close:hover { background: var(--bg-elevated); }
+
+    .slide-panel__content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    .slide-panel__grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* ============================================
+       BACKDROP
+       ============================================ */
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 350;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .backdrop--visible { opacity: 1; visibility: visible; }
+
+    /* ============================================
+       DOWNLOAD FAB
+       ============================================ */
+    .download-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+    }
+
+    .download-fab__btn {
+      width: 56px;
+      height: 56px;
+      background: var(--accent-cyan);
+      border: none;
+      border-radius: 50%;
+      color: #000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px var(--accent-cyan-glow);
+      transition: all var(--duration-fast) var(--ease-out);
+      position: relative;
+    }
+
+    .download-fab__btn:hover { transform: scale(1.1); }
+    .download-fab__btn svg { width: 24px; height: 24px; }
+
+    .download-fab__badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      background: var(--accent-coral);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ============================================
+       SWIMLANE (Horizontal Scroll)
+       ============================================ */
+    .swimlane {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 8px;
+      margin: 0 -24px;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .swimlane::-webkit-scrollbar { display: none; }
+    .swimlane__item { flex: 0 0 240px; }
+
+    /* ============================================
+       TOAST
+       ============================================ */
+    .toast-container {
+      position: fixed;
+      top: 90px;
+      right: 24px;
+      z-index: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      box-shadow: var(--shadow-elevated);
+      min-width: 300px;
+      transform: translateX(120%);
+      transition: transform var(--duration-slow) var(--ease-out);
+    }
+
+    .toast--show { transform: translateX(0); }
+    .toast--success { border-left: 4px solid var(--success); }
+    .toast--info { border-left: 4px solid var(--accent-cyan); }
+
+    .toast__content { flex: 1; }
+    .toast__title { font-size: 14px; font-weight: 600; }
+    .toast__message { font-size: 12px; color: var(--text-secondary); }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 900px) {
+      .preview-modal__content { flex-direction: column; }
+      .preview-modal__video { width: 100%; }
+      .preview-modal__info { width: 100%; }
+      .slide-panel { width: 100%; }
+    }
+
+    @media (max-width: 768px) {
+      .header { gap: 12px; padding: 0 16px; }
+      .logo__text { font-size: 20px; }
+      .logo__icon { width: 32px; height: 32px; }
+      .search-bar__container { min-width: 200px; }
+      .header__nav { display: none; }
+      .main { padding: 16px; }
+      .video-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+      .discovery-pack { flex-direction: column; }
+      .discovery-pack__image { width: 100%; height: auto; aspect-ratio: 16/9; }
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <a href="#" class="logo">
+      <div class="logo__icon">
+        <!-- TV + Play + Droplet icon inspired by original TVP logo -->
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- TV Frame -->
+          <rect x="2" y="8" width="36" height="28" rx="4" stroke="var(--accent-cyan)" stroke-width="2.5" fill="none"/>
+          <!-- Antenna -->
+          <path d="M14 8 L20 2 L26 8" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <!-- Play button inside -->
+          <path d="M16 16 L16 28 L28 22 Z" fill="var(--accent-cyan)"/>
+        </svg>
+      </div>
+      <span class="logo__text">THEVIDEO<span class="logo__text-accent">POOL</span></span>
+    </a>
+
+    <div class="search-bar">
+      <div class="search-bar__container">
+        <svg class="search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" class="search-bar__input" placeholder="Search videos, artists, genres..." id="mainSearch">
+        <span class="search-bar__kbd">⌘K</span>
+      </div>
+    </div>
+
+    <nav class="header__nav">
+      <a class="nav__link nav__link--active" onclick="setActiveNav(this)">Browse</a>
+      <a class="nav__link" onclick="setActiveNav(this); openSlidePanel('New Releases', 'new')">New Releases</a>
+      <a class="nav__link" onclick="setActiveNav(this); openSlidePanel('Charts', 'charts')">Charts</a>
+      <a class="nav__link" onclick="setActiveNav(this); openSlidePanel('Playlists', 'playlists')">Playlists</a>
+    </nav>
+
+    <div class="header__actions">
+      <button class="header-btn" title="Wishlist" onclick="openSlidePanel('My Wishlist', 'wishlist')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <span class="header-btn__badge">3</span>
+      </button>
+      <button class="header-btn" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </button>
+      <button class="header-btn" title="Toggle Theme" onclick="toggleTheme()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <div class="user-avatar">DJ</div>
+    </div>
+  </header>
+
+  <!-- CUSTOM GENRE NAV -->
+  <nav class="genre-nav">
+    <div class="genre-nav__inner">
+      <div class="genre-chip genre-chip--active">All</div>
+
+      <div class="genre-chip">
+        Hip-Hop <span class="genre-chip__arrow">▾</span>
+        <div class="genre-mega">
+          <div class="genre-mega__section">
+            <div class="genre-mega__title">By Era</div>
+            <div class="genre-mega__grid">
+              <div class="genre-mega__item" onclick="filterGenre('90s Hip-Hop')">90s Hip-Hop</div>
+              <div class="genre-mega__item" onclick="filterGenre('2000s Hip-Hop')">2000s Hip-Hop</div>
+              <div class="genre-mega__item" onclick="filterGenre('2010s Hip-Hop')">2010s Hip-Hop</div>
+              <div class="genre-mega__item" onclick="filterGenre('Current Hits')">Current Hits</div>
+            </div>
+          </div>
+          <div class="genre-mega__section">
+            <div class="genre-mega__title">By Style</div>
+            <div class="genre-mega__grid">
+              <div class="genre-mega__item" onclick="filterGenre('Trap')">Trap</div>
+              <div class="genre-mega__item" onclick="filterGenre('Drill')">Drill</div>
+              <div class="genre-mega__item" onclick="filterGenre('Boom Bap')">Boom Bap</div>
+              <div class="genre-mega__item" onclick="filterGenre('Southern')">Southern</div>
+              <div class="genre-mega__item" onclick="filterGenre('West Coast')">West Coast</div>
+              <div class="genre-mega__item" onclick="filterGenre('East Coast')">East Coast</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="genre-chip">
+        House <span class="genre-chip__arrow">▾</span>
+        <div class="genre-mega">
+          <div class="genre-mega__section">
+            <div class="genre-mega__title">Subgenres</div>
+            <div class="genre-mega__grid">
+              <div class="genre-mega__item" onclick="filterGenre('Deep House')">Deep House</div>
+              <div class="genre-mega__item" onclick="filterGenre('Tech House')">Tech House</div>
+              <div class="genre-mega__item" onclick="filterGenre('Progressive')">Progressive</div>
+              <div class="genre-mega__item" onclick="filterGenre('Afro House')">Afro House</div>
+              <div class="genre-mega__item" onclick="filterGenre('Melodic House')">Melodic House</div>
+              <div class="genre-mega__item" onclick="filterGenre('Vocal House')">Vocal House</div>
+              <div class="genre-mega__item" onclick="filterGenre('Disco House')">Disco House</div>
+              <div class="genre-mega__item" onclick="filterGenre('Funky House')">Funky House</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="genre-chip">
+        Latin <span class="genre-chip__arrow">▾</span>
+        <div class="genre-mega">
+          <div class="genre-mega__section">
+            <div class="genre-mega__title">Styles</div>
+            <div class="genre-mega__grid">
+              <div class="genre-mega__item" onclick="filterGenre('Reggaeton')">Reggaeton</div>
+              <div class="genre-mega__item" onclick="filterGenre('Bachata')">Bachata</div>
+              <div class="genre-mega__item" onclick="filterGenre('Salsa')">Salsa</div>
+              <div class="genre-mega__item" onclick="filterGenre('Cumbia')">Cumbia</div>
+              <div class="genre-mega__item" onclick="filterGenre('Merengue')">Merengue</div>
+              <div class="genre-mega__item" onclick="filterGenre('Regional Mexican')">Regional Mexican</div>
+              <div class="genre-mega__item" onclick="filterGenre('Latin Pop')">Latin Pop</div>
+              <div class="genre-mega__item" onclick="filterGenre('Dembow')">Dembow</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="genre-chip">
+        EDM <span class="genre-chip__arrow">▾</span>
+        <div class="genre-mega">
+          <div class="genre-mega__section">
+            <div class="genre-mega__title">Subgenres</div>
+            <div class="genre-mega__grid">
+              <div class="genre-mega__item" onclick="filterGenre('Big Room')">Big Room</div>
+              <div class="genre-mega__item" onclick="filterGenre('Future Bass')">Future Bass</div>
+              <div class="genre-mega__item" onclick="filterGenre('Dubstep')">Dubstep</div>
+              <div class="genre-mega__item" onclick="filterGenre('Drum & Bass')">Drum & Bass</div>
+              <div class="genre-mega__item" onclick="filterGenre('Trance')">Trance</div>
+              <div class="genre-mega__item" onclick="filterGenre('Hardstyle')">Hardstyle</div>
+              <div class="genre-mega__item" onclick="filterGenre('Electro')">Electro</div>
+              <div class="genre-mega__item" onclick="filterGenre('Techno')">Techno</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="genre-chip">Pop</div>
+      <div class="genre-chip">R&B</div>
+      <div class="genre-chip">Rock</div>
+      <div class="genre-chip">Country</div>
+      <div class="genre-chip">Throwbacks</div>
+
+      <button class="genre-nav__customize" onclick="showToast('Customize Genres', 'Drag to reorder your top 4 genres', 'info')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Customize
+      </button>
+    </div>
+  </nav>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-dropdown">
+      <button class="filter-btn">
+        BPM Range
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="filter-menu">
+        <div class="filter-menu__item" onclick="setFilter(this, 'All BPM')">All BPM</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '50-70 (Very Slow)')">50-70 (Very Slow)</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '70-90 (Slow)')">70-90 (Slow)</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '90-110 (Medium)')">90-110 (Medium)</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '110-130 (Club)')">110-130 (Club)</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '130-150 (High Energy)')">130-150 (High Energy)</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '150-180 (Fast)')">150-180 (Fast)</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '180-200 (Very Fast)')">180-200 (Very Fast)</div>
+      </div>
+    </div>
+
+    <div class="filter-dropdown">
+      <button class="filter-btn">
+        Quality
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="filter-menu">
+        <div class="filter-menu__item filter-menu__item--active" onclick="setFilter(this, 'All Quality')">All Quality</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '4K Ultra HD')">4K Ultra HD</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '1080p Full HD')">1080p Full HD</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '720p HD')">720p HD</div>
+      </div>
+    </div>
+
+    <div class="filter-dropdown">
+      <button class="filter-btn">
+        Version
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="filter-menu">
+        <div class="filter-menu__item filter-menu__item--active" onclick="setFilter(this, 'All Versions')">All Versions</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'Clean Only')">Clean Only</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'Explicit Only')">Explicit Only</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'Extended Intro')">Extended Intro</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'Quick Edit')">Quick Edit</div>
+      </div>
+    </div>
+
+    <div class="filter-dropdown">
+      <button class="filter-btn">
+        Time Period
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="filter-menu">
+        <div class="filter-menu__item filter-menu__item--active" onclick="setFilter(this, 'All Time')">All Time</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'Today')">Today</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'This Week')">This Week</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'This Month')">This Month</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'Last 3 Months')">Last 3 Months</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'This Year')">This Year</div>
+      </div>
+    </div>
+
+    <div class="filter-dropdown">
+      <button class="filter-btn">
+        Key
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="filter-menu">
+        <div class="filter-menu__item" onclick="setFilter(this, 'All Keys')">All Keys</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '1A / Abm')">1A / Abm</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '2A / Ebm')">2A / Ebm</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '3A / Bbm')">3A / Bbm</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '4A / Fm')">4A / Fm</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '5A / Cm')">5A / Cm</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '6A / Gm')">6A / Gm</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '7A / Dm')">7A / Dm</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '8A / Am')">8A / Am</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '9A / Em')">9A / Em</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '10A / Bm')">10A / Bm</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '11A / F#m')">11A / F#m</div>
+        <div class="filter-menu__item" onclick="setFilter(this, '12A / Dbm')">12A / Dbm</div>
+      </div>
+    </div>
+
+    <div class="filter-bar__spacer"></div>
+
+    <div class="filter-dropdown">
+      <button class="filter-btn">
+        Sort: Newest
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="filter-menu">
+        <div class="filter-menu__item filter-menu__item--active" onclick="setFilter(this, 'Newest')">Newest First</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'Most Popular')">Most Popular</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'Most Downloaded')">Most Downloaded</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'A-Z')">A-Z (Title)</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'BPM Low to High')">BPM: Low to High</div>
+        <div class="filter-menu__item" onclick="setFilter(this, 'BPM High to Low')">BPM: High to Low</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="main" id="mainContent">
+    <!-- WEEKLY DISCOVERY PACK -->
+    <section class="section" id="section-discovery" draggable="true">
+      <div class="section__header" onclick="toggleSection('section-discovery')">
+        <div class="section__drag-handle" onmousedown="event.stopPropagation()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+            <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+          </svg>
+        </div>
+        <h2 class="section__title">
+          <span class="section__title-icon">🎁</span>
+          Your Weekly Discovery Pack
+        </h2>
+        <span class="section__link" onclick="event.stopPropagation(); openSlidePanel('Discovery Pack', 'discovery')">See All 20 →</span>
+        <div class="section__toggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </div>
+      </div>
+      <div class="section__content">
+        <div class="discovery-pack">
+          <div class="discovery-pack__image">
+            <img src="https://picsum.photos/400/225?random=1" alt="Top Pick">
+            <span class="discovery-pack__image-badge">#1 FOR YOU</span>
+          </div>
+          <div class="discovery-pack__content">
+            <div class="discovery-pack__label">Personalized for You</div>
+            <h3 class="discovery-pack__title">20 Fresh Picks Based on Your Taste</h3>
+            <p class="discovery-pack__subtitle">Curated every Monday • Mix of new releases (60%) + catalog gems (40%)</p>
+            <div class="discovery-pack__meta">
+              <span>📁 20 videos</span>
+              <span>⏱️ 1hr 18min</span>
+              <span>💾 4.8 GB total</span>
+              <span>🔄 Refreshes in 5 days</span>
+            </div>
+            <div class="discovery-pack__actions">
+              <button class="btn btn--primary" onclick="showToast('Download Started', 'Adding 20 videos to your queue...', 'success')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                </svg>
+                Download All
+              </button>
+              <button class="btn btn--secondary" onclick="openSlidePanel('Discovery Pack', 'discovery')">Preview Pack</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOR YOU SECTION -->
+    <section class="section" id="section-foryou" draggable="true">
+      <div class="section__header" onclick="toggleSection('section-foryou')">
+        <div class="section__drag-handle" onmousedown="event.stopPropagation()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+            <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+          </svg>
+        </div>
+        <h2 class="section__title">
+          <span class="section__title-icon">✨</span>
+          For You
+        </h2>
+        <span class="section__link" onclick="event.stopPropagation(); openSlidePanel('For You', 'foryou')">See All →</span>
+        <div class="section__toggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </div>
+      </div>
+      <div class="section__content">
+        <div class="swimlane">
+          <div class="swimlane__item">
+            <div class="video-card" onclick="openPreviewModal('Espresso', 'Sabrina Carpenter', 126, '5A', '3:42', '4K', 'Pop')">
+              <div class="video-card__thumb">
+                <img src="https://picsum.photos/400/225?random=10" alt="">
+                <div class="video-card__overlay">
+                  <div class="video-card__play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <div class="video-card__badges"><span class="badge badge--new">NEW</span></div>
+                <span class="video-card__quality video-card__quality--4k">4K</span>
+                <span class="video-card__versions">4 ver</span>
+                <span class="video-card__duration">3:42</span>
+              </div>
+              <div class="video-card__content">
+                <h3 class="video-card__title">Espresso</h3>
+                <p class="video-card__artist">Sabrina Carpenter</p>
+                <div class="video-card__meta">
+                  <span>126 BPM</span>
+                  <span>5A</span>
+                </div>
+                <div class="video-card__actions">
+                  <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal('Espresso', 'Sabrina Carpenter', 126, '5A', '3:42', '4K', 'Pop')">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="swimlane__item">
+            <div class="video-card" onclick="openPreviewModal('Not Like Us', 'Kendrick Lamar', 100, '8A', '4:34', '4K', 'Hip-Hop')">
+              <div class="video-card__thumb">
+                <img src="https://picsum.photos/400/225?random=11" alt="">
+                <div class="video-card__overlay">
+                  <div class="video-card__play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <div class="video-card__badges"><span class="badge badge--hot">HOT</span></div>
+                <span class="video-card__quality video-card__quality--4k">4K</span>
+                <span class="video-card__versions">5 ver</span>
+                <span class="video-card__duration">4:34</span>
+              </div>
+              <div class="video-card__content">
+                <h3 class="video-card__title">Not Like Us</h3>
+                <p class="video-card__artist">Kendrick Lamar</p>
+                <div class="video-card__meta">
+                  <span>100 BPM</span>
+                  <span>8A</span>
+                </div>
+                <div class="video-card__actions">
+                  <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal('Not Like Us', 'Kendrick Lamar', 100, '8A', '4:34', '4K', 'Hip-Hop')">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="swimlane__item">
+            <div class="video-card" onclick="openPreviewModal('Beautiful Things', 'Benson Boone', 110, '3B', '3:00', 'HD', 'Pop')">
+              <div class="video-card__thumb">
+                <img src="https://picsum.photos/400/225?random=12" alt="">
+                <div class="video-card__overlay">
+                  <div class="video-card__play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <div class="video-card__badges"><span class="badge badge--exclusive">EXCLUSIVE</span></div>
+                <span class="video-card__quality video-card__quality--hd">HD</span>
+                <span class="video-card__versions">3 ver</span>
+                <span class="video-card__duration">3:00</span>
+              </div>
+              <div class="video-card__content">
+                <h3 class="video-card__title">Beautiful Things</h3>
+                <p class="video-card__artist">Benson Boone</p>
+                <div class="video-card__meta">
+                  <span>110 BPM</span>
+                  <span>3B</span>
+                </div>
+                <div class="video-card__actions">
+                  <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal('Beautiful Things', 'Benson Boone', 110, '3B', '3:00', 'HD', 'Pop')">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="swimlane__item">
+            <div class="video-card" onclick="openPreviewModal('Lovin On Me', 'Jack Harlow', 116, '11B', '2:18', '4K', 'Hip-Hop')">
+              <div class="video-card__thumb">
+                <img src="https://picsum.photos/400/225?random=13" alt="">
+                <div class="video-card__overlay">
+                  <div class="video-card__play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <span class="video-card__quality video-card__quality--4k">4K</span>
+                <span class="video-card__versions">4 ver</span>
+                <span class="video-card__duration">2:18</span>
+              </div>
+              <div class="video-card__content">
+                <h3 class="video-card__title">Lovin On Me</h3>
+                <p class="video-card__artist">Jack Harlow</p>
+                <div class="video-card__meta">
+                  <span>116 BPM</span>
+                  <span>11B</span>
+                </div>
+                <div class="video-card__actions">
+                  <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal('Lovin On Me', 'Jack Harlow', 116, '11B', '2:18', '4K', 'Hip-Hop')">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="swimlane__item">
+            <div class="video-card" onclick="openPreviewModal('Too Sweet', 'Hozier', 62, '9B', '4:12', '4K', 'Pop')">
+              <div class="video-card__thumb">
+                <img src="https://picsum.photos/400/225?random=14" alt="">
+                <div class="video-card__overlay">
+                  <div class="video-card__play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <div class="video-card__badges"><span class="badge badge--clean">CLEAN</span></div>
+                <span class="video-card__quality video-card__quality--4k">4K</span>
+                <span class="video-card__versions">3 ver</span>
+                <span class="video-card__duration">4:12</span>
+              </div>
+              <div class="video-card__content">
+                <h3 class="video-card__title">Too Sweet</h3>
+                <p class="video-card__artist">Hozier</p>
+                <div class="video-card__meta">
+                  <span>62 BPM</span>
+                  <span>9B</span>
+                </div>
+                <div class="video-card__actions">
+                  <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal('Too Sweet', 'Hozier', 62, '9B', '4:12', '4K', 'Pop')">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRENDING NOW -->
+    <section class="section" id="section-trending" draggable="true">
+      <div class="section__header" onclick="toggleSection('section-trending')">
+        <div class="section__drag-handle" onmousedown="event.stopPropagation()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+            <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+          </svg>
+        </div>
+        <h2 class="section__title">
+          <span class="section__title-icon">🔥</span>
+          Trending Now
+        </h2>
+        <span class="section__link" onclick="event.stopPropagation(); openSlidePanel('Trending Now', 'trending')">See All →</span>
+        <div class="section__toggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </div>
+      </div>
+      <div class="section__content">
+        <div class="video-grid">
+          <div class="video-card" onclick="openPreviewModal('We Can\\'t Be Friends', 'Ariana Grande', 118, '1A', '4:16', '4K', 'Pop')">
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/400/225?random=20" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+              </div>
+              <div class="video-card__badges"><span class="badge badge--new">NEW</span></div>
+              <span class="video-card__quality video-card__quality--4k">4K</span>
+              <span class="video-card__versions">4 ver</span>
+              <span class="video-card__duration">4:16</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">We Can't Be Friends</h3>
+              <p class="video-card__artist">Ariana Grande</p>
+              <div class="video-card__meta">
+                <span>118 BPM</span>
+                <span>1A</span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal('We Can\\'t Be Friends', 'Ariana Grande', 118, '1A', '4:16', '4K', 'Pop')">Download</button>
+              </div>
+            </div>
+          </div>
+          <div class="video-card" onclick="openPreviewModal('I Had Some Help', 'Post Malone ft. Morgan Wallen', 108, '6B', '3:02', 'HD', 'Country')">
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/400/225?random=21" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+              </div>
+              <div class="video-card__badges"><span class="badge badge--hot">HOT</span></div>
+              <span class="video-card__quality video-card__quality--hd">HD</span>
+              <span class="video-card__versions">3 ver</span>
+              <span class="video-card__duration">3:02</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">I Had Some Help</h3>
+              <p class="video-card__artist">Post Malone ft. Morgan Wallen</p>
+              <div class="video-card__meta">
+                <span>108 BPM</span>
+                <span>6B</span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal('I Had Some Help', 'Post Malone ft. Morgan Wallen', 108, '6B', '3:02', 'HD', 'Country')">Download</button>
+              </div>
+            </div>
+          </div>
+          <div class="video-card" onclick="openPreviewModal('Million Dollar Baby', 'Tommy Richman', 104, '2B', '2:31', '4K', 'Pop')">
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/400/225?random=22" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+              </div>
+              <div class="video-card__badges"><span class="badge badge--exclusive">EXCLUSIVE</span></div>
+              <span class="video-card__quality video-card__quality--4k">4K</span>
+              <span class="video-card__versions">4 ver</span>
+              <span class="video-card__duration">2:31</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">Million Dollar Baby</h3>
+              <p class="video-card__artist">Tommy Richman</p>
+              <div class="video-card__meta">
+                <span>104 BPM</span>
+                <span>2B</span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal('Million Dollar Baby', 'Tommy Richman', 104, '2B', '2:31', '4K', 'Pop')">Download</button>
+              </div>
+            </div>
+          </div>
+          <div class="video-card" onclick="openPreviewModal('Birds of a Feather', 'Billie Eilish', 105, '8B', '3:30', '4K', 'Pop')">
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/400/225?random=23" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+              </div>
+              <span class="video-card__quality video-card__quality--4k">4K</span>
+              <span class="video-card__versions">3 ver</span>
+              <span class="video-card__duration">3:30</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">Birds of a Feather</h3>
+              <p class="video-card__artist">Billie Eilish</p>
+              <div class="video-card__meta">
+                <span>105 BPM</span>
+                <span>8B</span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal('Birds of a Feather', 'Billie Eilish', 105, '8B', '3:30', '4K', 'Pop')">Download</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW IN LATIN -->
+    <section class="section" id="section-latin" draggable="true">
+      <div class="section__header" onclick="toggleSection('section-latin')">
+        <div class="section__drag-handle" onmousedown="event.stopPropagation()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+            <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+          </svg>
+        </div>
+        <h2 class="section__title">
+          <span class="section__title-icon">🌴</span>
+          New in Latin
+        </h2>
+        <span class="section__link" onclick="event.stopPropagation(); openSlidePanel('Latin Music', 'latin')">See All →</span>
+        <div class="section__toggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </div>
+      </div>
+      <div class="section__content">
+        <div class="swimlane">
+          <div class="swimlane__item">
+            <div class="video-card" onclick="openPreviewModal('Bonita', 'Daddy Yankee', 96, '4A', '3:25', '4K', 'Reggaeton')">
+              <div class="video-card__thumb">
+                <img src="https://picsum.photos/400/225?random=30" alt="">
+                <div class="video-card__overlay">
+                  <div class="video-card__play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <div class="video-card__badges"><span class="badge badge--new">NEW</span></div>
+                <span class="video-card__quality video-card__quality--4k">4K</span>
+                <span class="video-card__duration">3:25</span>
+              </div>
+              <div class="video-card__content">
+                <h3 class="video-card__title">Bonita</h3>
+                <p class="video-card__artist">Daddy Yankee</p>
+                <div class="video-card__meta">
+                  <span>96 BPM</span>
+                  <span>4A</span>
+                </div>
+                <div class="video-card__actions">
+                  <button class="btn btn--primary" onclick="event.stopPropagation()">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="swimlane__item">
+            <div class="video-card" onclick="openPreviewModal('La Bebe', 'Yng Lvcas & Peso Pluma', 92, '1B', '3:45', '4K', 'Regional Mexican')">
+              <div class="video-card__thumb">
+                <img src="https://picsum.photos/400/225?random=31" alt="">
+                <div class="video-card__overlay">
+                  <div class="video-card__play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <div class="video-card__badges"><span class="badge badge--hot">HOT</span></div>
+                <span class="video-card__quality video-card__quality--4k">4K</span>
+                <span class="video-card__duration">3:45</span>
+              </div>
+              <div class="video-card__content">
+                <h3 class="video-card__title">La Bebe</h3>
+                <p class="video-card__artist">Yng Lvcas & Peso Pluma</p>
+                <div class="video-card__meta">
+                  <span>92 BPM</span>
+                  <span>1B</span>
+                </div>
+                <div class="video-card__actions">
+                  <button class="btn btn--primary" onclick="event.stopPropagation()">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="swimlane__item">
+            <div class="video-card" onclick="openPreviewModal('Bellakeo', 'Peso Pluma & Anitta', 100, '6A', '2:55', 'HD', 'Reggaeton')">
+              <div class="video-card__thumb">
+                <img src="https://picsum.photos/400/225?random=32" alt="">
+                <div class="video-card__overlay">
+                  <div class="video-card__play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <span class="video-card__quality video-card__quality--hd">HD</span>
+                <span class="video-card__duration">2:55</span>
+              </div>
+              <div class="video-card__content">
+                <h3 class="video-card__title">Bellakeo</h3>
+                <p class="video-card__artist">Peso Pluma & Anitta</p>
+                <div class="video-card__meta">
+                  <span>100 BPM</span>
+                  <span>6A</span>
+                </div>
+                <div class="video-card__actions">
+                  <button class="btn btn--primary" onclick="event.stopPropagation()">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="swimlane__item">
+            <div class="video-card" onclick="openPreviewModal('Una Noche en Medellín', 'Cris MJ', 98, '2A', '3:12', '4K', 'Reggaeton')">
+              <div class="video-card__thumb">
+                <img src="https://picsum.photos/400/225?random=33" alt="">
+                <div class="video-card__overlay">
+                  <div class="video-card__play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <span class="video-card__quality video-card__quality--4k">4K</span>
+                <span class="video-card__duration">3:12</span>
+              </div>
+              <div class="video-card__content">
+                <h3 class="video-card__title">Una Noche en Medellín</h3>
+                <p class="video-card__artist">Cris MJ</p>
+                <div class="video-card__meta">
+                  <span>98 BPM</span>
+                  <span>2A</span>
+                </div>
+                <div class="video-card__actions">
+                  <button class="btn btn--primary" onclick="event.stopPropagation()">Download</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- PREVIEW MODAL -->
+  <div class="preview-modal" id="previewModal">
+    <div class="preview-modal__content">
+      <div class="preview-modal__video">
+        <div class="preview-modal__video-placeholder">
+          <img src="https://picsum.photos/600/338?random=1" alt="" id="previewImage">
+        </div>
+        <button class="preview-modal__play-btn" onclick="showToast('Preview Playing', '60-second clip from 0:30-1:30', 'info')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+      </div>
+      <div class="preview-modal__info">
+        <div class="preview-modal__header">
+          <span class="preview-modal__badge">NEW</span>
+          <button class="preview-modal__close" onclick="closePreviewModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <h2 class="preview-modal__title" id="previewTitle">Espresso</h2>
+        <p class="preview-modal__artist" id="previewArtist">Sabrina Carpenter</p>
+
+        <div class="preview-modal__stats">
+          <div class="preview-modal__stat">
+            <span class="preview-modal__stat-label">BPM</span>
+            <span class="preview-modal__stat-value" id="previewBpm">126</span>
+          </div>
+          <div class="preview-modal__stat">
+            <span class="preview-modal__stat-label">Key</span>
+            <span class="preview-modal__stat-value" id="previewKey">5A</span>
+          </div>
+          <div class="preview-modal__stat">
+            <span class="preview-modal__stat-label">Duration</span>
+            <span class="preview-modal__stat-value" id="previewDuration">3:42</span>
+          </div>
+          <div class="preview-modal__stat">
+            <span class="preview-modal__stat-label">Quality</span>
+            <span class="preview-modal__stat-value" id="previewQuality">4K</span>
+          </div>
+        </div>
+
+        <div class="preview-modal__stat" style="margin-bottom: 16px;">
+          <span class="preview-modal__stat-label">Genre</span>
+          <span class="preview-modal__stat-value" id="previewGenre">Pop</span>
+        </div>
+
+        <div class="preview-modal__divider"></div>
+
+        <div class="preview-modal__section-title">Download Options</div>
+
+        <div class="preview-modal__option" onclick="toggleOption(this)">
+          <div class="preview-modal__option-check preview-modal__option-check--checked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </div>
+          <div class="preview-modal__option-info">
+            <div class="preview-modal__option-name">Video + Audio</div>
+            <div class="preview-modal__option-meta">4K MP4 • ~230 MB</div>
+          </div>
+        </div>
+
+        <div class="preview-modal__option" onclick="toggleOption(this)">
+          <div class="preview-modal__option-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </div>
+          <div class="preview-modal__option-info">
+            <div class="preview-modal__option-name">Audio Only (MP3)</div>
+            <div class="preview-modal__option-meta">320kbps • ~8 MB</div>
+          </div>
+        </div>
+
+        <div class="preview-modal__footer">
+          <button class="btn btn--primary" onclick="downloadFromModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Download
+          </button>
+          <button class="btn btn--secondary" onclick="showToast('Added to Crate', 'Track saved to your crate', 'success')">Add to Crate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE PANEL -->
+  <div class="slide-panel" id="slidePanel">
+    <div class="slide-panel__header">
+      <h2 class="slide-panel__title" id="slidePanelTitle">See All</h2>
+      <button class="slide-panel__close" onclick="closeSlidePanel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="slide-panel__content">
+      <div class="slide-panel__grid" id="slidePanelGrid">
+        <!-- Dynamic content loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- BACKDROP -->
+  <div class="backdrop" id="backdrop" onclick="closeAllPanels()"></div>
+
+  <!-- DOWNLOAD FAB -->
+  <div class="download-fab">
+    <button class="download-fab__btn" onclick="showToast('Download Queue', '3 items in queue • 2 concurrent max', 'info')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+      </svg>
+      <span class="download-fab__badge">3</span>
+    </button>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ============================================
+    // THEME
+    // ============================================
+    function toggleTheme() {
+      document.documentElement.classList.toggle('light');
+      localStorage.setItem('tvp-theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
+    }
+
+    // Load saved theme
+    if (localStorage.getItem('tvp-theme') === 'light') {
+      document.documentElement.classList.add('light');
+    }
+
+    // ============================================
+    // COLLAPSIBLE SECTIONS
+    // ============================================
+    function toggleSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      section.classList.toggle('section--collapsed');
+
+      // Save state
+      const collapsed = JSON.parse(localStorage.getItem('tvp-collapsed') || '{}');
+      collapsed[sectionId] = section.classList.contains('section--collapsed');
+      localStorage.setItem('tvp-collapsed', JSON.stringify(collapsed));
+    }
+
+    // Load collapsed state
+    function loadCollapsedState() {
+      const collapsed = JSON.parse(localStorage.getItem('tvp-collapsed') || '{}');
+      Object.keys(collapsed).forEach(sectionId => {
+        if (collapsed[sectionId]) {
+          const section = document.getElementById(sectionId);
+          if (section) section.classList.add('section--collapsed');
+        }
+      });
+    }
+
+    // ============================================
+    // DRAG AND DROP SECTIONS
+    // ============================================
+    let draggedSection = null;
+
+    function initDragDrop() {
+      const sections = document.querySelectorAll('.section');
+
+      sections.forEach(section => {
+        const handle = section.querySelector('.section__drag-handle');
+
+        handle.addEventListener('mousedown', (e) => {
+          section.setAttribute('draggable', 'true');
+        });
+
+        section.addEventListener('dragstart', (e) => {
+          draggedSection = section;
+          section.classList.add('section--dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+
+        section.addEventListener('dragend', () => {
+          section.classList.remove('section--dragging');
+          document.querySelectorAll('.section--drag-over').forEach(s => s.classList.remove('section--drag-over'));
+          draggedSection = null;
+          saveSectionOrder();
+        });
+
+        section.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          if (draggedSection && draggedSection !== section) {
+            section.classList.add('section--drag-over');
+          }
+        });
+
+        section.addEventListener('dragleave', () => {
+          section.classList.remove('section--drag-over');
+        });
+
+        section.addEventListener('drop', (e) => {
+          e.preventDefault();
+          section.classList.remove('section--drag-over');
+          if (draggedSection && draggedSection !== section) {
+            const main = document.getElementById('mainContent');
+            const allSections = [...main.querySelectorAll('.section')];
+            const draggedIndex = allSections.indexOf(draggedSection);
+            const targetIndex = allSections.indexOf(section);
+
+            if (draggedIndex < targetIndex) {
+              section.after(draggedSection);
+            } else {
+              section.before(draggedSection);
+            }
+          }
+        });
+      });
+    }
+
+    function saveSectionOrder() {
+      const main = document.getElementById('mainContent');
+      const order = [...main.querySelectorAll('.section')].map(s => s.id);
+      localStorage.setItem('tvp-section-order', JSON.stringify(order));
+    }
+
+    function loadSectionOrder() {
+      const order = JSON.parse(localStorage.getItem('tvp-section-order') || '[]');
+      if (order.length > 0) {
+        const main = document.getElementById('mainContent');
+        order.forEach(sectionId => {
+          const section = document.getElementById(sectionId);
+          if (section) main.appendChild(section);
+        });
+      }
+    }
+
+    // ============================================
+    // PREVIEW MODAL
+    // ============================================
+    function openPreviewModal(title, artist, bpm, key, duration, quality, genre) {
+      document.getElementById('previewTitle').textContent = title;
+      document.getElementById('previewArtist').textContent = artist;
+      document.getElementById('previewBpm').textContent = bpm;
+      document.getElementById('previewKey').textContent = key;
+      document.getElementById('previewDuration').textContent = duration;
+      document.getElementById('previewQuality').textContent = quality;
+      document.getElementById('previewGenre').textContent = genre;
+      document.getElementById('previewImage').src = `https://picsum.photos/600/338?random=${Math.floor(Math.random() * 100)}`;
+      document.getElementById('previewModal').classList.add('preview-modal--open');
+      document.getElementById('backdrop').classList.add('backdrop--visible');
+    }
+
+    function closePreviewModal() {
+      document.getElementById('previewModal').classList.remove('preview-modal--open');
+      document.getElementById('backdrop').classList.remove('backdrop--visible');
+    }
+
+    function toggleOption(el) {
+      const check = el.querySelector('.preview-modal__option-check');
+      check.classList.toggle('preview-modal__option-check--checked');
+    }
+
+    function downloadFromModal() {
+      const title = document.getElementById('previewTitle').textContent;
+      closePreviewModal();
+      showToast('Download Started', `${title} added to queue`, 'success');
+    }
+
+    // ============================================
+    // SLIDE PANEL
+    // ============================================
+    function openSlidePanel(title, type) {
+      document.getElementById('slidePanelTitle').textContent = title;
+
+      // Generate content based on type
+      const grid = document.getElementById('slidePanelGrid');
+      grid.innerHTML = '';
+
+      for (let i = 0; i < 12; i++) {
+        grid.innerHTML += `
+          <div class="video-card" onclick="openPreviewModal('Track ${i + 1}', 'Artist', ${80 + i * 5}, '${i + 1}A', '3:${20 + i}', '4K', 'Pop')">
+            <div class="video-card__thumb">
+              <img src="https://picsum.photos/400/225?random=${50 + i}" alt="">
+              <span class="video-card__quality video-card__quality--4k">4K</span>
+              <span class="video-card__duration">3:${20 + i}</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">${title} Track ${i + 1}</h3>
+              <p class="video-card__artist">Artist Name</p>
+              <div class="video-card__meta">
+                <span>${80 + i * 5} BPM</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('slidePanel').classList.add('slide-panel--open');
+      document.getElementById('backdrop').classList.add('backdrop--visible');
+    }
+
+    function closeSlidePanel() {
+      document.getElementById('slidePanel').classList.remove('slide-panel--open');
+      document.getElementById('backdrop').classList.remove('backdrop--visible');
+    }
+
+    function closeAllPanels() {
+      closePreviewModal();
+      closeSlidePanel();
+    }
+
+    // ============================================
+    // NAVIGATION
+    // ============================================
+    function setActiveNav(el) {
+      document.querySelectorAll('.nav__link').forEach(link => link.classList.remove('nav__link--active'));
+      el.classList.add('nav__link--active');
+    }
+
+    function filterGenre(genre) {
+      showToast('Filter Applied', `Showing ${genre} videos`, 'info');
+    }
+
+    function setFilter(el, value) {
+      const menu = el.closest('.filter-menu');
+      menu.querySelectorAll('.filter-menu__item').forEach(item => item.classList.remove('filter-menu__item--active'));
+      el.classList.add('filter-menu__item--active');
+      showToast('Filter Updated', value, 'info');
+    }
+
+    // ============================================
+    // TOAST NOTIFICATIONS
+    // ============================================
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast--${type}`;
+      toast.innerHTML = `
+        <div class="toast__content">
+          <div class="toast__title">${title}</div>
+          <div class="toast__message">${message}</div>
+        </div>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => toast.classList.add('toast--show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('toast--show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('mainSearch').focus();
+      }
+      if (e.key === 'Escape') {
+        closeAllPanels();
+      }
+    });
+
+    // ============================================
+    // INIT
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCollapsedState();
+      loadSectionOrder();
+      initDragDrop();
+    });
+  </script>
+</body>
+</html>

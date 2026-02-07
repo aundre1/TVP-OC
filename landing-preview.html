@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Landing Page Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111116;
+      --bg-tertiary: #1a1a22;
+      --bg-elevated: #222230;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #6b6b76;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.1);
+      --accent-cyan: #00d4ff;
+      --accent-cyan-hover: #33ddff;
+      --accent-gold: #ffd700;
+      --accent-coral: #ff6b4a;
+      --accent-purple: #a855f7;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Animations */
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .animate-gradient {
+      animation: gradient 3s ease infinite;
+    }
+
+    .animate-pulse {
+      animation: pulse 2s infinite;
+    }
+
+    .animate-bounce {
+      animation: bounce 2s infinite;
+    }
+
+    /* ==================== NAVBAR ==================== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 1rem 1.5rem;
+      background: rgba(10, 10, 15, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .navbar-content {
+      max-width: 72rem;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      background: var(--accent-cyan);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-cyan-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-default);
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(0, 212, 255, 0.5);
+      background: var(--bg-tertiary);
+    }
+
+    .btn-large {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      border-radius: 0.75rem;
+    }
+
+    /* ==================== HERO SECTION ==================== */
+    .hero {
+      position: relative;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding-top: 5rem;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary), var(--bg-primary));
+    }
+
+    .hero-glow-1 {
+      position: absolute;
+      top: 25%;
+      left: 25%;
+      width: 24rem;
+      height: 24rem;
+      background: rgba(0, 212, 255, 0.1);
+      border-radius: 50%;
+      filter: blur(128px);
+    }
+
+    .hero-glow-2 {
+      position: absolute;
+      bottom: 25%;
+      right: 25%;
+      width: 24rem;
+      height: 24rem;
+      background: rgba(168, 85, 247, 0.1);
+      border-radius: 50%;
+      filter: blur(128px);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      margin-bottom: 2rem;
+    }
+
+    .hero-badge-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--accent-cyan);
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+    }
+
+    .hero-title-gradient {
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-cyan));
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 48rem;
+      margin: 0 auto 2rem;
+    }
+
+    .hero-subtitle strong {
+      color: var(--text-primary);
+    }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-promo {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .hero-promo strong {
+      color: var(--accent-gold);
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-muted);
+    }
+
+    /* ==================== VALUE PROPS ==================== */
+    .section {
+      padding: 6rem 1.5rem;
+    }
+
+    .section-dark {
+      background: var(--bg-secondary);
+    }
+
+    .container {
+      max-width: 72rem;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      max-width: 42rem;
+      margin: 0 auto;
+    }
+
+    .value-props-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .value-card {
+      position: relative;
+      padding: 2rem;
+      border-radius: 1rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.3s;
+    }
+
+    .value-card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .value-icon {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 0.75rem;
+      background: rgba(0, 212, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      color: var(--accent-cyan);
+    }
+
+    .value-highlight {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      background: rgba(0, 212, 255, 0.1);
+      color: var(--accent-cyan);
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .value-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .value-description {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ==================== CONTENT PREVIEW ==================== */
+    .genres-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 4rem;
+    }
+
+    .genre-card {
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .genre-card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .genre-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .genre-count {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .hot-tracks {
+      background: var(--bg-secondary);
+      border-radius: 1rem;
+      border: 1px solid var(--border-subtle);
+      padding: 2rem;
+    }
+
+    .hot-tracks-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .hot-tracks-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .tracks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .track-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      transition: border-color 0.2s;
+    }
+
+    .track-card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .track-thumb {
+      width: 4rem;
+      height: 2.5rem;
+      border-radius: 0.5rem;
+      background: var(--bg-elevated);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--text-muted);
+    }
+
+    .track-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .track-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .track-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-badge {
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      font-size: 0.625rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .track-badge-hot {
+      background: linear-gradient(90deg, var(--accent-coral), var(--accent-gold));
+      color: #fff;
+    }
+
+    .track-badge-new {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .track-artist {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hot-tracks-cta {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .hot-tracks-cta a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hot-tracks-cta a:hover {
+      text-decoration: underline;
+    }
+
+    /* ==================== PRICING ==================== */
+    .pricing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-badge-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--accent-gold);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .pricing-card {
+      position: relative;
+      padding: 2rem;
+      border-radius: 1rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.3s;
+    }
+
+    .pricing-card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .pricing-card-popular {
+      background: linear-gradient(180deg, rgba(0, 212, 255, 0.1), var(--bg-primary));
+      border: 2px solid var(--accent-cyan);
+      transform: scale(1.05);
+      box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
+    }
+
+    .pricing-popular-badge {
+      position: absolute;
+      top: -0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.25rem 1rem;
+      background: var(--accent-cyan);
+      color: #000;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: 9999px;
+    }
+
+    .pricing-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-price {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .pricing-amount {
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+
+    .pricing-original {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .pricing-period {
+      color: var(--text-muted);
+    }
+
+    .pricing-after {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-downloads {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .pricing-feature svg {
+      flex-shrink: 0;
+      color: var(--accent-cyan);
+      margin-top: 0.125rem;
+    }
+
+    .pricing-cta {
+      width: 100%;
+    }
+
+    .pricing-note {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* ==================== FEATURES ==================== */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      display: flex;
+      gap: 1rem;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      transition: border-color 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .feature-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.75rem;
+      background: rgba(0, 212, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent-cyan);
+    }
+
+    .feature-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-description {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    /* ==================== SOCIAL PROOF ==================== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+
+    .stats-card {
+      text-align: center;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .stats-icon {
+      color: var(--accent-cyan);
+      margin-bottom: 0.75rem;
+    }
+
+    .stats-value {
+      font-size: 1.875rem;
+      font-weight: 700;
+    }
+
+    .stats-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .testimonial-card {
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .testimonial-stars {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+      color: var(--accent-gold);
+    }
+
+    .testimonial-quote {
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .testimonial-avatar {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .testimonial-name {
+      font-weight: 500;
+    }
+
+    .testimonial-role {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* ==================== FAQ ==================== */
+    .faq-list {
+      max-width: 48rem;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .faq-question {
+      width: 100%;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-secondary);
+      border: none;
+      color: var(--text-primary);
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .faq-question:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .faq-answer {
+      padding: 0 1.5rem 1.5rem;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+    }
+
+    /* ==================== FINAL CTA ==================== */
+    .final-cta {
+      background: linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
+      text-align: center;
+    }
+
+    .final-cta-title {
+      font-size: clamp(1.875rem, 5vw, 3rem);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+
+    .final-cta-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 42rem;
+      margin: 0 auto 2rem;
+    }
+
+    .final-cta-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .final-cta-note {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* ==================== FOOTER ==================== */
+    .footer {
+      background: var(--bg-primary);
+      border-top: 1px solid var(--border-subtle);
+      padding: 3rem 1.5rem;
+    }
+
+    .footer-content {
+      max-width: 72rem;
+      margin: 0 auto;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-brand p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+    }
+
+    .footer-title {
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-links a {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-bottom {
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .footer-copyright {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .footer-social a {
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .footer-social a:hover {
+      color: var(--text-primary);
+    }
+
+    /* ==================== ICONS (Simple SVG) ==================== */
+    .icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .icon-lg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .icon-xl {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .pricing-card-popular {
+        transform: none;
+      }
+
+      .hero-stats {
+        gap: 1.5rem;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="logo">
+        <div class="logo-icon">
+          <svg class="icon" fill="black" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <span class="logo-text">The Video Pool</span>
+      </a>
+      <div class="nav-links">
+        <a href="#pricing" class="nav-link">Pricing</a>
+        <a href="#" class="nav-link">Sign In</a>
+        <a href="#" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-glow-1 animate-pulse"></div>
+    <div class="hero-glow-2 animate-pulse"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--accent-cyan)"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        <span class="hero-badge-text">The #1 DJ Video Pool</span>
+      </div>
+
+      <h1 class="hero-title">
+        Level Up Your<br>
+        <span class="hero-title-gradient animate-gradient">DJ Sets</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Access <strong>30,000+ HD music videos</strong> with new releases daily.<br>
+        Built by DJs, for DJs who demand excellence.
+      </p>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-value">30K+</div>
+          <div class="stat-label">HD Videos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">8+</div>
+          <div class="stat-label">Genres</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">Daily</div>
+          <div class="stat-label">New Releases</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">4K</div>
+          <div class="stat-label">Quality Available</div>
+        </div>
+      </div>
+
+      <div class="hero-cta">
+        <a href="#" class="btn btn-primary btn-large">
+          Start Free Trial
+          <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#" class="btn btn-secondary btn-large">Sign In</a>
+      </div>
+
+      <p class="hero-promo">
+        <strong>50% OFF</strong> your first month on all plans
+      </p>
+    </div>
+
+    <div class="scroll-indicator animate-bounce">
+      <svg class="icon-lg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+    </div>
+  </section>
+
+  <!-- VALUE PROPOSITIONS -->
+  <section class="section section-dark">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Everything You Need to Rock Any Venue</h2>
+        <p class="section-subtitle">From intimate lounges to massive festivals, we've got the videos that move crowds.</p>
+      </div>
+
+      <div class="value-props-grid">
+        <div class="value-card">
+          <div class="value-icon">
+            <svg class="icon-xl" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="value-highlight">30K+ Videos</div>
+          <h3 class="value-title">Massive Video Library</h3>
+          <p class="value-description">30,000+ professionally produced music videos across Hip-Hop, EDM, Latin, Pop, Country, R&B, Rock, and Throwbacks. New content added daily.</p>
+        </div>
+
+        <div class="value-card">
+          <div class="value-icon">
+            <svg class="icon-xl" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          </div>
+          <div class="value-highlight">Up to 4K</div>
+          <h3 class="value-title">Premium Quality</h3>
+          <p class="value-description">Crystal-clear HD and 4K video quality. Multiple format options including clean edits, extended versions, and quick hits.</p>
+        </div>
+
+        <div class="value-card">
+          <div class="value-icon">
+            <svg class="icon-xl" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div class="value-highlight">Set Builder</div>
+          <h3 class="value-title">DJ-Built Tools</h3>
+          <p class="value-description">Smart Set Builder with BPM/Key matching, advanced search filters, and instant downloads. Built by DJs who understand your workflow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT PREVIEW -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Explore Our Library</h2>
+        <p class="section-subtitle">From chart-toppers to underground hits, we've got every vibe covered.</p>
+      </div>
+
+      <div class="genres-grid">
+        <div class="genre-card">
+          <div class="genre-name">Hip-Hop</div>
+          <div class="genre-count">8,500+ videos</div>
+        </div>
+        <div class="genre-card">
+          <div class="genre-name">EDM</div>
+          <div class="genre-count">6,200+ videos</div>
+        </div>
+        <div class="genre-card">
+          <div class="genre-name">Latin</div>
+          <div class="genre-count">5,800+ videos</div>
+        </div>
+        <div class="genre-card">
+          <div class="genre-name">Pop</div>
+          <div class="genre-count">4,500+ videos</div>
+        </div>
+        <div class="genre-card">
+          <div class="genre-name">R&B</div>
+          <div class="genre-count">3,200+ videos</div>
+        </div>
+        <div class="genre-card">
+          <div class="genre-name">Country</div>
+          <div class="genre-count">2,100+ videos</div>
+        </div>
+        <div class="genre-card">
+          <div class="genre-name">Rock</div>
+          <div class="genre-count">1,800+ videos</div>
+        </div>
+        <div class="genre-card">
+          <div class="genre-name">Throwbacks</div>
+          <div class="genre-count">3,500+ videos</div>
+        </div>
+      </div>
+
+      <div class="hot-tracks">
+        <div class="hot-tracks-header">
+          <svg class="icon-lg" fill="none" stroke="var(--accent-coral)" stroke-width="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          <h3 class="hot-tracks-title">Hot This Week</h3>
+        </div>
+
+        <div class="tracks-grid">
+          <div class="track-card">
+            <div class="track-thumb">
+              <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="track-info">
+              <div class="track-title-row">
+                <span class="track-title">Die With A Smile</span>
+                <span class="track-badge track-badge-hot">HOT</span>
+              </div>
+              <span class="track-artist">Lady Gaga & Bruno Mars</span>
+            </div>
+          </div>
+
+          <div class="track-card">
+            <div class="track-thumb">
+              <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="track-info">
+              <div class="track-title-row">
+                <span class="track-title">APT.</span>
+                <span class="track-badge track-badge-new">NEW</span>
+              </div>
+              <span class="track-artist">ROSÉ & Bruno Mars</span>
+            </div>
+          </div>
+
+          <div class="track-card">
+            <div class="track-thumb">
+              <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="track-info">
+              <div class="track-title-row">
+                <span class="track-title">Espresso</span>
+                <span class="track-badge track-badge-hot">HOT</span>
+              </div>
+              <span class="track-artist">Sabrina Carpenter</span>
+            </div>
+          </div>
+
+          <div class="track-card">
+            <div class="track-thumb">
+              <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="track-info">
+              <div class="track-title-row">
+                <span class="track-title">Birds of a Feather</span>
+                <span class="track-badge track-badge-new">NEW</span>
+              </div>
+              <span class="track-artist">Billie Eilish</span>
+            </div>
+          </div>
+
+          <div class="track-card">
+            <div class="track-thumb">
+              <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="track-info">
+              <div class="track-title-row">
+                <span class="track-title">Not Like Us</span>
+                <span class="track-badge track-badge-hot">HOT</span>
+              </div>
+              <span class="track-artist">Kendrick Lamar</span>
+            </div>
+          </div>
+
+          <div class="track-card">
+            <div class="track-thumb">
+              <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="track-info">
+              <div class="track-title-row">
+                <span class="track-title">A Bar Song</span>
+                <span class="track-badge track-badge-new">NEW</span>
+              </div>
+              <span class="track-artist">Shaboozey</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hot-tracks-cta">
+          <a href="#">
+            Sign up to browse all videos
+            <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" class="section section-dark">
+    <div class="container">
+      <div class="section-header">
+        <div class="pricing-badge">
+          <svg class="icon" fill="var(--accent-gold)" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span class="pricing-badge-text">50% OFF First Month - All Plans</span>
+        </div>
+        <h2 class="section-title">Choose Your Plan</h2>
+        <p class="section-subtitle">No contracts. Cancel anytime. Start with half price on your first month.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Starter -->
+        <div class="pricing-card">
+          <h3 class="pricing-name">Starter</h3>
+          <div class="pricing-price">
+            <span class="pricing-amount">$9.99</span>
+            <span class="pricing-original">$19.99</span>
+            <span class="pricing-period">/first month</span>
+          </div>
+          <p class="pricing-after">Then $19.99/month</p>
+          <div class="pricing-downloads">50 downloads/month</div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>HD quality (up to 1080p)</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>All genres access</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Basic search & filters</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Email support</span>
+            </li>
+          </ul>
+          <a href="#" class="btn btn-secondary pricing-cta">Get Started</a>
+        </div>
+
+        <!-- Pro (Popular) -->
+        <div class="pricing-card pricing-card-popular">
+          <div class="pricing-popular-badge">Most Popular</div>
+          <h3 class="pricing-name">Pro</h3>
+          <div class="pricing-price">
+            <span class="pricing-amount">$17.49</span>
+            <span class="pricing-original">$34.99</span>
+            <span class="pricing-period">/first month</span>
+          </div>
+          <p class="pricing-after">Then $34.99/month</p>
+          <div class="pricing-downloads">200 downloads/month</div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>4K quality available</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>All genres access</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Advanced search & filters</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Set Builder with BPM/Key matching</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Priority support</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Early access to new releases</span>
+            </li>
+          </ul>
+          <a href="#" class="btn btn-primary pricing-cta">Go Pro</a>
+        </div>
+
+        <!-- Elite -->
+        <div class="pricing-card">
+          <h3 class="pricing-name">Elite</h3>
+          <div class="pricing-price">
+            <span class="pricing-amount">$29.99</span>
+            <span class="pricing-original">$59.99</span>
+            <span class="pricing-period">/first month</span>
+          </div>
+          <p class="pricing-after">Then $59.99/month</p>
+          <div class="pricing-downloads">Unlimited downloads/month</div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>4K quality available</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Set Builder Pro with AI recommendations</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>VIP support (24/7)</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Early access + exclusives</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Request priority</span>
+            </li>
+            <li class="pricing-feature">
+              <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <span>Custom edit requests</span>
+            </li>
+          </ul>
+          <a href="#" class="btn btn-secondary pricing-cta">Go Elite</a>
+        </div>
+      </div>
+
+      <p class="pricing-note">All plans include instant access. No approval process required.</p>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Built for Professional DJs</h2>
+        <p class="section-subtitle">Every feature designed to streamline your workflow and elevate your performances.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg class="icon-lg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94"/></svg>
+          </div>
+          <div>
+            <h4 class="feature-title">BPM & Key Matching</h4>
+            <p class="feature-description">Our Set Builder analyzes BPM and musical key to help you create seamless mixes.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg class="icon-lg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          </div>
+          <div>
+            <h4 class="feature-title">Instant Downloads</h4>
+            <p class="feature-description">No waiting. Download your videos instantly in your preferred quality and format.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg class="icon-lg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div>
+            <h4 class="feature-title">Multiple Versions</h4>
+            <p class="feature-description">Clean edits, explicit versions, intros, outros, and quick hits for every track.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg class="icon-lg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div>
+            <h4 class="feature-title">Software Compatible</h4>
+            <p class="feature-description">Works with Serato Video, VirtualDJ, rekordbox, and all major DJ software.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg class="icon-lg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          </div>
+          <div>
+            <h4 class="feature-title">Global Content</h4>
+            <p class="feature-description">International hits from around the world - Latin, K-Pop, Afrobeats, and more.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg class="icon-lg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
+          </div>
+          <div>
+            <h4 class="feature-title">High-Quality Audio</h4>
+            <p class="feature-description">Premium 320kbps audio paired with stunning HD and 4K video quality.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL PROOF -->
+  <section class="section section-dark">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Trusted by DJs Worldwide</h2>
+        <p class="section-subtitle">Join thousands of professional DJs who've elevated their performances.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stats-card">
+          <svg class="icon-xl stats-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          <div class="stats-value">5,000+</div>
+          <div class="stats-label">Active DJs</div>
+        </div>
+        <div class="stats-card">
+          <svg class="icon-xl stats-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <div class="stats-value">1M+</div>
+          <div class="stats-label">Downloads</div>
+        </div>
+        <div class="stats-card">
+          <svg class="icon-xl stats-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          <div class="stats-value">50+</div>
+          <div class="stats-label">Countries</div>
+        </div>
+        <div class="stats-card">
+          <svg class="icon-xl stats-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>
+          <div class="stats-value">4.9</div>
+          <div class="stats-label">User Rating</div>
+        </div>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="testimonial-quote">"The Video Pool has completely transformed my sets. The quality is unmatched."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">M</div>
+            <div>
+              <div class="testimonial-name">DJ Mike</div>
+              <div class="testimonial-role">Club DJ, Las Vegas</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-stars">
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="testimonial-quote">"Finally, a video pool that understands what DJs actually need. The Set Builder is a game-changer."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">S</div>
+            <div>
+              <div class="testimonial-name">DJ Sarah</div>
+              <div class="testimonial-role">Mobile DJ, Miami</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-stars">
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="testimonial-quote">"Best investment I've made for my DJ business. The library is massive and always up to date."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">M</div>
+            <div>
+              <div class="testimonial-name">DJ Marcus</div>
+              <div class="testimonial-role">Wedding DJ, Chicago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">Got questions? We've got answers.</p>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">
+            What video formats do you offer?
+            <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer">
+            We provide MP4 videos in HD (720p), Full HD (1080p), and 4K quality depending on your subscription plan. Audio is embedded at 320kbps for crystal-clear sound.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            What DJ software is compatible?
+            <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer">
+            Our videos work with all major DJ software including Serato Video, VirtualDJ, rekordbox Video, PCDJ DEX, and any software that supports MP4 video playback.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Can I cancel anytime?
+            <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer">
+            Absolutely. There are no contracts or commitments. You can cancel your subscription at any time from your account settings, and you'll retain access until the end of your billing period.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            How often is new content added?
+            <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer">
+            We add new content daily! Our team works around the clock to ensure you have access to the latest releases, often within days of the official video premiere.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Do you offer clean/radio edits?
+            <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer">
+            Yes! Most tracks come with multiple versions including clean edits, explicit versions, extended mixes, intros, outros, and quick hits - perfect for any venue or event type.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Is there an approval process to join?
+            <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-answer">
+            No approval needed. Create your account, choose your plan, and start downloading immediately. Instant access to our entire library.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section final-cta">
+    <div class="container">
+      <h2 class="final-cta-title">Ready to Level Up Your Sets?</h2>
+      <p class="final-cta-subtitle">
+        Join thousands of DJs who trust The Video Pool for their music video needs.
+        Start with 50% off your first month.
+      </p>
+      <div class="final-cta-buttons">
+        <a href="#" class="btn btn-primary btn-large">
+          Get Started Now
+          <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#pricing" class="btn btn-secondary btn-large">View Pricing</a>
+      </div>
+      <p class="final-cta-note">No credit card required to browse. Cancel anytime.</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-icon">
+              <svg class="icon" fill="black" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <span class="logo-text">The Video Pool</span>
+          </div>
+          <p>The premier DJ video pool for professionals who demand excellence.</p>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Product</h4>
+          <ul class="footer-links">
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Genres</a></li>
+            <li><a href="#">New Releases</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Support</h4>
+          <ul class="footer-links">
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">System Status</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Legal</h4>
+          <ul class="footer-links">
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">DMCA</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copyright">© 2026 The Video Pool. All rights reserved.</p>
+        <div class="footer-social">
+          <a href="#">
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/></svg>
+          </a>
+          <a href="#">
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd"/></svg>
+          </a>
+          <a href="#">
+            <svg class="icon" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 01-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 01-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 011.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z" clip-rule="evenodd"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Simple FAQ toggle
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const answer = button.nextElementSibling;
+        const isOpen = answer.style.display === 'block';
+
+        // Close all
+        document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
+        document.querySelectorAll('.faq-question svg').forEach(svg => svg.style.transform = 'rotate(0deg)');
+
+        // Toggle current
+        if (!isOpen) {
+          answer.style.display = 'block';
+          button.querySelector('svg').style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+
+    // Initially hide all FAQ answers
+    document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
+  </script>
+</body>
+</html>

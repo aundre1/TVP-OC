@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Preview v6 (Logged In)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'tvp-bg-primary': '#0a0a0f',
+            'tvp-bg-secondary': '#12121a',
+            'tvp-bg-tertiary': '#1a1a24',
+            'tvp-bg-elevated': '#22222e',
+            'tvp-text-primary': '#ffffff',
+            'tvp-text-secondary': '#a0a0b0',
+            'tvp-text-muted': '#606070',
+            'tvp-border-subtle': '#ffffff08',
+            'tvp-border-default': '#ffffff15',
+            'tvp-accent-cyan': '#00d4ff',
+            'tvp-accent-coral': '#ff6b6b',
+            'tvp-status-warning': '#ffb347',
+            'tvp-status-error': '#ff4757',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .quality-4k { background: linear-gradient(135deg, #00d4ff, #0099cc); color: black; }
+    .quality-1080p { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .quality-720p { background: #3b82f6; color: white; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+    .drag-handle { cursor: grab; }
+    .drag-handle:active { cursor: grabbing; }
+    .context-menu { animation: fadeIn 0.15s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .section-title { font-size: 1.25rem; font-weight: 600; color: white; }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #12121a; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #444; }
+  </style>
+</head>
+<body class="bg-tvp-bg-primary text-tvp-text-primary min-h-screen">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-tvp-bg-secondary/95 backdrop-blur-md border-b border-tvp-border-subtle">
+    <div class="flex items-center justify-between px-6 py-3">
+      <!-- Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-tvp-accent-cyan to-tvp-accent-cyan/50 flex items-center justify-center font-bold text-black">TVP</div>
+        <span class="text-lg font-semibold">The Video Pool</span>
+      </div>
+
+      <!-- Search -->
+      <div class="flex-1 max-w-xl mx-8">
+        <div class="relative">
+          <input type="text" placeholder="Search 30,000+ videos... Try: '90s hip hop clean edits around 95 BPM'"
+                 class="w-full px-4 py-2.5 pl-10 bg-tvp-bg-tertiary border border-tvp-border-default rounded-xl text-sm text-tvp-text-primary placeholder:text-tvp-text-muted focus:border-tvp-accent-cyan focus:outline-none">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-tvp-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Right Actions -->
+      <div class="flex items-center gap-4">
+        <!-- View Toggle -->
+        <div class="flex bg-tvp-bg-tertiary rounded-lg p-1">
+          <button class="px-3 py-1.5 rounded-md bg-tvp-accent-cyan text-black text-sm font-medium">Grid</button>
+          <button class="px-3 py-1.5 rounded-md text-tvp-text-secondary text-sm font-medium hover:text-white">List</button>
+        </div>
+
+        <!-- Downloads Counter -->
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-tvp-bg-tertiary rounded-lg">
+          <svg class="w-4 h-4 text-tvp-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          <span class="text-sm font-medium">47/100</span>
+        </div>
+
+        <!-- User Menu -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-tvp-accent-cyan to-tvp-accent-coral"></div>
+          <span class="text-sm font-medium">DJ Mike</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Genre Nav -->
+    <div class="flex items-center gap-1 px-6 py-2 border-t border-tvp-border-subtle overflow-x-auto">
+      <button class="px-4 py-1.5 rounded-lg bg-tvp-accent-cyan/10 text-tvp-accent-cyan text-sm font-medium border border-tvp-accent-cyan/30">All</button>
+      <button class="px-4 py-1.5 rounded-lg text-tvp-text-secondary text-sm font-medium hover:bg-tvp-bg-tertiary">Hip-Hop</button>
+      <button class="px-4 py-1.5 rounded-lg text-tvp-text-secondary text-sm font-medium hover:bg-tvp-bg-tertiary">Pop</button>
+      <button class="px-4 py-1.5 rounded-lg text-tvp-text-secondary text-sm font-medium hover:bg-tvp-bg-tertiary">R&B</button>
+      <button class="px-4 py-1.5 rounded-lg text-tvp-text-secondary text-sm font-medium hover:bg-tvp-bg-tertiary">EDM</button>
+      <button class="px-4 py-1.5 rounded-lg text-tvp-text-secondary text-sm font-medium hover:bg-tvp-bg-tertiary">Latin</button>
+      <button class="px-4 py-1.5 rounded-lg text-tvp-text-secondary text-sm font-medium hover:bg-tvp-bg-tertiary">Rock</button>
+      <button class="px-4 py-1.5 rounded-lg text-tvp-text-secondary text-sm font-medium hover:bg-tvp-bg-tertiary">Country</button>
+      <button class="px-4 py-1.5 rounded-lg text-tvp-text-secondary text-sm font-medium hover:bg-tvp-bg-tertiary">Throwbacks</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="px-6 py-6">
+    <!-- AI Search Hero -->
+    <div class="mb-8 p-6 rounded-2xl bg-gradient-to-r from-tvp-bg-secondary to-tvp-bg-tertiary border border-tvp-border-subtle">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-tvp-accent-cyan/20 flex items-center justify-center">
+          <svg class="w-5 h-5 text-tvp-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <span class="text-lg font-semibold">AI-Powered Search</span>
+      </div>
+      <p class="text-tvp-text-secondary text-sm">Try natural language: "upbeat wedding songs from the 80s" or "Drake clean versions 100-110 BPM"</p>
+    </div>
+
+    <!-- Recent Downloads (Non-draggable) -->
+    <div class="mb-8 p-4 rounded-xl bg-gradient-to-r from-tvp-accent-cyan/5 to-transparent border border-tvp-accent-cyan/20">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-tvp-text-secondary">Recent Downloads</h3>
+        <button class="text-xs text-tvp-accent-cyan hover:underline">View All</button>
+      </div>
+      <div class="flex gap-3 overflow-x-auto pb-2">
+        <div class="flex-shrink-0 flex items-center gap-3 px-3 py-2 bg-tvp-bg-secondary rounded-lg">
+          <img src="https://picsum.photos/40/40?random=101" class="w-10 h-10 rounded object-cover">
+          <div class="min-w-0">
+            <p class="text-sm font-medium truncate">Espresso</p>
+            <p class="text-xs text-tvp-text-muted">Sabrina Carpenter</p>
+          </div>
+          <button class="p-1.5 text-tvp-text-muted hover:text-tvp-accent-cyan">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+        </div>
+        <div class="flex-shrink-0 flex items-center gap-3 px-3 py-2 bg-tvp-bg-secondary rounded-lg">
+          <img src="https://picsum.photos/40/40?random=102" class="w-10 h-10 rounded object-cover">
+          <div class="min-w-0">
+            <p class="text-sm font-medium truncate">APT.</p>
+            <p class="text-xs text-tvp-text-muted">ROSE & Bruno Mars</p>
+          </div>
+          <button class="p-1.5 text-tvp-text-muted hover:text-tvp-accent-cyan">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+        </div>
+        <div class="flex-shrink-0 flex items-center gap-3 px-3 py-2 bg-tvp-bg-secondary rounded-lg">
+          <img src="https://picsum.photos/40/40?random=103" class="w-10 h-10 rounded object-cover">
+          <div class="min-w-0">
+            <p class="text-sm font-medium truncate">Die With A Smile</p>
+            <p class="text-xs text-tvp-text-muted">Lady Gaga & Bruno Mars</p>
+          </div>
+          <button class="p-1.5 text-tvp-text-muted hover:text-tvp-accent-cyan">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 1: Trending Now (Draggable) -->
+    <section class="mb-10 pt-8 border-t border-white/5">
+      <div class="flex items-center gap-3 py-3 cursor-pointer select-none">
+        <!-- Drag Handle (6-dot) -->
+        <button class="drag-handle w-8 h-8 flex items-center justify-center rounded text-tvp-text-muted opacity-60 hover:opacity-100 hover:text-tvp-accent-cyan hover:bg-tvp-accent-cyan/10 transition-all" title="Drag to reorder sections">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+            <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+          </svg>
+        </button>
+        <h2 class="section-title flex-1">Trending Now</h2>
+        <button class="text-tvp-text-secondary text-sm font-medium hover:text-tvp-accent-cyan hover:underline">See all</button>
+        <div class="w-7 h-7 flex items-center justify-center text-tvp-text-muted">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Video Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <!-- Video Card 1 - With EXCLUSIVE badge -->
+        <div class="relative bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl overflow-hidden cursor-pointer card-hover transition-all duration-200" onclick="openPreview(this)">
+          <!-- Checkbox (on hover) -->
+          <button class="absolute top-3 left-3 z-10 w-6 h-6 bg-tvp-bg-secondary border-2 border-tvp-border-default rounded-md opacity-0 hover:opacity-100 transition-opacity"></button>
+
+          <!-- Thumbnail -->
+          <div class="relative aspect-video bg-tvp-bg-tertiary overflow-hidden group">
+            <img src="https://picsum.photos/320/180?random=1" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+
+            <!-- Play Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-12 h-12 rounded-full bg-tvp-accent-cyan flex items-center justify-center">
+                <svg class="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Badges - EXCLUSIVE, NEW, HOT -->
+            <div class="absolute top-2 left-10 flex gap-1.5">
+              <span class="px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-yellow-500 to-amber-400 text-black rounded shadow-sm">EXCLUSIVE</span>
+              <span class="px-1.5 py-0.5 text-[10px] font-bold bg-tvp-accent-coral text-white rounded">NEW</span>
+            </div>
+
+            <!-- Heart Button (Top Right) -->
+            <button class="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 text-white/70 hover:text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-all z-10" onclick="event.stopPropagation(); toggleFavorite(this)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </button>
+
+            <!-- Quality Badge -->
+            <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold quality-4k">4K</span>
+
+            <!-- Duration -->
+            <span class="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 text-white text-[11px] font-mono rounded">3:45</span>
+          </div>
+
+          <!-- Content - v6 Layout: Artist | Title | Label inline -->
+          <div class="p-3.5">
+            <div class="flex items-center gap-1.5 mb-1.5 text-[13px] min-w-0">
+              <span class="text-tvp-text-secondary flex-shrink-0 truncate max-w-[35%]">Sabrina Carpenter</span>
+              <span class="text-tvp-border-subtle flex-shrink-0">|</span>
+              <span class="font-semibold text-tvp-text-primary truncate">Espresso</span>
+              <span class="text-tvp-border-subtle flex-shrink-0">|</span>
+              <span class="text-tvp-text-muted truncate text-[11px]">Island Records</span>
+            </div>
+
+            <!-- Metadata with Download Count -->
+            <div class="flex items-center gap-2 font-mono text-[11px] text-tvp-text-muted mb-3">
+              <span>104 BPM</span>
+              <span>•</span>
+              <span class="text-tvp-accent-cyan">Fm</span>
+              <span>•</span>
+              <span class="flex items-center gap-0.5">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                15.2K
+              </span>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-2">
+              <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-secondary text-xs font-medium hover:border-tvp-accent-cyan hover:text-tvp-accent-cyan transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add to Set
+              </button>
+              <button class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-accent-cyan text-black hover:bg-tvp-accent-cyan/80 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+              </button>
+
+              <!-- Context Menu Button -->
+              <div class="relative">
+                <button onclick="event.stopPropagation(); toggleContextMenu(this)" class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-muted hover:text-tvp-text-primary hover:border-tvp-border-default transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/>
+                  </svg>
+                </button>
+
+                <!-- Context Menu Dropdown -->
+                <div class="context-menu hidden absolute right-0 bottom-full mb-2 z-50 w-44 py-1.5 rounded-lg bg-tvp-bg-elevated border border-tvp-border-default shadow-lg">
+                  <button class="w-full px-3 py-2 text-left text-sm text-tvp-text-secondary hover:text-tvp-text-primary hover:bg-tvp-bg-tertiary flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                    </svg>
+                    Add to Crate
+                  </button>
+                  <button class="w-full px-3 py-2 text-left text-sm text-tvp-text-secondary hover:text-tvp-text-primary hover:bg-tvp-bg-tertiary flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                    </svg>
+                    Share
+                  </button>
+                  <button class="w-full px-3 py-2 text-left text-sm text-tvp-text-secondary hover:text-tvp-text-primary hover:bg-tvp-bg-tertiary flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    View Details
+                  </button>
+                  <button class="w-full px-3 py-2 text-left text-sm text-tvp-text-secondary hover:text-tvp-accent-cyan hover:bg-tvp-bg-tertiary flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                    More Like This
+                  </button>
+                  <div class="border-t border-tvp-border-subtle my-1"></div>
+                  <button class="w-full px-3 py-2 text-left text-sm text-tvp-text-muted hover:text-tvp-status-error hover:bg-tvp-bg-tertiary flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
+                    </svg>
+                    Report Issue
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card 2 - HOT badge -->
+        <div class="relative bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl overflow-hidden cursor-pointer card-hover transition-all duration-200">
+          <div class="relative aspect-video bg-tvp-bg-tertiary overflow-hidden group">
+            <img src="https://picsum.photos/320/180?random=2" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-12 h-12 rounded-full bg-tvp-accent-cyan flex items-center justify-center">
+                <svg class="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+            <div class="absolute top-2 left-10 flex gap-1.5">
+              <span class="px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-tvp-accent-coral to-tvp-status-warning text-white rounded">HOT</span>
+            </div>
+            <button class="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 text-white/70 hover:text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-all z-10">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            </button>
+            <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold quality-1080p">1080p</span>
+            <span class="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 text-white text-[11px] font-mono rounded">3:12</span>
+          </div>
+          <div class="p-3.5">
+            <div class="flex items-center gap-1.5 mb-1.5 text-[13px] min-w-0">
+              <span class="text-tvp-text-secondary flex-shrink-0 truncate max-w-[35%]">ROSE & Bruno Mars</span>
+              <span class="text-tvp-border-subtle flex-shrink-0">|</span>
+              <span class="font-semibold text-tvp-text-primary truncate">APT.</span>
+              <span class="text-tvp-border-subtle flex-shrink-0">|</span>
+              <span class="text-tvp-text-muted truncate text-[11px]">Atlantic</span>
+            </div>
+            <div class="flex items-center gap-2 font-mono text-[11px] text-tvp-text-muted mb-3">
+              <span>148 BPM</span><span>•</span><span class="text-tvp-accent-cyan">E</span>
+              <span>•</span><span class="flex items-center gap-0.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>12.8K</span>
+            </div>
+            <div class="flex gap-2">
+              <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-secondary text-xs font-medium hover:border-tvp-accent-cyan hover:text-tvp-accent-cyan transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Add to Set
+              </button>
+              <button class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-accent-cyan text-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></button>
+              <button class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-muted"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card 3 - NEW badge, Favorited -->
+        <div class="relative bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl overflow-hidden cursor-pointer card-hover transition-all duration-200">
+          <div class="relative aspect-video bg-tvp-bg-tertiary overflow-hidden group">
+            <img src="https://picsum.photos/320/180?random=3" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-12 h-12 rounded-full bg-tvp-accent-cyan flex items-center justify-center">
+                <svg class="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+            <div class="absolute top-2 left-10 flex gap-1.5">
+              <span class="px-1.5 py-0.5 text-[10px] font-bold bg-tvp-accent-coral text-white rounded">NEW</span>
+            </div>
+            <!-- Favorited Heart (filled, always visible) -->
+            <button class="absolute top-2 right-2 p-1.5 rounded-lg bg-tvp-accent-coral/90 text-white z-10">
+              <svg class="w-4 h-4" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            </button>
+            <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold quality-1080p">1080p</span>
+            <span class="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 text-white text-[11px] font-mono rounded">4:02</span>
+          </div>
+          <div class="p-3.5">
+            <div class="flex items-center gap-1.5 mb-1.5 text-[13px] min-w-0">
+              <span class="text-tvp-text-secondary flex-shrink-0 truncate max-w-[35%]">Kendrick Lamar</span>
+              <span class="text-tvp-border-subtle flex-shrink-0">|</span>
+              <span class="font-semibold text-tvp-text-primary truncate">Not Like Us</span>
+              <span class="text-tvp-border-subtle flex-shrink-0">|</span>
+              <span class="text-tvp-text-muted truncate text-[11px]">pgLang</span>
+            </div>
+            <div class="flex items-center gap-2 font-mono text-[11px] text-tvp-text-muted mb-3">
+              <span>100 BPM</span><span>•</span><span class="text-tvp-accent-cyan">C#m</span>
+              <span>•</span><span class="flex items-center gap-0.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>28.5K</span>
+            </div>
+            <div class="flex gap-2">
+              <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-secondary text-xs font-medium hover:border-tvp-accent-cyan hover:text-tvp-accent-cyan transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Add to Set
+              </button>
+              <button class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-accent-cyan text-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></button>
+              <button class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-muted"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card 4 -->
+        <div class="relative bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl overflow-hidden cursor-pointer card-hover transition-all duration-200">
+          <div class="relative aspect-video bg-tvp-bg-tertiary overflow-hidden group">
+            <img src="https://picsum.photos/320/180?random=4" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-12 h-12 rounded-full bg-tvp-accent-cyan flex items-center justify-center">
+                <svg class="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+            <button class="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 text-white/70 hover:text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-all z-10">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            </button>
+            <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold quality-720p">720p</span>
+            <span class="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 text-white text-[11px] font-mono rounded">3:28</span>
+          </div>
+          <div class="p-3.5">
+            <div class="flex items-center gap-1.5 mb-1.5 text-[13px] min-w-0">
+              <span class="text-tvp-text-secondary flex-shrink-0 truncate max-w-[35%]">Post Malone ft. Morgan</span>
+              <span class="text-tvp-border-subtle flex-shrink-0">|</span>
+              <span class="font-semibold text-tvp-text-primary truncate">I Had Some Help</span>
+            </div>
+            <div class="flex items-center gap-2 font-mono text-[11px] text-tvp-text-muted mb-3">
+              <span>106 BPM</span><span>•</span><span class="text-tvp-accent-cyan">G</span>
+              <span>•</span><span class="flex items-center gap-0.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>8.9K</span>
+            </div>
+            <div class="flex gap-2">
+              <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-secondary text-xs font-medium hover:border-tvp-accent-cyan hover:text-tvp-accent-cyan transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Add to Set
+              </button>
+              <button class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-accent-cyan text-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></button>
+              <button class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-muted"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card 5 -->
+        <div class="relative bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl overflow-hidden cursor-pointer card-hover transition-all duration-200">
+          <div class="relative aspect-video bg-tvp-bg-tertiary overflow-hidden group">
+            <img src="https://picsum.photos/320/180?random=5" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-12 h-12 rounded-full bg-tvp-accent-cyan flex items-center justify-center">
+                <svg class="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+            <button class="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 text-white/70 hover:text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-all z-10">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            </button>
+            <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold quality-1080p">1080p</span>
+            <span class="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 text-white text-[11px] font-mono rounded">4:15</span>
+          </div>
+          <div class="p-3.5">
+            <div class="flex items-center gap-1.5 mb-1.5 text-[13px] min-w-0">
+              <span class="text-tvp-text-secondary flex-shrink-0 truncate max-w-[35%]">Lady Gaga & Bruno</span>
+              <span class="text-tvp-border-subtle flex-shrink-0">|</span>
+              <span class="font-semibold text-tvp-text-primary truncate">Die With A Smile</span>
+            </div>
+            <div class="flex items-center gap-2 font-mono text-[11px] text-tvp-text-muted mb-3">
+              <span>158 BPM</span><span>•</span><span class="text-tvp-accent-cyan">Fm</span>
+              <span>•</span><span class="flex items-center gap-0.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>11.2K</span>
+            </div>
+            <div class="flex gap-2">
+              <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-secondary text-xs font-medium hover:border-tvp-accent-cyan hover:text-tvp-accent-cyan transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Add to Set
+              </button>
+              <button class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-accent-cyan text-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></button>
+              <button class="flex items-center justify-center w-9 h-9 rounded-lg bg-tvp-bg-tertiary border border-tvp-border-subtle text-tvp-text-muted"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: For You (Draggable) -->
+    <section class="mb-10 pt-8 border-t border-white/5">
+      <div class="flex items-center gap-3 py-3 cursor-pointer select-none">
+        <button class="drag-handle w-8 h-8 flex items-center justify-center rounded text-tvp-text-muted opacity-60 hover:opacity-100 hover:text-tvp-accent-cyan hover:bg-tvp-accent-cyan/10 transition-all">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+            <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+          </svg>
+        </button>
+        <h2 class="section-title flex-1">For You</h2>
+        <button class="text-tvp-text-secondary text-sm font-medium hover:text-tvp-accent-cyan hover:underline">See all</button>
+        <div class="w-7 h-7 flex items-center justify-center text-tvp-text-muted">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-tvp-text-muted text-sm mb-4">Based on your download history and preferences</p>
+
+      <!-- More cards would go here -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div class="relative bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl overflow-hidden cursor-pointer card-hover transition-all duration-200 opacity-60">
+          <div class="aspect-video bg-tvp-bg-tertiary flex items-center justify-center">
+            <span class="text-tvp-text-muted">More personalized content...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Latest Releases (Draggable) -->
+    <section class="mb-10 pt-8 border-t border-white/5">
+      <div class="flex items-center gap-3 py-3 cursor-pointer select-none">
+        <button class="drag-handle w-8 h-8 flex items-center justify-center rounded text-tvp-text-muted opacity-60 hover:opacity-100 hover:text-tvp-accent-cyan hover:bg-tvp-accent-cyan/10 transition-all">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+            <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+          </svg>
+        </button>
+        <h2 class="section-title flex-1">Latest Releases</h2>
+        <button class="text-tvp-text-secondary text-sm font-medium hover:text-tvp-accent-cyan hover:underline">See all</button>
+        <div class="w-7 h-7 flex items-center justify-center text-tvp-text-muted">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div class="relative bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl overflow-hidden cursor-pointer card-hover transition-all duration-200 opacity-60">
+          <div class="aspect-video bg-tvp-bg-tertiary flex items-center justify-center">
+            <span class="text-tvp-text-muted">New releases this week...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Notification (example) -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-tvp-bg-elevated border border-tvp-border-default rounded-full shadow-lg flex items-center gap-2 hidden z-50">
+    <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+    </svg>
+    <span id="toast-message" class="text-sm">Added to favorites</span>
+  </div>
+
+  <script>
+    // Toggle favorite
+    function toggleFavorite(btn) {
+      const svg = btn.querySelector('svg');
+      const isFavorited = svg.getAttribute('fill') === 'currentColor';
+
+      if (isFavorited) {
+        svg.setAttribute('fill', 'none');
+        btn.classList.remove('bg-tvp-accent-coral/90', 'text-white');
+        btn.classList.add('bg-black/50', 'text-white/70');
+        showToast('Removed from favorites');
+      } else {
+        svg.setAttribute('fill', 'currentColor');
+        btn.classList.add('bg-tvp-accent-coral/90', 'text-white');
+        btn.classList.remove('bg-black/50', 'text-white/70');
+        showToast('Added to favorites');
+      }
+    }
+
+    // Toggle context menu
+    function toggleContextMenu(btn) {
+      const menu = btn.nextElementSibling;
+      const allMenus = document.querySelectorAll('.context-menu');
+
+      // Close all other menus
+      allMenus.forEach(m => {
+        if (m !== menu) m.classList.add('hidden');
+      });
+
+      menu.classList.toggle('hidden');
+    }
+
+    // Close menus on outside click
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.context-menu') && !e.target.closest('[onclick*="toggleContextMenu"]')) {
+        document.querySelectorAll('.context-menu').forEach(m => m.classList.add('hidden'));
+      }
+    });
+
+    // Show toast
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      toastMessage.textContent = message;
+      toast.classList.remove('hidden');
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2000);
+    }
+
+    // Open preview modal (placeholder)
+    function openPreview(card) {
+      const title = card.querySelector('.font-semibold').textContent;
+      alert(`Preview: ${title}\n\n(In the React version, this opens a full preview modal with version selection and quality options)`);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,2629 @@
+<!DOCTYPE html>
+<!--
+  THE VIDEO POOL - Complete Redesign Prototype v3.0 CRIMSON
+  Version: 3.0 | January 2026
+
+  COLOR SCHEME: Crimson Nightclub (Council Winner - 8 votes)
+  - Primary: #E31B23 (Crimson Red)
+  - Accent: #FFD700 (Gold)
+  - Background: #0D0D0D (Deep Black)
+
+  NEW FEATURES IN V3:
+  ✓ Crimson Nightclub color scheme
+  ✓ Infrared V logo with first-load animation
+  ✓ Request System modal
+  ✓ Recently Downloaded History
+  ✓ Wishlist/Watch List
+  ✓ Bulk Selection mode
+-->
+<html lang="en">
+<head>
+  <script>
+    (function() {
+      const theme = localStorage.getItem('tvp-theme');
+      if (theme === 'light') document.documentElement.classList.add('light');
+      // First-load animation flag
+      if (!sessionStorage.getItem('tvp-logo-animated')) {
+        document.documentElement.classList.add('first-load');
+        sessionStorage.setItem('tvp-logo-animated', 'true');
+      }
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Professional Video DJ Platform</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230D0D0D'/><path d='M8 6 L24 16 L8 26 Z' fill='%23E31B23'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CRIMSON NIGHTCLUB COLOR SCHEME
+       Council Winner: 8 votes
+       ============================================ */
+    :root {
+      --bg-primary: #0D0D0D;
+      --bg-secondary: #141414;
+      --bg-tertiary: #1A1A1A;
+      --bg-elevated: #222222;
+      --text-primary: #F5F5F5;
+      --text-secondary: #A0A0A0;
+      --text-muted: #666666;
+      --text-disabled: #444444;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.1);
+      --border-strong: rgba(255, 255, 255, 0.15);
+
+      /* CRIMSON PRIMARY */
+      --accent-primary: #E31B23;
+      --accent-primary-hover: #FF2D36;
+      --accent-primary-glow: rgba(227, 27, 35, 0.3);
+      --accent-primary-subtle: rgba(227, 27, 35, 0.12);
+
+      /* GOLD ACCENT */
+      --accent-gold: #FFD700;
+      --accent-gold-hover: #FFE033;
+      --accent-gold-glow: rgba(255, 215, 0, 0.25);
+      --accent-gold-subtle: rgba(255, 215, 0, 0.1);
+
+      /* STATUS COLORS */
+      --success: #00E676;
+      --warning: #FFAB00;
+      --error: #FF4757;
+      --info: #3B82F6;
+
+      /* LEGACY MAPPINGS */
+      --accent-cyan: var(--accent-primary);
+      --accent-cyan-hover: var(--accent-primary-hover);
+      --accent-cyan-glow: var(--accent-primary-glow);
+      --accent-cyan-subtle: var(--accent-primary-subtle);
+      --accent-coral: var(--accent-gold);
+      --accent-coral-hover: var(--accent-gold-hover);
+      --accent-coral-glow: var(--accent-gold-glow);
+
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-elevated: 0 8px 40px rgba(0, 0, 0, 0.5);
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Plus Jakarta Sans', var(--font-primary);
+      --font-mono: 'JetBrains Mono', monospace;
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 150ms;
+      --duration-normal: 200ms;
+    }
+
+    .light {
+      --bg-primary: #F8F8F8;
+      --bg-secondary: #FFFFFF;
+      --bg-tertiary: #EEEEEE;
+      --bg-elevated: #FFFFFF;
+      --text-primary: #0D0D0D;
+      --text-secondary: #555555;
+      --text-muted: #777777;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --border-default: rgba(0, 0, 0, 0.1);
+      --accent-primary: #C41720;
+      --accent-primary-hover: #E31B23;
+      --accent-primary-glow: rgba(196, 23, 32, 0.2);
+      --accent-primary-subtle: rgba(196, 23, 32, 0.08);
+      --accent-gold: #D4A700;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-primary);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================================
+       INFRARED V LOGO - First Load Animation
+       ============================================ */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo__icon {
+      width: 44px;
+      height: 44px;
+      position: relative;
+    }
+
+    .logo__v {
+      width: 100%;
+      height: 100%;
+      fill: var(--accent-primary);
+      filter: drop-shadow(0 0 0 transparent);
+      transition: filter 0.3s ease;
+    }
+
+    .logo:hover .logo__v {
+      filter: drop-shadow(0 0 12px var(--accent-primary-glow));
+    }
+
+    /* First-load animation */
+    .first-load .logo__icon {
+      animation: logoEntrance 2s ease-out forwards;
+    }
+
+    .first-load .logo__v {
+      animation: logoGlow 2s ease-out forwards;
+    }
+
+    @keyframes logoEntrance {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes logoGlow {
+      0% { filter: drop-shadow(0 0 0 transparent); }
+      50% { filter: drop-shadow(0 0 20px var(--accent-primary)); }
+      100% { filter: drop-shadow(0 0 0 transparent); }
+    }
+
+    .logo__text {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .logo__text span {
+      color: var(--accent-primary);
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      height: 72px;
+      padding: 0 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* PROMINENT SEARCH BAR */
+    .search-bar {
+      flex: 1;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-bar__container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-width: 500px;
+      padding: 12px 18px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-subtle);
+      border-radius: 12px;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .search-bar__container:focus-within {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 4px var(--accent-primary-subtle);
+      background: var(--bg-elevated);
+    }
+
+    .search-bar__icon { width: 22px; height: 22px; color: var(--text-muted); flex-shrink: 0; }
+
+    .search-bar__input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 15px;
+      outline: none;
+    }
+
+    .search-bar__input::placeholder { color: var(--text-muted); }
+
+    .search-bar__advanced {
+      padding: 6px 12px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .search-bar__advanced:hover {
+      background: var(--accent-primary-subtle);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .search-bar__kbd {
+      padding: 4px 8px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header__nav { display: flex; align-items: center; gap: 4px; }
+
+    .nav__link {
+      padding: 8px 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all var(--duration-fast) var(--ease-out);
+      cursor: pointer;
+    }
+
+    .nav__link:hover { background: var(--accent-primary-subtle); color: var(--text-primary); }
+    .nav__link--active { background: var(--accent-primary-subtle); color: var(--accent-primary); }
+
+    .header__actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+    /* Wishlist Button in Header */
+    .wishlist-btn {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .wishlist-btn:hover {
+      background: var(--accent-gold-subtle);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+
+    .wishlist-btn svg { width: 20px; height: 20px; }
+
+    .wishlist-btn__count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      background: var(--accent-gold);
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .theme-toggle:hover {
+      background: var(--accent-primary-subtle);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .theme-toggle svg { width: 20px; height: 20px; }
+    .theme-toggle__sun { display: none; }
+    .theme-toggle__moon { display: block; }
+    .light .theme-toggle__sun { display: block; }
+    .light .theme-toggle__moon { display: none; }
+
+    .user-menu {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-gold) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* ============================================
+       GENRE NAV WITH MEGA MENU
+       ============================================ */
+    .genre-nav {
+      position: sticky;
+      top: 72px;
+      z-index: 90;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 24px;
+    }
+
+    .genre-nav__list {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 12px 0;
+    }
+
+    .genre-nav__list::-webkit-scrollbar { display: none; }
+
+    .genre-nav__item {
+      position: relative;
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .genre-nav__item:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .genre-nav__item--active {
+      background: var(--accent-primary-subtle);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .genre-nav__item svg { width: 12px; height: 12px; margin-left: 4px; vertical-align: middle; }
+
+    .mega-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 500px;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      box-shadow: var(--shadow-elevated);
+      display: none;
+      z-index: 100;
+    }
+
+    .genre-nav__item:hover .mega-menu { display: block; }
+
+    .mega-menu__title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .mega-menu__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+    .mega-menu__link {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .mega-menu__link:hover {
+      background: var(--accent-primary-subtle);
+      color: var(--accent-primary);
+    }
+
+    .mega-menu__section { margin-bottom: 16px; }
+    .mega-menu__section:last-child { margin-bottom: 0; }
+
+    /* ============================================
+       FILTER BAR WITH BULK MODE
+       ============================================ */
+    .filter-bar {
+      position: sticky;
+      top: 120px;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .bulk-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .bulk-toggle:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    .bulk-toggle--active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: #fff;
+    }
+
+    .bulk-toggle svg { width: 16px; height: 16px; }
+
+    .bulk-actions {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      background: var(--accent-primary-subtle);
+      border: 1px solid var(--accent-primary);
+      border-radius: 8px;
+    }
+
+    .bulk-actions--visible { display: flex; }
+
+    .bulk-actions__count {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-primary);
+    }
+
+    .bulk-actions__btn {
+      padding: 6px 12px;
+      background: var(--accent-primary);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .bulk-actions__btn:hover { background: var(--accent-primary-hover); }
+
+    .bulk-actions__btn--secondary {
+      background: transparent;
+      border: 1px solid var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .filter-bar__filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .filter-select {
+      padding: 8px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .filter-select:hover { border-color: var(--border-default); color: var(--text-primary); }
+    .filter-select:focus { outline: none; border-color: var(--accent-primary); }
+
+    .filter-bar__spacer { flex: 1; }
+
+    .request-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--accent-gold-subtle);
+      border: 1px solid var(--accent-gold);
+      border-radius: 8px;
+      color: var(--accent-gold);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .request-btn:hover { background: var(--accent-gold); color: #000; }
+    .request-btn svg { width: 16px; height: 16px; }
+
+    .view-toggle {
+      display: flex;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .view-toggle__btn {
+      width: 36px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .view-toggle__btn:hover { color: var(--text-secondary); }
+    .view-toggle__btn--active { background: var(--accent-primary); color: #fff; }
+    .view-toggle__btn svg { width: 18px; height: 18px; }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main { padding: 24px; min-height: calc(100vh - 200px); }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-header__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .section-header__link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .section-header__link:hover { opacity: 0.8; }
+
+    /* ============================================
+       RECENTLY DOWNLOADED SECTION
+       ============================================ */
+    .recent-downloads {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+
+    .recent-downloads__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .recent-downloads__title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .recent-downloads__title svg { width: 20px; height: 20px; color: var(--accent-gold); }
+
+    .recent-downloads__list {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+    }
+
+    .recent-downloads__list::-webkit-scrollbar { display: none; }
+
+    .recent-item {
+      flex: 0 0 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .recent-item:hover { background: var(--bg-elevated); }
+
+    .recent-item__thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    .recent-item__thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .recent-item__title {
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .recent-item__date { font-size: 11px; color: var(--text-muted); }
+
+    /* ============================================
+       FOR YOU SECTION (PERSONALIZED)
+       ============================================ */
+    .for-you-section {
+      background: linear-gradient(135deg, var(--accent-primary-subtle) 0%, var(--accent-gold-subtle) 100%);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .for-you-section .section-header__title {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ============================================
+       WEEKLY DISCOVERY PACK
+       ============================================ */
+    .discovery-pack {
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent-primary);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .discovery-pack__icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-gold) 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      flex-shrink: 0;
+    }
+
+    .discovery-pack__content { flex: 1; }
+
+    .discovery-pack__title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .discovery-pack__subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; }
+
+    .discovery-pack__meta { display: flex; gap: 16px; font-size: 13px; color: var(--text-muted); }
+
+    .discovery-pack__actions { display: flex; gap: 12px; }
+
+    /* ============================================
+       SWIMLANES
+       ============================================ */
+    .swimlane { margin-bottom: 32px; }
+
+    .swimlane__scroll {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      padding-bottom: 8px;
+      margin: 0 -24px;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .swimlane__scroll::-webkit-scrollbar { display: none; }
+    .swimlane__item { flex: 0 0 220px; scroll-snap-align: start; }
+
+    /* ============================================
+       VIDEO CARD WITH WISHLIST & BULK SELECT
+       ============================================ */
+    .video-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all var(--duration-normal) var(--ease-out);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .video-card:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--accent-primary-glow);
+    }
+
+    /* Bulk selection checkbox */
+    .video-card__select {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 24px;
+      height: 24px;
+      background: rgba(0,0,0,0.6);
+      border: 2px solid #fff;
+      border-radius: 6px;
+      z-index: 10;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .bulk-mode .video-card__select { display: flex; }
+    .video-card__select:hover { background: var(--accent-primary); border-color: var(--accent-primary); }
+    .video-card__select--checked {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .video-card__select svg { width: 16px; height: 16px; color: #fff; display: none; }
+    .video-card__select--checked svg { display: block; }
+
+    /* Wishlist heart button */
+    .video-card__wishlist {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__wishlist { opacity: 1; }
+    .video-card__wishlist:hover { background: var(--accent-gold); color: #000; }
+    .video-card__wishlist--active { opacity: 1; background: var(--accent-gold); color: #000; }
+    .video-card__wishlist svg { width: 18px; height: 18px; }
+
+    .video-card__thumbnail {
+      position: relative;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      background: var(--bg-tertiary);
+    }
+
+    .video-card__thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s var(--ease-out);
+    }
+
+    .video-card:hover .video-card__thumbnail img { transform: scale(1.08); }
+
+    .video-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity var(--duration-normal) var(--ease-out);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-card:hover .video-card__overlay { opacity: 1; }
+
+    .video-card__play {
+      width: 56px;
+      height: 56px;
+      background: var(--accent-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      transform: scale(0.8);
+      opacity: 0;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__play { transform: scale(1); opacity: 1; }
+    .video-card__play svg { width: 24px; height: 24px; margin-left: 3px; }
+
+    /* BADGES */
+    .video-card__badges { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 5; }
+    .bulk-mode .video-card__badges { left: 44px; }
+
+    .badge { padding: 4px 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; border-radius: 4px; }
+    .badge-new { background: var(--accent-primary); color: #fff; }
+    .badge-exclusive { background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-gold) 100%); color: #fff; }
+    .badge-hot { background: linear-gradient(135deg, var(--accent-gold) 0%, var(--warning) 100%); color: #000; }
+    .badge-clean { background: var(--success); color: #000; }
+
+    /* QUALITY BADGES */
+    .video-card__quality {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .video-card__quality--4k { background: var(--accent-primary); color: #fff; }
+    .video-card__quality--hd { background: rgba(255,255,255,0.15); color: #fff; font-size: 10px; }
+    .video-card__quality--sd { background: var(--warning); color: #000; font-size: 10px; }
+
+    .video-card__duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      padding: 3px 8px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      border-radius: 4px;
+    }
+
+    .video-card__versions {
+      position: absolute;
+      top: 8px;
+      right: 48px;
+      padding: 4px 8px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--accent-primary);
+      color: var(--accent-primary);
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .video-card__content { padding: 14px; }
+
+    .video-card__title {
+      font-size: 14px;
+      font-weight: 600;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      min-height: 36px;
+    }
+
+    .video-card__artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 10px;
+    }
+
+    .video-card__meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .video-card__actions { display: flex; gap: 8px; }
+
+    /* ============================================
+       BUTTONS
+       ============================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn svg { width: 16px; height: 16px; }
+
+    .btn-primary { flex: 1; background: var(--accent-primary); color: #fff; }
+    .btn-primary:hover { background: var(--accent-primary-hover); box-shadow: 0 4px 15px var(--accent-primary-glow); }
+
+    .btn-secondary { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+    .btn-secondary:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+    .btn-icon { width: 40px; height: 40px; padding: 0; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); color: var(--text-secondary); }
+    .btn-icon:hover { background: var(--accent-primary-subtle); border-color: var(--accent-primary); color: var(--accent-primary); }
+
+    /* ============================================
+       VIDEO GRID
+       ============================================ */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    /* ============================================
+       PAGINATION
+       ============================================ */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 32px 0;
+    }
+
+    .pagination__btn {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pagination__btn:hover { background: var(--accent-primary-subtle); border-color: var(--accent-primary); color: var(--accent-primary); }
+    .pagination__btn--active { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
+    .pagination__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pagination__info { padding: 0 16px; font-size: 14px; color: var(--text-muted); }
+
+    /* ============================================
+       REQUEST MODAL
+       ============================================ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay--open { display: flex; }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow: hidden;
+    }
+
+    .modal__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .modal__title { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+
+    .modal__close {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal__close:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+    .modal__body { padding: 24px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: var(--font-primary);
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-primary-subtle);
+    }
+
+    .form-textarea { min-height: 100px; resize: vertical; }
+
+    .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+    .modal__footer {
+      display: flex;
+      gap: 12px;
+      padding: 20px 24px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .modal__footer .btn { flex: 1; }
+
+    /* ============================================
+       WISHLIST DRAWER
+       ============================================ */
+    .wishlist-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 400px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      z-index: 300;
+      transform: translateX(100%);
+      transition: transform 0.3s var(--ease-out);
+    }
+
+    .wishlist-drawer--open { transform: translateX(0); }
+
+    .wishlist-drawer__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .wishlist-drawer__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .wishlist-drawer__title svg { width: 22px; height: 22px; color: var(--accent-gold); }
+
+    .wishlist-drawer__close {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wishlist-drawer__close:hover { background: var(--bg-tertiary); }
+
+    .wishlist-drawer__list { padding: 16px; overflow-y: auto; max-height: calc(100vh - 140px); }
+
+    .wishlist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .wishlist-item:last-child { margin-bottom: 0; }
+
+    .wishlist-item__thumb {
+      width: 80px;
+      height: 45px;
+      border-radius: 6px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .wishlist-item__thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .wishlist-item__info { flex: 1; min-width: 0; }
+    .wishlist-item__title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wishlist-item__artist { font-size: 12px; color: var(--text-muted); }
+
+    .wishlist-item__actions { display: flex; gap: 6px; }
+
+    .wishlist-item__btn {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-primary);
+      border: none;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wishlist-item__btn:hover { color: var(--text-primary); }
+    .wishlist-item__btn--download { background: var(--accent-primary); color: #fff; }
+    .wishlist-item__btn--download:hover { background: var(--accent-primary-hover); }
+    .wishlist-item__btn svg { width: 16px; height: 16px; }
+
+    .wishlist-drawer__footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .wishlist-drawer__footer .btn { width: 100%; }
+
+    /* ============================================
+       VERSION DRAWER
+       ============================================ */
+    .version-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 450px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      z-index: 300;
+      transform: translateX(100%);
+      transition: transform 0.3s var(--ease-out);
+    }
+
+    .version-drawer--open { transform: translateX(0); }
+
+    .version-drawer__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .version-drawer__title { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+
+    .version-drawer__close {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .version-drawer__close:hover { background: var(--bg-tertiary); }
+
+    .version-drawer__video { padding: 20px; border-bottom: 1px solid var(--border-subtle); }
+
+    .version-drawer__video-info { display: flex; gap: 16px; }
+
+    .version-drawer__thumb { width: 120px; height: 68px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+    .version-drawer__thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .version-drawer__details h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .version-drawer__details p { font-size: 14px; color: var(--text-secondary); }
+
+    .version-drawer__list { padding: 20px; overflow-y: auto; max-height: calc(100vh - 300px); }
+
+    .version-drawer__section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .version-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .version-item:hover { border-color: var(--accent-primary); background: var(--bg-elevated); }
+
+    .version-item__icon {
+      width: 44px;
+      height: 44px;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .version-item__icon svg { width: 22px; height: 22px; color: var(--accent-primary); }
+    .version-item__icon--audio svg { color: var(--accent-gold); }
+
+    .version-item__info { flex: 1; min-width: 0; }
+    .version-item__name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .version-item__meta { font-size: 12px; color: var(--text-muted); }
+
+    .version-item__download {
+      padding: 8px 14px;
+      background: var(--accent-primary);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .version-item__download:hover { background: var(--accent-primary-hover); }
+    .version-item__download--audio { background: var(--accent-gold); color: #000; }
+    .version-item__download--audio:hover { background: var(--accent-gold-hover); }
+
+    .version-drawer__footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .download-all-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-gold) 100%);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .download-all-btn:hover { box-shadow: 0 4px 20px var(--accent-primary-glow); }
+
+    /* ============================================
+       FLOATING DOWNLOAD FAB
+       ============================================ */
+    .download-fab { position: fixed; bottom: 24px; right: 24px; z-index: 200; }
+
+    .download-fab__btn {
+      width: 60px;
+      height: 60px;
+      background: var(--accent-primary);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px var(--accent-primary-glow);
+      position: relative;
+    }
+
+    .download-fab__btn:hover { transform: scale(1.1); box-shadow: 0 8px 30px var(--accent-primary-glow); }
+    .download-fab__btn svg { width: 28px; height: 28px; }
+
+    .download-fab__count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 6px;
+      background: var(--accent-gold);
+      color: #000;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .download-fab__progress {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 3px solid var(--bg-tertiary);
+      border-top-color: var(--accent-primary);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .download-fab--idle .download-fab__progress { display: none; }
+
+    /* ============================================
+       QUEUE PANEL
+       ============================================ */
+    .queue-panel {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 380px;
+      max-height: 500px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      box-shadow: var(--shadow-elevated);
+      z-index: 199;
+      transform: translateY(20px) scale(0.95);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s var(--ease-out);
+    }
+
+    .queue-panel--open { transform: translateY(0) scale(1); opacity: 1; visibility: visible; }
+
+    .queue-panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .queue-panel__title { font-size: 16px; font-weight: 600; }
+    .queue-panel__status { font-size: 12px; color: var(--text-muted); }
+
+    .queue-panel__list { padding: 12px; max-height: 350px; overflow-y: auto; }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .queue-item:last-child { margin-bottom: 0; }
+
+    .queue-item__thumb { width: 56px; height: 32px; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+    .queue-item__thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .queue-item__info { flex: 1; min-width: 0; }
+    .queue-item__title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .queue-item__status { font-size: 11px; color: var(--text-muted); }
+
+    .queue-item__progress { height: 3px; background: var(--bg-primary); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+    .queue-item__progress-bar { height: 100%; background: var(--accent-primary); border-radius: 2px; transition: width 0.3s ease; }
+
+    .queue-item--complete .queue-item__status { color: var(--success); }
+
+    /* ============================================
+       TOAST NOTIFICATIONS
+       ============================================ */
+    .toast-container { position: fixed; top: 90px; right: 24px; z-index: 400; display: flex; flex-direction: column; gap: 12px; }
+
+    .toast {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      box-shadow: var(--shadow-elevated);
+      min-width: 320px;
+      max-width: 420px;
+      transform: translateX(120%);
+      opacity: 0;
+      transition: all 0.3s var(--ease-out);
+    }
+
+    .toast--show { transform: translateX(0); opacity: 1; }
+    .toast--success { border-left: 4px solid var(--success); }
+    .toast--error { border-left: 4px solid var(--error); }
+    .toast--info { border-left: 4px solid var(--accent-primary); }
+
+    .toast__icon { flex-shrink: 0; width: 20px; height: 20px; }
+    .toast__content { flex: 1; }
+    .toast__title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .toast__message { font-size: 13px; color: var(--text-secondary); }
+    .toast__close { padding: 4px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; }
+
+    /* ============================================
+       OVERLAY BACKDROP
+       ============================================ */
+    .overlay-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 250;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .overlay-backdrop--visible { opacity: 1; visibility: visible; }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 1024px) {
+      .search-bar__container { min-width: 300px; }
+      .header__nav { display: none; }
+    }
+
+    @media (max-width: 768px) {
+      .header { padding: 0 16px; gap: 12px; }
+      .search-bar__container { min-width: 200px; padding: 10px 14px; }
+      .search-bar__advanced, .search-bar__kbd { display: none; }
+      .main { padding: 16px; }
+      .filter-bar { flex-wrap: wrap; padding: 12px 16px; }
+      .discovery-pack { flex-direction: column; text-align: center; }
+      .discovery-pack__actions { justify-content: center; }
+      .video-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+      .version-drawer, .wishlist-drawer { width: 100%; }
+      .queue-panel { width: calc(100% - 48px); right: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <a href="#" class="logo">
+      <div class="logo__icon">
+        <svg class="logo__v" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="44" height="44" rx="10" fill="#0D0D0D"/>
+          <path d="M10 10 L22 34 L34 10" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="22" cy="22" r="3" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="logo__text">THE VIDEO <span>POOL</span></div>
+    </a>
+
+    <div class="search-bar">
+      <div class="search-bar__container">
+        <svg class="search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" class="search-bar__input" placeholder="Search videos, artists, genres..." id="mainSearch">
+        <button class="search-bar__advanced" onclick="toggleAdvancedSearch()">Advanced</button>
+        <span class="search-bar__kbd">⌘K</span>
+      </div>
+    </div>
+
+    <nav class="header__nav">
+      <a class="nav__link nav__link--active">Browse</a>
+      <a class="nav__link">New Releases</a>
+      <a class="nav__link">Charts</a>
+      <a class="nav__link">Playlists</a>
+    </nav>
+
+    <div class="header__actions">
+      <button class="wishlist-btn" onclick="toggleWishlistDrawer()" title="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <span class="wishlist-btn__count">3</span>
+      </button>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <svg class="theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg class="theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+      <div class="user-menu">DJ</div>
+    </div>
+  </header>
+
+  <!-- GENRE NAV -->
+  <nav class="genre-nav">
+    <div class="genre-nav__list">
+      <button class="genre-nav__item genre-nav__item--active">All Genres</button>
+      <button class="genre-nav__item">
+        Hip-Hop
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        <div class="mega-menu">
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">By Era</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">90s Hip-Hop</div>
+              <div class="mega-menu__link">2000s Hip-Hop</div>
+              <div class="mega-menu__link">2010s Hip-Hop</div>
+              <div class="mega-menu__link">Current Hits</div>
+            </div>
+          </div>
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">By Style</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">Trap</div>
+              <div class="mega-menu__link">Drill</div>
+              <div class="mega-menu__link">Boom Bap</div>
+              <div class="mega-menu__link">Southern</div>
+              <div class="mega-menu__link">West Coast</div>
+              <div class="mega-menu__link">East Coast</div>
+            </div>
+          </div>
+        </div>
+      </button>
+      <button class="genre-nav__item">
+        House
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        <div class="mega-menu">
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">Subgenres</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">Deep House</div>
+              <div class="mega-menu__link">Tech House</div>
+              <div class="mega-menu__link">Progressive</div>
+              <div class="mega-menu__link">Afro House</div>
+              <div class="mega-menu__link">Melodic House</div>
+              <div class="mega-menu__link">Vocal House</div>
+            </div>
+          </div>
+        </div>
+      </button>
+      <button class="genre-nav__item">
+        Latin
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        <div class="mega-menu">
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">Styles</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">Reggaeton</div>
+              <div class="mega-menu__link">Bachata</div>
+              <div class="mega-menu__link">Salsa</div>
+              <div class="mega-menu__link">Cumbia</div>
+              <div class="mega-menu__link">Regional Mexican</div>
+              <div class="mega-menu__link">Latin Pop</div>
+            </div>
+          </div>
+        </div>
+      </button>
+      <button class="genre-nav__item">R&B / Soul</button>
+      <button class="genre-nav__item">EDM</button>
+      <button class="genre-nav__item">Pop</button>
+      <button class="genre-nav__item">Rock</button>
+      <button class="genre-nav__item">Country</button>
+      <button class="genre-nav__item">Throwbacks</button>
+    </div>
+  </nav>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <button class="bulk-toggle" onclick="toggleBulkMode()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      Bulk Select
+    </button>
+
+    <div class="bulk-actions" id="bulkActions">
+      <span class="bulk-actions__count"><span id="selectedCount">0</span> selected</span>
+      <button class="bulk-actions__btn" onclick="bulkDownload()">Download All</button>
+      <button class="bulk-actions__btn bulk-actions__btn--secondary" onclick="bulkAddToWishlist()">Add to Wishlist</button>
+      <button class="bulk-actions__btn bulk-actions__btn--secondary" onclick="clearBulkSelection()">Clear</button>
+    </div>
+
+    <div class="filter-bar__filters">
+      <select class="filter-select">
+        <option>All Time</option>
+        <option>This Week</option>
+        <option>This Month</option>
+        <option>Last 3 Months</option>
+      </select>
+      <select class="filter-select">
+        <option>All Quality</option>
+        <option>4K Only</option>
+        <option>1080p HD</option>
+        <option>720p</option>
+      </select>
+      <select class="filter-select">
+        <option>All Versions</option>
+        <option>Clean Only</option>
+        <option>Explicit Only</option>
+        <option>Extended</option>
+      </select>
+    </div>
+
+    <div class="filter-bar__spacer"></div>
+
+    <button class="request-btn" onclick="openRequestModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+      </svg>
+      Request Content
+    </button>
+
+    <select class="filter-select">
+      <option>Sort: Newest</option>
+      <option>Sort: Most Popular</option>
+      <option>Sort: A-Z</option>
+      <option>Sort: BPM</option>
+    </select>
+
+    <div class="view-toggle">
+      <button class="view-toggle__btn view-toggle__btn--active" title="Grid view">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+      </button>
+      <button class="view-toggle__btn" title="List view">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <!-- RECENTLY DOWNLOADED -->
+    <section class="recent-downloads">
+      <div class="recent-downloads__header">
+        <div class="recent-downloads__title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+          </svg>
+          Recently Downloaded
+        </div>
+        <a href="#" class="section-header__link">View History →</a>
+      </div>
+      <div class="recent-downloads__list">
+        <div class="recent-item">
+          <div class="recent-item__thumb">
+            <img src="https://picsum.photos/160/90?random=101" alt="">
+          </div>
+          <div class="recent-item__title">Espresso</div>
+          <div class="recent-item__date">2 hours ago</div>
+        </div>
+        <div class="recent-item">
+          <div class="recent-item__thumb">
+            <img src="https://picsum.photos/160/90?random=102" alt="">
+          </div>
+          <div class="recent-item__title">Not Like Us</div>
+          <div class="recent-item__date">Yesterday</div>
+        </div>
+        <div class="recent-item">
+          <div class="recent-item__thumb">
+            <img src="https://picsum.photos/160/90?random=103" alt="">
+          </div>
+          <div class="recent-item__title">Beautiful Things</div>
+          <div class="recent-item__date">2 days ago</div>
+        </div>
+        <div class="recent-item">
+          <div class="recent-item__thumb">
+            <img src="https://picsum.photos/160/90?random=104" alt="">
+          </div>
+          <div class="recent-item__title">Lovin On Me</div>
+          <div class="recent-item__date">3 days ago</div>
+        </div>
+        <div class="recent-item">
+          <div class="recent-item__thumb">
+            <img src="https://picsum.photos/160/90?random=105" alt="">
+          </div>
+          <div class="recent-item__title">We Can't Be Friends</div>
+          <div class="recent-item__date">4 days ago</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WEEKLY DISCOVERY PACK -->
+    <section class="discovery-pack">
+      <div class="discovery-pack__icon">🎁</div>
+      <div class="discovery-pack__content">
+        <h2 class="discovery-pack__title">Your Weekly Discovery Pack</h2>
+        <p class="discovery-pack__subtitle">20 personalized picks based on your taste • Refreshes Monday</p>
+        <div class="discovery-pack__meta">
+          <span>📁 20 videos</span>
+          <span>⏱️ 1hr 24min</span>
+          <span>💾 4.2 GB total</span>
+        </div>
+      </div>
+      <div class="discovery-pack__actions">
+        <button class="btn btn-primary">Download All</button>
+        <button class="btn btn-secondary">Preview</button>
+      </div>
+    </section>
+
+    <!-- FOR YOU SECTION -->
+    <section class="for-you-section">
+      <div class="section-header">
+        <h2 class="section-header__title">✨ For You</h2>
+        <a href="#" class="section-header__link">See all →</a>
+      </div>
+      <div class="swimlane__scroll">
+        <div class="swimlane__item">
+          <div class="video-card" onclick="openVersionDrawer()">
+            <button class="video-card__select" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+            </button>
+            <button class="video-card__wishlist" onclick="event.stopPropagation(); toggleWishlist(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+            <div class="video-card__thumbnail">
+              <img src="https://picsum.photos/400/225?random=1" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+              </div>
+              <div class="video-card__badges"><span class="badge badge-new">NEW</span></div>
+              <span class="video-card__quality video-card__quality--4k">4K</span>
+              <span class="video-card__versions">4 versions</span>
+              <span class="video-card__duration">3:42</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">Espresso</h3>
+              <p class="video-card__artist">Sabrina Carpenter</p>
+              <div class="video-card__meta">
+                <span>126 BPM</span>
+                <span class="dot"></span>
+                <span>F Minor</span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn-primary">Download</button>
+                <button class="btn btn-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swimlane__item">
+          <div class="video-card" onclick="openVersionDrawer()">
+            <button class="video-card__select" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+            </button>
+            <button class="video-card__wishlist" onclick="event.stopPropagation(); toggleWishlist(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+            <div class="video-card__thumbnail">
+              <img src="https://picsum.photos/400/225?random=2" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+              </div>
+              <div class="video-card__badges"><span class="badge badge-hot">HOT</span></div>
+              <span class="video-card__quality video-card__quality--4k">4K</span>
+              <span class="video-card__versions">5 versions</span>
+              <span class="video-card__duration">4:18</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">Not Like Us</h3>
+              <p class="video-card__artist">Kendrick Lamar</p>
+              <div class="video-card__meta">
+                <span>100 BPM</span>
+                <span class="dot"></span>
+                <span>C Major</span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn-primary">Download</button>
+                <button class="btn btn-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swimlane__item">
+          <div class="video-card" onclick="openVersionDrawer()">
+            <button class="video-card__select" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+            </button>
+            <button class="video-card__wishlist" onclick="event.stopPropagation(); toggleWishlist(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+            <div class="video-card__thumbnail">
+              <img src="https://picsum.photos/400/225?random=3" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+              </div>
+              <div class="video-card__badges"><span class="badge badge-exclusive">EXCLUSIVE</span></div>
+              <span class="video-card__quality video-card__quality--hd">HD</span>
+              <span class="video-card__versions">3 versions</span>
+              <span class="video-card__duration">3:15</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">Beautiful Things</h3>
+              <p class="video-card__artist">Benson Boone</p>
+              <div class="video-card__meta">
+                <span>110 BPM</span>
+                <span class="dot"></span>
+                <span>D Major</span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn-primary">Download</button>
+                <button class="btn btn-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swimlane__item">
+          <div class="video-card" onclick="openVersionDrawer()">
+            <button class="video-card__select" onclick="event.stopPropagation(); toggleSelect(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+            </button>
+            <button class="video-card__wishlist" onclick="event.stopPropagation(); toggleWishlist(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+            <div class="video-card__thumbnail">
+              <img src="https://picsum.photos/400/225?random=4" alt="">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+              </div>
+              <span class="video-card__quality video-card__quality--4k">4K</span>
+              <span class="video-card__versions">4 versions</span>
+              <span class="video-card__duration">2:58</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">Lovin On Me</h3>
+              <p class="video-card__artist">Jack Harlow</p>
+              <div class="video-card__meta">
+                <span>116 BPM</span>
+                <span class="dot"></span>
+                <span>G Major</span>
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn-primary">Download</button>
+                <button class="btn btn-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRENDING NOW -->
+    <section class="swimlane">
+      <div class="section-header">
+        <h2 class="section-header__title">🔥 Trending Now</h2>
+        <a href="#" class="section-header__link">See all →</a>
+      </div>
+      <div class="video-grid">
+        <div class="video-card" onclick="openVersionDrawer()">
+          <button class="video-card__select" onclick="event.stopPropagation(); toggleSelect(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </button>
+          <button class="video-card__wishlist" onclick="event.stopPropagation(); toggleWishlist(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+          <div class="video-card__thumbnail">
+            <img src="https://picsum.photos/400/225?random=10" alt="">
+            <div class="video-card__overlay">
+              <div class="video-card__play">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+            </div>
+            <div class="video-card__badges"><span class="badge badge-new">NEW</span></div>
+            <span class="video-card__quality video-card__quality--4k">4K</span>
+            <span class="video-card__versions">4 versions</span>
+            <span class="video-card__duration">3:28</span>
+          </div>
+          <div class="video-card__content">
+            <h3 class="video-card__title">We Can't Be Friends</h3>
+            <p class="video-card__artist">Ariana Grande</p>
+            <div class="video-card__meta">
+              <span>118 BPM</span>
+              <span class="dot"></span>
+              <span>A Minor</span>
+            </div>
+            <div class="video-card__actions">
+              <button class="btn btn-primary">Download</button>
+              <button class="btn btn-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="video-card" onclick="openVersionDrawer()">
+          <button class="video-card__select" onclick="event.stopPropagation(); toggleSelect(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </button>
+          <button class="video-card__wishlist" onclick="event.stopPropagation(); toggleWishlist(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+          <div class="video-card__thumbnail">
+            <img src="https://picsum.photos/400/225?random=11" alt="">
+            <div class="video-card__overlay">
+              <div class="video-card__play">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+            </div>
+            <div class="video-card__badges"><span class="badge badge-hot">HOT</span></div>
+            <span class="video-card__quality video-card__quality--4k">4K</span>
+            <span class="video-card__versions">5 versions</span>
+            <span class="video-card__duration">3:45</span>
+          </div>
+          <div class="video-card__content">
+            <h3 class="video-card__title">Too Sweet</h3>
+            <p class="video-card__artist">Hozier</p>
+            <div class="video-card__meta">
+              <span>90 BPM</span>
+              <span class="dot"></span>
+              <span>E Major</span>
+            </div>
+            <div class="video-card__actions">
+              <button class="btn btn-primary">Download</button>
+              <button class="btn btn-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="video-card" onclick="openVersionDrawer()">
+          <button class="video-card__select" onclick="event.stopPropagation(); toggleSelect(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </button>
+          <button class="video-card__wishlist" onclick="event.stopPropagation(); toggleWishlist(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+          <div class="video-card__thumbnail">
+            <img src="https://picsum.photos/400/225?random=12" alt="">
+            <div class="video-card__overlay">
+              <div class="video-card__play">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+            </div>
+            <div class="video-card__badges"><span class="badge badge-clean">CLEAN</span></div>
+            <span class="video-card__quality video-card__quality--hd">HD</span>
+            <span class="video-card__versions">3 versions</span>
+            <span class="video-card__duration">2:54</span>
+          </div>
+          <div class="video-card__content">
+            <h3 class="video-card__title">I Had Some Help</h3>
+            <p class="video-card__artist">Post Malone ft. Morgan Wallen</p>
+            <div class="video-card__meta">
+              <span>108 BPM</span>
+              <span class="dot"></span>
+              <span>G Major</span>
+            </div>
+            <div class="video-card__actions">
+              <button class="btn btn-primary">Download</button>
+              <button class="btn btn-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="video-card" onclick="openVersionDrawer()">
+          <button class="video-card__select" onclick="event.stopPropagation(); toggleSelect(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </button>
+          <button class="video-card__wishlist" onclick="event.stopPropagation(); toggleWishlist(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+          <div class="video-card__thumbnail">
+            <img src="https://picsum.photos/400/225?random=13" alt="">
+            <div class="video-card__overlay">
+              <div class="video-card__play">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+            </div>
+            <div class="video-card__badges"><span class="badge badge-exclusive">EXCLUSIVE</span></div>
+            <span class="video-card__quality video-card__quality--4k">4K</span>
+            <span class="video-card__versions">4 versions</span>
+            <span class="video-card__duration">3:12</span>
+          </div>
+          <div class="video-card__content">
+            <h3 class="video-card__title">Million Dollar Baby</h3>
+            <p class="video-card__artist">Tommy Richman</p>
+            <div class="video-card__meta">
+              <span>104 BPM</span>
+              <span class="dot"></span>
+              <span>B Minor</span>
+            </div>
+            <div class="video-card__actions">
+              <button class="btn btn-primary">Download</button>
+              <button class="btn btn-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <button class="pagination__btn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="15,18 9,12 15,6"/></svg>
+      </button>
+      <button class="pagination__btn pagination__btn--active">1</button>
+      <button class="pagination__btn">2</button>
+      <button class="pagination__btn">3</button>
+      <button class="pagination__btn">4</button>
+      <button class="pagination__btn">5</button>
+      <span class="pagination__info">...</span>
+      <button class="pagination__btn">24</button>
+      <button class="pagination__btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="9,6 15,12 9,18"/></svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- VERSION DRAWER -->
+  <div class="version-drawer" id="versionDrawer">
+    <div class="version-drawer__header">
+      <h2 class="version-drawer__title">Available Versions</h2>
+      <button class="version-drawer__close" onclick="closeVersionDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="version-drawer__video">
+      <div class="version-drawer__video-info">
+        <div class="version-drawer__thumb">
+          <img src="https://picsum.photos/120/68?random=1" alt="">
+        </div>
+        <div class="version-drawer__details">
+          <h3>Espresso</h3>
+          <p>Sabrina Carpenter</p>
+        </div>
+      </div>
+    </div>
+    <div class="version-drawer__list">
+      <div class="version-drawer__section-title">Video Versions</div>
+      <div class="version-item">
+        <div class="version-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><path d="m10 8 6 4-6 4V8z"/></svg>
+        </div>
+        <div class="version-item__info">
+          <div class="version-item__name">Clean Version</div>
+          <div class="version-item__meta">4K • 245 MB • 3:42</div>
+        </div>
+        <button class="version-item__download">Download</button>
+      </div>
+      <div class="version-item">
+        <div class="version-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><path d="m10 8 6 4-6 4V8z"/></svg>
+        </div>
+        <div class="version-item__info">
+          <div class="version-item__name">Explicit Version</div>
+          <div class="version-item__meta">4K • 248 MB • 3:42</div>
+        </div>
+        <button class="version-item__download">Download</button>
+      </div>
+      <div class="version-item">
+        <div class="version-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><path d="m10 8 6 4-6 4V8z"/></svg>
+        </div>
+        <div class="version-item__info">
+          <div class="version-item__name">Extended Intro</div>
+          <div class="version-item__meta">4K • 312 MB • 4:28</div>
+        </div>
+        <button class="version-item__download">Download</button>
+      </div>
+      <div class="version-item">
+        <div class="version-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><path d="m10 8 6 4-6 4V8z"/></svg>
+        </div>
+        <div class="version-item__info">
+          <div class="version-item__name">Quick Outro</div>
+          <div class="version-item__meta">4K • 198 MB • 3:15</div>
+        </div>
+        <button class="version-item__download">Download</button>
+      </div>
+
+      <div class="version-drawer__section-title" style="margin-top: 20px;">Audio Only (MP3 320kbps)</div>
+      <div class="version-item">
+        <div class="version-item__icon version-item__icon--audio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <div class="version-item__info">
+          <div class="version-item__name">Clean Audio</div>
+          <div class="version-item__meta">MP3 320kbps • 8.5 MB</div>
+        </div>
+        <button class="version-item__download version-item__download--audio">Download</button>
+      </div>
+      <div class="version-item">
+        <div class="version-item__icon version-item__icon--audio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <div class="version-item__info">
+          <div class="version-item__name">Explicit Audio</div>
+          <div class="version-item__meta">MP3 320kbps • 8.6 MB</div>
+        </div>
+        <button class="version-item__download version-item__download--audio">Download</button>
+      </div>
+    </div>
+    <div class="version-drawer__footer">
+      <button class="download-all-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Download All Versions
+      </button>
+    </div>
+  </div>
+
+  <!-- WISHLIST DRAWER -->
+  <div class="wishlist-drawer" id="wishlistDrawer">
+    <div class="wishlist-drawer__header">
+      <div class="wishlist-drawer__title">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        My Wishlist
+      </div>
+      <button class="wishlist-drawer__close" onclick="toggleWishlistDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="wishlist-drawer__list">
+      <div class="wishlist-item">
+        <div class="wishlist-item__thumb">
+          <img src="https://picsum.photos/80/45?random=50" alt="">
+        </div>
+        <div class="wishlist-item__info">
+          <div class="wishlist-item__title">Birds of a Feather</div>
+          <div class="wishlist-item__artist">Billie Eilish</div>
+        </div>
+        <div class="wishlist-item__actions">
+          <button class="wishlist-item__btn wishlist-item__btn--download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          </button>
+          <button class="wishlist-item__btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="wishlist-item">
+        <div class="wishlist-item__thumb">
+          <img src="https://picsum.photos/80/45?random=51" alt="">
+        </div>
+        <div class="wishlist-item__info">
+          <div class="wishlist-item__title">Please Please Please</div>
+          <div class="wishlist-item__artist">Sabrina Carpenter</div>
+        </div>
+        <div class="wishlist-item__actions">
+          <button class="wishlist-item__btn wishlist-item__btn--download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          </button>
+          <button class="wishlist-item__btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="wishlist-item">
+        <div class="wishlist-item__thumb">
+          <img src="https://picsum.photos/80/45?random=52" alt="">
+        </div>
+        <div class="wishlist-item__info">
+          <div class="wishlist-item__title">Lunch</div>
+          <div class="wishlist-item__artist">Billie Eilish</div>
+        </div>
+        <div class="wishlist-item__actions">
+          <button class="wishlist-item__btn wishlist-item__btn--download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          </button>
+          <button class="wishlist-item__btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="wishlist-drawer__footer">
+      <button class="btn btn-primary">Download All (3)</button>
+    </div>
+  </div>
+
+  <!-- REQUEST MODAL -->
+  <div class="modal-overlay" id="requestModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title">Request Content</h2>
+        <button class="modal__close" onclick="closeRequestModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal__body">
+        <div class="form-group">
+          <label class="form-label">Song Title *</label>
+          <input type="text" class="form-input" placeholder="Enter song title">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Artist *</label>
+          <input type="text" class="form-input" placeholder="Enter artist name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Version Needed</label>
+          <select class="form-select">
+            <option>Any version</option>
+            <option>Clean edit</option>
+            <option>Explicit</option>
+            <option>Extended intro</option>
+            <option>Quick edit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Additional Notes</label>
+          <textarea class="form-textarea" placeholder="Any specific details about your request..."></textarea>
+          <p class="form-hint">Include links to the original video if available</p>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn-secondary" onclick="closeRequestModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitRequest()">Submit Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY BACKDROP -->
+  <div class="overlay-backdrop" id="overlayBackdrop" onclick="closeAllDrawers()"></div>
+
+  <!-- FLOATING DOWNLOAD FAB -->
+  <div class="download-fab" id="downloadFab">
+    <button class="download-fab__btn" onclick="toggleQueuePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+      </svg>
+      <span class="download-fab__count">2</span>
+      <div class="download-fab__progress"></div>
+    </button>
+  </div>
+
+  <!-- QUEUE PANEL -->
+  <div class="queue-panel" id="queuePanel">
+    <div class="queue-panel__header">
+      <span class="queue-panel__title">Downloads</span>
+      <span class="queue-panel__status">2 concurrent max</span>
+    </div>
+    <div class="queue-panel__list">
+      <div class="queue-item">
+        <div class="queue-item__thumb">
+          <img src="https://picsum.photos/56/32?random=1" alt="">
+        </div>
+        <div class="queue-item__info">
+          <div class="queue-item__title">Espresso - Clean 4K</div>
+          <div class="queue-item__status">Downloading... 67%</div>
+          <div class="queue-item__progress">
+            <div class="queue-item__progress-bar" style="width: 67%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="queue-item">
+        <div class="queue-item__thumb">
+          <img src="https://picsum.photos/56/32?random=2" alt="">
+        </div>
+        <div class="queue-item__info">
+          <div class="queue-item__title">Not Like Us - Explicit 4K</div>
+          <div class="queue-item__status">Downloading... 23%</div>
+          <div class="queue-item__progress">
+            <div class="queue-item__progress-bar" style="width: 23%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="queue-item queue-item--queued">
+        <div class="queue-item__thumb">
+          <img src="https://picsum.photos/56/32?random=3" alt="">
+        </div>
+        <div class="queue-item__info">
+          <div class="queue-item__title">Beautiful Things - Clean HD</div>
+          <div class="queue-item__status">Queued</div>
+        </div>
+      </div>
+      <div class="queue-item queue-item--complete">
+        <div class="queue-item__thumb">
+          <img src="https://picsum.photos/56/32?random=4" alt="">
+        </div>
+        <div class="queue-item__info">
+          <div class="queue-item__title">Lovin On Me - Clean 4K</div>
+          <div class="queue-item__status">✓ Complete</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ============================================
+    // THEME TOGGLE
+    // ============================================
+    function toggleTheme() {
+      document.documentElement.classList.toggle('light');
+      const isLight = document.documentElement.classList.contains('light');
+      localStorage.setItem('tvp-theme', isLight ? 'light' : 'dark');
+    }
+
+    // ============================================
+    // VERSION DRAWER
+    // ============================================
+    function openVersionDrawer() {
+      document.getElementById('versionDrawer').classList.add('version-drawer--open');
+      document.getElementById('overlayBackdrop').classList.add('overlay-backdrop--visible');
+    }
+
+    function closeVersionDrawer() {
+      document.getElementById('versionDrawer').classList.remove('version-drawer--open');
+      document.getElementById('overlayBackdrop').classList.remove('overlay-backdrop--visible');
+    }
+
+    // ============================================
+    // WISHLIST DRAWER
+    // ============================================
+    function toggleWishlistDrawer() {
+      const drawer = document.getElementById('wishlistDrawer');
+      const backdrop = document.getElementById('overlayBackdrop');
+      drawer.classList.toggle('wishlist-drawer--open');
+      backdrop.classList.toggle('overlay-backdrop--visible');
+    }
+
+    function toggleWishlist(btn) {
+      btn.classList.toggle('video-card__wishlist--active');
+      const isActive = btn.classList.contains('video-card__wishlist--active');
+      showToast(isActive ? 'Added to Wishlist' : 'Removed from Wishlist', isActive ? 'success' : 'info');
+    }
+
+    // ============================================
+    // REQUEST MODAL
+    // ============================================
+    function openRequestModal() {
+      document.getElementById('requestModal').classList.add('modal-overlay--open');
+    }
+
+    function closeRequestModal() {
+      document.getElementById('requestModal').classList.remove('modal-overlay--open');
+    }
+
+    function submitRequest() {
+      closeRequestModal();
+      showToast('Request Submitted', 'Your content request has been sent to our team.', 'success');
+    }
+
+    // ============================================
+    // BULK SELECTION MODE
+    // ============================================
+    let bulkMode = false;
+    let selectedItems = new Set();
+
+    function toggleBulkMode() {
+      bulkMode = !bulkMode;
+      document.body.classList.toggle('bulk-mode', bulkMode);
+      document.querySelector('.bulk-toggle').classList.toggle('bulk-toggle--active', bulkMode);
+      document.getElementById('bulkActions').classList.toggle('bulk-actions--visible', bulkMode);
+
+      if (!bulkMode) {
+        clearBulkSelection();
+      }
+    }
+
+    function toggleSelect(checkbox) {
+      checkbox.classList.toggle('video-card__select--checked');
+      const card = checkbox.closest('.video-card');
+      const title = card.querySelector('.video-card__title').textContent;
+
+      if (checkbox.classList.contains('video-card__select--checked')) {
+        selectedItems.add(title);
+      } else {
+        selectedItems.delete(title);
+      }
+
+      document.getElementById('selectedCount').textContent = selectedItems.size;
+    }
+
+    function clearBulkSelection() {
+      document.querySelectorAll('.video-card__select--checked').forEach(cb => {
+        cb.classList.remove('video-card__select--checked');
+      });
+      selectedItems.clear();
+      document.getElementById('selectedCount').textContent = '0';
+    }
+
+    function bulkDownload() {
+      showToast('Bulk Download Started', `${selectedItems.size} items added to queue`, 'success');
+      clearBulkSelection();
+      toggleBulkMode();
+    }
+
+    function bulkAddToWishlist() {
+      showToast('Added to Wishlist', `${selectedItems.size} items added`, 'success');
+      clearBulkSelection();
+      toggleBulkMode();
+    }
+
+    // ============================================
+    // DOWNLOAD QUEUE
+    // ============================================
+    function toggleQueuePanel() {
+      document.getElementById('queuePanel').classList.toggle('queue-panel--open');
+    }
+
+    // ============================================
+    // CLOSE ALL DRAWERS
+    // ============================================
+    function closeAllDrawers() {
+      document.getElementById('versionDrawer').classList.remove('version-drawer--open');
+      document.getElementById('wishlistDrawer').classList.remove('wishlist-drawer--open');
+      document.getElementById('overlayBackdrop').classList.remove('overlay-backdrop--visible');
+    }
+
+    // ============================================
+    // ADVANCED SEARCH
+    // ============================================
+    function toggleAdvancedSearch() {
+      showToast('Advanced Search', 'Coming soon - BPM range, key, era filters', 'info');
+    }
+
+    // ============================================
+    // TOAST NOTIFICATIONS
+    // ============================================
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast--${type}`;
+      toast.innerHTML = `
+        <div class="toast__content">
+          <div class="toast__title">${title}</div>
+          ${message ? `<div class="toast__message">${message}</div>` : ''}
+        </div>
+        <button class="toast__close" onclick="this.parentElement.remove()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => toast.classList.add('toast--show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('toast--show');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('mainSearch').focus();
+      }
+      if (e.key === 'Escape') {
+        closeAllDrawers();
+        closeRequestModal();
+      }
+    });
+
+    // ============================================
+    // INIT
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Remove first-load class after animation
+      setTimeout(() => {
+        document.documentElement.classList.remove('first-load');
+      }, 2500);
+    });
+  </script>
+</body>
+</html>

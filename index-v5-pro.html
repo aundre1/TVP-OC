@@ -1,0 +1,3462 @@
+<!DOCTYPE html>
+<!--
+  THE VIDEO POOL - Professional DJ Platform v5.1
+  Version: 5.1 | January 2026
+
+  NEW IN V5.1 (Keyboard Shortcuts Update):
+  ✓ Comprehensive keyboard shortcuts for DJ workflow
+  ✓ Shortcuts reference panel (? icon in header)
+  ✓ Playback: Space, P, Arrow keys
+  ✓ Navigation: J/K, 1-5 section jump
+  ✓ Set Building: S, B, D shortcuts
+  ✓ Mixing: C, M, H for Camelot/BPM/Harmonic
+  ✓ Visual feedback on shortcut activation
+
+  V5.0 FEATURES:
+  ✓ List View / Grid View toggle with localStorage
+  ✓ Batch operations: Multi-select + bulk download to crate
+  ✓ Camelot Wheel visualization (click to filter compatible keys)
+  ✓ Recently Downloaded section (10 shown, expandable)
+  ✓ Set Builder: Right panel with drag-drop, BPM/key compatibility
+  ✓ All v4 features preserved
+
+  PRICING TIERS:
+  - Free: $0 (1 download/month, 720p)
+  - Starter: $14.99/month (50 downloads, 1080p)
+  - Pro: $29.99/month (200 downloads, 4K)
+  - Elite: $49.99/month (UNLIMITED, 4K)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Professional Video DJ Platform</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a0f'/><polygon points='10,8 10,24 24,16' fill='%2300d4ff'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS VARIABLES
+       ============================================ */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111116;
+      --bg-tertiary: #1a1a22;
+      --bg-elevated: #222230;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #6b6b76;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.1);
+      --accent-cyan: #00d4ff;
+      --accent-cyan-hover: #33ddff;
+      --accent-cyan-glow: rgba(0, 212, 255, 0.3);
+      --accent-cyan-subtle: rgba(0, 212, 255, 0.1);
+      --accent-gold: #ffd700;
+      --accent-coral: #ff6b4a;
+      --accent-purple: #a855f7;
+      --success: #00e676;
+      --warning: #ffab00;
+      --error: #ff4757;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.5);
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 150ms;
+      --duration-normal: 200ms;
+      --duration-slow: 300ms;
+    }
+
+    .light {
+      --bg-primary: #f5f5f7;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #e8e8ed;
+      --bg-elevated: #ffffff;
+      --text-primary: #0a0a0f;
+      --text-secondary: #52525b;
+      --text-muted: #71717a;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --border-default: rgba(0, 0, 0, 0.1);
+      --accent-cyan: #0099cc;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ============================================
+       LOGO
+       ============================================ */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo__icon { width: 40px; height: 40px; }
+    .logo__icon svg { width: 100%; height: 100%; }
+    .logo:hover .logo__icon svg { filter: drop-shadow(0 0 8px var(--accent-cyan-glow)); }
+
+    .logo__text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .logo__text-accent { color: var(--accent-cyan); }
+    .logo:hover .logo__text-accent { text-shadow: 0 0 15px var(--accent-cyan-glow); }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      height: 72px;
+      padding: 0 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .search-bar { flex: 1; max-width: 550px; margin: 0 auto; }
+
+    .search-bar__container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-width: 300px;
+      padding: 10px 16px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-subtle);
+      border-radius: 10px;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .search-bar__container:focus-within {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 4px var(--accent-cyan-subtle);
+    }
+
+    .search-bar__icon { width: 20px; height: 20px; color: var(--text-muted); flex-shrink: 0; }
+    .search-bar__input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      min-width: 0;
+    }
+    .search-bar__input::placeholder { color: var(--text-muted); }
+    .search-bar__kbd {
+      padding: 3px 7px;
+      background: var(--bg-primary);
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header__nav { display: flex; gap: 2px; }
+
+    .nav__link {
+      padding: 8px 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .nav__link:hover { background: var(--accent-cyan-subtle); color: var(--text-primary); }
+    .nav__link--active { background: var(--accent-cyan-subtle); color: var(--accent-cyan); }
+
+    .header__actions { display: flex; align-items: center; gap: 10px; }
+
+    .header-btn {
+      width: 38px;
+      height: 38px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .header-btn:hover {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .header-btn svg { width: 18px; height: 18px; }
+
+    .header-btn__badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      background: var(--accent-coral);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 13px;
+      color: #000;
+      cursor: pointer;
+    }
+
+    .user-avatar:hover { box-shadow: 0 0 15px var(--accent-cyan-glow); }
+
+    /* ============================================
+       GENRE NAV
+       ============================================ */
+    .genre-nav {
+      position: sticky;
+      top: 72px;
+      z-index: 90;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 24px;
+    }
+
+    .genre-nav__inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .genre-nav__inner::-webkit-scrollbar { display: none; }
+
+    .genre-chip {
+      position: relative;
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .genre-chip:hover { border-color: var(--accent-cyan); color: var(--text-primary); }
+    .genre-chip--active { background: var(--accent-cyan); border-color: var(--accent-cyan); color: #000; }
+
+    /* ============================================
+       TOOLBAR (View Toggle, Batch Actions, Camelot)
+       ============================================ */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 24px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+
+    .toolbar__group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar__label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* View Toggle */
+    .view-toggle {
+      display: flex;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .view-toggle__btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .view-toggle__btn:hover { color: var(--text-primary); }
+    .view-toggle__btn--active { background: var(--accent-cyan); color: #000; }
+    .view-toggle__btn svg { width: 18px; height: 18px; }
+
+    /* Batch Actions Bar */
+    .batch-bar {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      background: var(--accent-cyan-subtle);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 10px;
+      animation: slideIn 0.2s ease-out;
+    }
+
+    .batch-bar--visible { display: flex; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .batch-bar__count {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    .batch-bar__actions { display: flex; gap: 8px; }
+
+    /* Camelot Wheel Button */
+    .camelot-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .camelot-btn:hover { border-color: var(--accent-cyan); color: var(--text-primary); }
+    .camelot-btn--active { background: var(--accent-cyan-subtle); border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+    .toolbar__spacer { flex: 1; }
+
+    /* Filter Dropdowns */
+    .filter-dropdown { position: relative; }
+
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .filter-btn:hover { border-color: var(--accent-cyan); color: var(--text-primary); }
+    .filter-btn svg { width: 14px; height: 14px; }
+
+    .filter-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 200px;
+      padding: 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      box-shadow: var(--shadow-elevated);
+      z-index: 50;
+      display: none;
+      margin-top: 4px;
+    }
+
+    .filter-dropdown:hover .filter-menu { display: block; }
+
+    .filter-menu__item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .filter-menu__item:hover { background: var(--accent-cyan-subtle); color: var(--text-primary); }
+    .filter-menu__item--active { background: var(--accent-cyan-subtle); color: var(--accent-cyan); }
+
+    /* ============================================
+       CAMELOT WHEEL MODAL
+       ============================================ */
+    .camelot-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .camelot-modal--open { display: flex; }
+
+    .camelot-modal__content {
+      background: var(--bg-secondary);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .camelot-modal__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .camelot-modal__title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .camelot-modal__close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .camelot-modal__close:hover { background: var(--bg-elevated); }
+
+    .camelot-wheel {
+      width: 350px;
+      height: 350px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .camelot-wheel svg { width: 100%; height: 100%; }
+
+    .camelot-segment {
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .camelot-segment:hover { filter: brightness(1.2); }
+    .camelot-segment--active { filter: brightness(1.4) drop-shadow(0 0 10px currentColor); }
+    .camelot-segment--compatible { filter: brightness(1.2); stroke: var(--accent-cyan); stroke-width: 3; }
+
+    .camelot-modal__info {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .camelot-modal__selected {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--accent-cyan-subtle);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    .camelot-modal__actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main {
+      display: flex;
+      min-height: calc(100vh - 200px);
+    }
+
+    .main__content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    /* ============================================
+       SECTIONS
+       ============================================ */
+    .section { margin-bottom: 32px; }
+
+    .section__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .section__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .section__title-icon { font-size: 20px; }
+
+    .section__link {
+      color: var(--accent-cyan);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .section__link:hover { text-decoration: underline; }
+
+    .section__toggle {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: transform var(--duration-fast) var(--ease-out);
+    }
+
+    .section--collapsed .section__toggle { transform: rotate(-90deg); }
+    .section--collapsed .section__content { max-height: 0; opacity: 0; overflow: hidden; }
+
+    .section__content {
+      max-height: 2000px;
+      transition: max-height var(--duration-slow) var(--ease-out);
+    }
+
+    /* ============================================
+       RECENTLY DOWNLOADED SECTION
+       ============================================ */
+    .recent-section {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, var(--accent-cyan-subtle) 100%);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .recent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .recent-header__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .recent-header__count {
+      padding: 4px 10px;
+      background: var(--accent-purple);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 12px;
+    }
+
+    .recent-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .recent-item:hover {
+      border-color: var(--accent-cyan);
+      background: var(--bg-tertiary);
+    }
+
+    .recent-item__thumb {
+      width: 48px;
+      height: 27px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .recent-item__thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .recent-item__info { flex: 1; min-width: 0; }
+
+    .recent-item__title {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .recent-item__meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .recent-item__date {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .recent-item__btn {
+      padding: 6px 12px;
+      background: var(--accent-cyan);
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .recent-item__btn:hover { background: var(--accent-cyan-hover); }
+
+    .recent-expand {
+      display: flex;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .recent-expand__btn {
+      padding: 8px 20px;
+      background: transparent;
+      border: 1px dashed var(--border-default);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .recent-expand__btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* ============================================
+       VIDEO GRID VIEW
+       ============================================ */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .video-grid--hidden { display: none; }
+
+    .video-card {
+      position: relative;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--accent-cyan-glow);
+    }
+
+    .video-card--selected {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 2px var(--accent-cyan);
+    }
+
+    .video-card__checkbox {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 10;
+      width: 24px;
+      height: 24px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-default);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__checkbox,
+    .video-card--selected .video-card__checkbox { opacity: 1; }
+
+    .video-card__checkbox--checked {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .video-card__checkbox svg { width: 14px; height: 14px; color: #000; display: none; }
+    .video-card__checkbox--checked svg { display: block; }
+
+    .video-card__thumb {
+      position: relative;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      background: var(--bg-tertiary);
+    }
+
+    .video-card__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s var(--ease-out);
+    }
+
+    .video-card:hover .video-card__thumb img { transform: scale(1.05); }
+
+    .video-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+      opacity: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__overlay { opacity: 1; }
+
+    .video-card__play {
+      width: 52px;
+      height: 52px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      transform: scale(0.8);
+      opacity: 0;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__play { transform: scale(1); opacity: 1; }
+    .video-card__play svg { width: 22px; height: 22px; margin-left: 2px; }
+
+    .badge {
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+
+    .badge--new { background: var(--accent-coral); color: #fff; }
+    .badge--hot { background: linear-gradient(135deg, #ff6b4a, #ffab00); color: #fff; }
+
+    .video-card__badges { position: absolute; top: 8px; left: 40px; display: flex; gap: 6px; }
+
+    .video-card__quality {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .video-card__quality--4k { background: var(--accent-cyan); color: #000; }
+    .video-card__quality--hd { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .video-card__duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      padding: 3px 7px;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      border-radius: 4px;
+    }
+
+    .video-card__content { padding: 14px; }
+
+    .video-card__title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 36px;
+    }
+
+    .video-card__artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-card__meta {
+      display: flex;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .video-card__actions { display: flex; gap: 8px; }
+
+    /* ============================================
+       VIDEO LIST VIEW (Spotify/iTunes Style)
+       ============================================ */
+    .video-list { display: none; }
+    .video-list--visible { display: block; }
+
+    .video-list__header {
+      display: grid;
+      grid-template-columns: 40px 60px 2fr 1.5fr 70px 60px 70px 80px 100px 120px;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .video-list__header-cell {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .video-list__header-cell:hover { color: var(--text-primary); }
+    .video-list__header-cell svg { width: 12px; height: 12px; }
+
+    .video-list__row {
+      display: grid;
+      grid-template-columns: 40px 60px 2fr 1.5fr 70px 60px 70px 80px 100px 120px;
+      gap: 12px;
+      padding: 10px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      margin-bottom: 4px;
+      align-items: center;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-list__row:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--accent-cyan);
+    }
+
+    .video-list__row--selected {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+    }
+
+    .video-list__checkbox {
+      width: 20px;
+      height: 20px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-default);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-list__checkbox:hover { border-color: var(--accent-cyan); }
+
+    .video-list__checkbox--checked {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .video-list__checkbox svg { width: 12px; height: 12px; color: #000; display: none; }
+    .video-list__checkbox--checked svg { display: block; }
+
+    .video-list__thumb {
+      width: 60px;
+      height: 34px;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .video-list__thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .video-list__thumb-play {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--duration-fast) var(--ease-out);
+    }
+
+    .video-list__row:hover .video-list__thumb-play { opacity: 1; }
+    .video-list__thumb-play svg { width: 20px; height: 20px; color: #fff; }
+
+    .video-list__title {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-list__artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-list__bpm {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent-cyan);
+      font-weight: 500;
+    }
+
+    .video-list__key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .video-list__duration {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .video-list__quality {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .video-list__quality--4k { background: var(--accent-cyan); color: #000; }
+    .video-list__quality--hd { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+    .video-list__genre {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-list__actions { display: flex; gap: 6px; }
+
+    .video-list__action-btn {
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .video-list__action-btn:hover {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+      color: #000;
+    }
+
+    .video-list__action-btn svg { width: 14px; height: 14px; }
+
+    /* ============================================
+       SET BUILDER PANEL
+       ============================================ */
+    .set-builder {
+      width: 380px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform var(--duration-slow) var(--ease-out);
+      position: fixed;
+      top: 72px;
+      right: 0;
+      bottom: 0;
+      z-index: 80;
+    }
+
+    .set-builder--open { transform: translateX(0); }
+
+    .set-builder__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .set-builder__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .set-builder__title-icon { font-size: 18px; }
+
+    .set-builder__close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .set-builder__close:hover { background: var(--bg-elevated); }
+
+    .set-builder__stats {
+      display: flex;
+      gap: 16px;
+      padding: 12px 20px;
+      background: var(--bg-tertiary);
+      font-size: 12px;
+    }
+
+    .set-builder__stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .set-builder__stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .set-builder__stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .set-builder__tracks {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .set-builder__empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .set-builder__empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+    .set-builder__empty-text { font-size: 14px; }
+    .set-builder__empty-hint { font-size: 12px; margin-top: 8px; }
+
+    .set-track {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: grab;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .set-track:hover { border-color: var(--accent-cyan); }
+    .set-track--dragging { opacity: 0.5; }
+    .set-track--drag-over { border-color: var(--accent-cyan); background: var(--accent-cyan-subtle); }
+
+    .set-track__order {
+      width: 24px;
+      height: 24px;
+      background: var(--bg-elevated);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .set-track__thumb {
+      width: 48px;
+      height: 27px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .set-track__thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .set-track__info { flex: 1; min-width: 0; }
+
+    .set-track__title {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .set-track__meta {
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .set-track__compatibility {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .set-track__compatibility--good { background: var(--success); }
+    .set-track__compatibility--ok { background: var(--warning); }
+    .set-track__compatibility--bad { background: var(--error); }
+
+    .set-track__remove {
+      width: 24px;
+      height: 24px;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .set-track:hover .set-track__remove { opacity: 1; }
+    .set-track__remove:hover { background: var(--error); color: #fff; }
+
+    .set-builder__footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .set-builder__footer-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* ============================================
+       BUTTONS
+       ============================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn svg { width: 16px; height: 16px; }
+
+    .btn--primary { flex: 1; background: var(--accent-cyan); color: #000; }
+    .btn--primary:hover { background: var(--accent-cyan-hover); box-shadow: 0 4px 15px var(--accent-cyan-glow); }
+
+    .btn--secondary { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+    .btn--secondary:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+    .btn--sm { padding: 6px 12px; font-size: 12px; }
+    .btn--sm svg { width: 14px; height: 14px; }
+
+    .btn--icon { width: 38px; height: 38px; padding: 0; }
+
+    /* ============================================
+       PREVIEW MODAL
+       ============================================ */
+    .preview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .preview-modal--open { display: flex; }
+
+    .preview-modal__content {
+      display: flex;
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      overflow: hidden;
+      max-width: 900px;
+      width: 100%;
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .preview-modal__video {
+      width: 55%;
+      aspect-ratio: 16/9;
+      background: #000;
+      position: relative;
+    }
+
+    .preview-modal__video-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-tertiary);
+    }
+
+    .preview-modal__video-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+
+    .preview-modal__play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70px;
+      height: 70px;
+      background: var(--accent-cyan);
+      border: none;
+      border-radius: 50%;
+      color: #000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-modal__play-btn:hover { transform: translate(-50%, -50%) scale(1.1); }
+    .preview-modal__play-btn svg { width: 30px; height: 30px; margin-left: 4px; }
+
+    .preview-modal__info {
+      width: 45%;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-modal__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .preview-modal__badge {
+      padding: 4px 10px;
+      background: var(--accent-coral);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+
+    .preview-modal__close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-modal__close:hover { background: var(--bg-elevated); }
+
+    .preview-modal__title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .preview-modal__artist { font-size: 16px; color: var(--text-secondary); margin-bottom: 20px; }
+
+    .preview-modal__stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .preview-modal__stat { display: flex; flex-direction: column; }
+
+    .preview-modal__stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .preview-modal__stat-value { font-size: 16px; font-weight: 600; color: var(--accent-cyan); }
+
+    .preview-modal__divider { height: 1px; background: var(--border-subtle); margin: 16px 0; }
+
+    .preview-modal__section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .preview-modal__option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .preview-modal__option:hover { background: var(--bg-elevated); }
+
+    .preview-modal__option-check {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--accent-cyan);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-modal__option-check--checked { background: var(--accent-cyan); }
+    .preview-modal__option-check svg { width: 14px; height: 14px; color: #000; display: none; }
+    .preview-modal__option-check--checked svg { display: block; }
+
+    .preview-modal__option-info { flex: 1; }
+    .preview-modal__option-name { font-size: 14px; font-weight: 500; }
+    .preview-modal__option-meta { font-size: 12px; color: var(--text-muted); }
+
+    .preview-modal__footer { margin-top: auto; display: flex; gap: 10px; }
+    .preview-modal__footer .btn { flex: 1; }
+
+    /* ============================================
+       TOAST
+       ============================================ */
+    .toast-container {
+      position: fixed;
+      top: 90px;
+      right: 24px;
+      z-index: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      box-shadow: var(--shadow-elevated);
+      min-width: 300px;
+      transform: translateX(120%);
+      transition: transform var(--duration-slow) var(--ease-out);
+    }
+
+    .toast--show { transform: translateX(0); }
+    .toast--success { border-left: 4px solid var(--success); }
+    .toast--info { border-left: 4px solid var(--accent-cyan); }
+
+    .toast__content { flex: 1; }
+    .toast__title { font-size: 14px; font-weight: 600; }
+    .toast__message { font-size: 12px; color: var(--text-secondary); }
+
+    /* ============================================
+       BACKDROP
+       ============================================ */
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 350;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .backdrop--visible { opacity: 1; visibility: visible; }
+
+    /* ============================================
+       KEYBOARD SHORTCUTS PANEL (Spotify/YouTube Style)
+       ============================================ */
+    .shortcuts-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.95);
+      width: 580px;
+      max-width: 95vw;
+      max-height: 85vh;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      box-shadow: var(--shadow-elevated);
+      z-index: 600;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--duration-normal) var(--ease-out);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .shortcuts-panel--open {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .shortcuts-panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .shortcuts-panel__title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .shortcuts-panel__title-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent-cyan-subtle);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shortcuts-panel__title-icon svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent-cyan);
+    }
+
+    .shortcuts-panel__close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .shortcuts-panel__close:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .shortcuts-panel__content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    .shortcuts-category {
+      margin-bottom: 24px;
+    }
+
+    .shortcuts-category:last-child {
+      margin-bottom: 0;
+    }
+
+    .shortcuts-category__title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .shortcuts-category__title-icon {
+      font-size: 14px;
+    }
+
+    .shortcuts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .shortcut-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      transition: background var(--duration-fast) var(--ease-out);
+    }
+
+    .shortcut-item:hover {
+      background: var(--bg-elevated);
+    }
+
+    .shortcut-item__description {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .shortcut-item__keys {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .shortcut-key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-default);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      box-shadow: 0 2px 0 var(--border-default);
+    }
+
+    .shortcut-key--wide {
+      min-width: 50px;
+    }
+
+    .shortcut-key--accent {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .shortcut-separator {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .shortcuts-panel__footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-tertiary);
+      border-radius: 0 0 16px 16px;
+    }
+
+    .shortcuts-panel__footer-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .shortcuts-panel__footer-hint .shortcut-key {
+      height: 22px;
+      min-width: 22px;
+      font-size: 10px;
+    }
+
+    /* Shortcut Action Feedback */
+    .shortcut-feedback {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      padding: 16px 24px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 12px;
+      box-shadow: 0 0 30px var(--accent-cyan-glow);
+      z-index: 700;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.15s var(--ease-out);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .shortcut-feedback--show {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .shortcut-feedback__key {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      height: 40px;
+      padding: 0 12px;
+      background: var(--accent-cyan);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #000;
+    }
+
+    .shortcut-feedback__action {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Focus indicator for current track */
+    .video-list__row--focused {
+      background: var(--accent-cyan-subtle) !important;
+      border-color: var(--accent-cyan) !important;
+      box-shadow: inset 0 0 0 1px var(--accent-cyan);
+    }
+
+    .video-card--focused {
+      border-color: var(--accent-cyan) !important;
+      box-shadow: 0 0 0 2px var(--accent-cyan), 0 12px 40px var(--accent-cyan-glow) !important;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 1200px) {
+      .video-list__header,
+      .video-list__row {
+        grid-template-columns: 40px 60px 2fr 1.5fr 70px 60px 70px 120px;
+      }
+      .video-list__header-cell:nth-child(8),
+      .video-list__header-cell:nth-child(9),
+      .video-list__row > *:nth-child(8),
+      .video-list__row > *:nth-child(9) { display: none; }
+    }
+
+    @media (max-width: 900px) {
+      .preview-modal__content { flex-direction: column; }
+      .preview-modal__video { width: 100%; }
+      .preview-modal__info { width: 100%; }
+      .set-builder { width: 100%; }
+    }
+
+    @media (max-width: 768px) {
+      .header { gap: 12px; padding: 0 16px; }
+      .logo__text { font-size: 20px; }
+      .header__nav { display: none; }
+      .main__content { padding: 16px; }
+      .video-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+      .toolbar { padding: 12px 16px; }
+      .video-list__header,
+      .video-list__row {
+        grid-template-columns: 40px 50px 1fr 70px 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <a href="#" class="logo">
+      <div class="logo__icon">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="8" width="36" height="28" rx="4" stroke="var(--accent-cyan)" stroke-width="2.5" fill="none"/>
+          <path d="M14 8 L20 2 L26 8" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M16 16 L16 28 L28 22 Z" fill="var(--accent-cyan)"/>
+        </svg>
+      </div>
+      <span class="logo__text">THEVIDEO<span class="logo__text-accent">POOL</span></span>
+    </a>
+
+    <div class="search-bar">
+      <div class="search-bar__container">
+        <svg class="search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" class="search-bar__input" placeholder="Search 30,000+ videos..." id="mainSearch">
+        <span class="search-bar__kbd">⌘K</span>
+      </div>
+    </div>
+
+    <nav class="header__nav">
+      <a class="nav__link nav__link--active">Browse</a>
+      <a class="nav__link">New Releases</a>
+      <a class="nav__link">Charts</a>
+      <a class="nav__link">Playlists</a>
+    </nav>
+
+    <div class="header__actions">
+      <button class="header-btn" title="Set Builder" onclick="toggleSetBuilder()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span class="header-btn__badge" id="setBuilderBadge">0</span>
+      </button>
+      <button class="header-btn" title="Downloads">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        <span class="header-btn__badge">3</span>
+      </button>
+      <button class="header-btn" title="Toggle Theme" onclick="toggleTheme()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <button class="header-btn" title="Keyboard Shortcuts (?)" onclick="toggleShortcutsPanel()" id="shortcutsBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </button>
+      <div class="user-avatar">DJ</div>
+    </div>
+  </header>
+
+  <!-- GENRE NAV -->
+  <nav class="genre-nav">
+    <div class="genre-nav__inner">
+      <div class="genre-chip genre-chip--active">All</div>
+      <div class="genre-chip">Hip-Hop</div>
+      <div class="genre-chip">House</div>
+      <div class="genre-chip">Latin</div>
+      <div class="genre-chip">EDM</div>
+      <div class="genre-chip">Pop</div>
+      <div class="genre-chip">R&B</div>
+      <div class="genre-chip">Rock</div>
+      <div class="genre-chip">Country</div>
+      <div class="genre-chip">Throwbacks</div>
+    </div>
+  </nav>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar__group">
+      <span class="toolbar__label">View</span>
+      <div class="view-toggle">
+        <button class="view-toggle__btn" id="gridViewBtn" onclick="setView('grid')" title="Grid View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </button>
+        <button class="view-toggle__btn view-toggle__btn--active" id="listViewBtn" onclick="setView('list')" title="List View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="camelot-btn" id="camelotBtn" onclick="openCamelotWheel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 12l6-6"/>
+      </svg>
+      Camelot Wheel
+    </button>
+
+    <div class="batch-bar" id="batchBar">
+      <span class="batch-bar__count"><span id="selectedCount">0</span> selected</span>
+      <div class="batch-bar__actions">
+        <button class="btn btn--primary btn--sm" onclick="batchDownload()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Download All
+        </button>
+        <button class="btn btn--secondary btn--sm" onclick="addToSetBuilder()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Add to Set
+        </button>
+        <button class="btn btn--secondary btn--sm" onclick="clearSelection()">Clear</button>
+      </div>
+    </div>
+
+    <div class="toolbar__spacer"></div>
+
+    <div class="filter-dropdown">
+      <button class="filter-btn">
+        BPM Range
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="filter-menu">
+        <div class="filter-menu__item filter-menu__item--active">All BPM</div>
+        <div class="filter-menu__item">70-90 (Slow)</div>
+        <div class="filter-menu__item">90-110 (Medium)</div>
+        <div class="filter-menu__item">110-130 (Club)</div>
+        <div class="filter-menu__item">130-150 (High Energy)</div>
+      </div>
+    </div>
+
+    <div class="filter-dropdown">
+      <button class="filter-btn">
+        Sort: Newest
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="filter-menu">
+        <div class="filter-menu__item filter-menu__item--active">Newest First</div>
+        <div class="filter-menu__item">Most Popular</div>
+        <div class="filter-menu__item">BPM: Low to High</div>
+        <div class="filter-menu__item">BPM: High to Low</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="main__content">
+      <!-- RECENTLY DOWNLOADED -->
+      <section class="recent-section" id="recentSection">
+        <div class="recent-header">
+          <div class="recent-header__title">
+            <span>⏱️</span>
+            Recently Downloaded
+          </div>
+          <span class="recent-header__count" id="recentCount">10</span>
+        </div>
+        <div class="recent-list" id="recentList">
+          <!-- Dynamically populated -->
+        </div>
+        <div class="recent-expand">
+          <button class="recent-expand__btn" id="recentExpandBtn" onclick="toggleRecentExpand()">Show All (47 total)</button>
+        </div>
+      </section>
+
+      <!-- BROWSE SECTION -->
+      <section class="section">
+        <div class="section__header">
+          <h2 class="section__title">
+            <span class="section__title-icon">🎵</span>
+            Browse Library
+            <span style="font-size: 13px; color: var(--text-muted); font-weight: 400; margin-left: 8px;">(30,247 videos)</span>
+          </h2>
+        </div>
+        <div class="section__content">
+          <!-- LIST VIEW -->
+          <div class="video-list video-list--visible" id="videoList">
+            <div class="video-list__header">
+              <div class="video-list__header-cell" onclick="toggleSelectAll()">
+                <div class="video-list__checkbox" id="selectAllCheckbox">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+                </div>
+              </div>
+              <div class="video-list__header-cell">Thumb</div>
+              <div class="video-list__header-cell">Title <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></div>
+              <div class="video-list__header-cell">Artist</div>
+              <div class="video-list__header-cell">BPM <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></div>
+              <div class="video-list__header-cell">Key</div>
+              <div class="video-list__header-cell">Duration</div>
+              <div class="video-list__header-cell">Quality</div>
+              <div class="video-list__header-cell">Genre</div>
+              <div class="video-list__header-cell">Actions</div>
+            </div>
+            <div id="listRows">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- GRID VIEW -->
+          <div class="video-grid video-grid--hidden" id="videoGrid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- SET BUILDER PANEL -->
+  <aside class="set-builder" id="setBuilder">
+    <div class="set-builder__header">
+      <div class="set-builder__title">
+        <span class="set-builder__title-icon">🎧</span>
+        Set Builder
+      </div>
+      <button class="set-builder__close" onclick="toggleSetBuilder()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="set-builder__stats">
+      <div class="set-builder__stat">
+        <span class="set-builder__stat-value" id="setTrackCount">0</span>
+        <span class="set-builder__stat-label">Tracks</span>
+      </div>
+      <div class="set-builder__stat">
+        <span class="set-builder__stat-value" id="setDuration">0:00</span>
+        <span class="set-builder__stat-label">Duration</span>
+      </div>
+      <div class="set-builder__stat">
+        <span class="set-builder__stat-value" id="setBpmRange">--</span>
+        <span class="set-builder__stat-label">BPM Range</span>
+      </div>
+    </div>
+    <div class="set-builder__tracks" id="setTracks">
+      <div class="set-builder__empty">
+        <div class="set-builder__empty-icon">📀</div>
+        <div class="set-builder__empty-text">No tracks in your set</div>
+        <div class="set-builder__empty-hint">Drag tracks here or use "Add to Set"</div>
+      </div>
+    </div>
+    <div class="set-builder__footer">
+      <div class="set-builder__footer-row">
+        <button class="btn btn--primary" onclick="downloadSet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Download Set
+        </button>
+      </div>
+      <div class="set-builder__footer-row">
+        <button class="btn btn--secondary" style="flex:1" onclick="saveSet()">Save Set</button>
+        <button class="btn btn--secondary" style="flex:1" onclick="clearSet()">Clear All</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CAMELOT WHEEL MODAL -->
+  <div class="camelot-modal" id="camelotModal">
+    <div class="camelot-modal__content">
+      <div class="camelot-modal__header">
+        <h2 class="camelot-modal__title">Camelot Wheel</h2>
+        <button class="camelot-modal__close" onclick="closeCamelotWheel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="camelot-wheel" id="camelotWheel">
+        <svg viewBox="0 0 350 350" id="camelotWheelSvg">
+          <!-- Wheel segments generated by JS -->
+        </svg>
+      </div>
+      <p class="camelot-modal__info">Click a key to filter tracks. Adjacent keys are harmonically compatible.</p>
+      <div class="camelot-modal__selected" id="camelotSelected" style="display:none">
+        <span>Filtering by:</span>
+        <strong id="camelotSelectedKey">8A</strong>
+      </div>
+      <div class="camelot-modal__actions">
+        <button class="btn btn--secondary" onclick="clearCamelotFilter()">Clear Filter</button>
+        <button class="btn btn--primary" onclick="applyCamelotFilter()">Apply Filter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW MODAL -->
+  <div class="preview-modal" id="previewModal">
+    <div class="preview-modal__content">
+      <div class="preview-modal__video">
+        <div class="preview-modal__video-placeholder">
+          <img src="https://picsum.photos/600/338?random=1" alt="" id="previewImage">
+        </div>
+        <button class="preview-modal__play-btn" onclick="showToast('Preview Playing', '60-second clip from 0:30-1:30', 'info')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+      </div>
+      <div class="preview-modal__info">
+        <div class="preview-modal__header">
+          <span class="preview-modal__badge">NEW</span>
+          <button class="preview-modal__close" onclick="closePreviewModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <h2 class="preview-modal__title" id="previewTitle">Track Title</h2>
+        <p class="preview-modal__artist" id="previewArtist">Artist Name</p>
+        <div class="preview-modal__stats">
+          <div class="preview-modal__stat">
+            <span class="preview-modal__stat-label">BPM</span>
+            <span class="preview-modal__stat-value" id="previewBpm">128</span>
+          </div>
+          <div class="preview-modal__stat">
+            <span class="preview-modal__stat-label">Key</span>
+            <span class="preview-modal__stat-value" id="previewKey">8A</span>
+          </div>
+          <div class="preview-modal__stat">
+            <span class="preview-modal__stat-label">Duration</span>
+            <span class="preview-modal__stat-value" id="previewDuration">3:42</span>
+          </div>
+          <div class="preview-modal__stat">
+            <span class="preview-modal__stat-label">Quality</span>
+            <span class="preview-modal__stat-value" id="previewQuality">4K</span>
+          </div>
+        </div>
+        <div class="preview-modal__divider"></div>
+        <div class="preview-modal__section-title">Download Options</div>
+        <div class="preview-modal__option" onclick="toggleOption(this)">
+          <div class="preview-modal__option-check preview-modal__option-check--checked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </div>
+          <div class="preview-modal__option-info">
+            <div class="preview-modal__option-name">Video + Audio</div>
+            <div class="preview-modal__option-meta">4K MP4 • ~230 MB</div>
+          </div>
+        </div>
+        <div class="preview-modal__option" onclick="toggleOption(this)">
+          <div class="preview-modal__option-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </div>
+          <div class="preview-modal__option-info">
+            <div class="preview-modal__option-name">Audio Only (MP3)</div>
+            <div class="preview-modal__option-meta">320kbps • ~8 MB</div>
+          </div>
+        </div>
+        <div class="preview-modal__footer">
+          <button class="btn btn--primary" onclick="downloadFromModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Download
+          </button>
+          <button class="btn btn--secondary" onclick="addToSetFromModal()">Add to Set</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEYBOARD SHORTCUTS PANEL -->
+  <div class="shortcuts-panel" id="shortcutsPanel">
+    <div class="shortcuts-panel__header">
+      <div class="shortcuts-panel__title">
+        <div class="shortcuts-panel__title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h8"/>
+          </svg>
+        </div>
+        Keyboard Shortcuts
+      </div>
+      <button class="shortcuts-panel__close" onclick="toggleShortcutsPanel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="shortcuts-panel__content">
+      <!-- Playback -->
+      <div class="shortcuts-category">
+        <div class="shortcuts-category__title">
+          <span class="shortcuts-category__title-icon">▶️</span>
+          Playback Controls
+        </div>
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Play / Pause preview</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--wide shortcut-key--accent">Space</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Preview focused track</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">P</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Seek backward 5 seconds</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key">←</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Seek forward 5 seconds</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key">→</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="shortcuts-category">
+        <div class="shortcuts-category__title">
+          <span class="shortcuts-category__title-icon">🎯</span>
+          Selection & Navigation
+        </div>
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Previous track</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">K</span>
+              <span class="shortcut-separator">or</span>
+              <span class="shortcut-key">↑</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Next track</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">J</span>
+              <span class="shortcut-separator">or</span>
+              <span class="shortcut-key">↓</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Select / Deselect focused track</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">X</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Select all tracks</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key">⌘</span>
+              <span class="shortcut-separator">+</span>
+              <span class="shortcut-key">A</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Jump to section (Recent, Browse, etc.)</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key">1</span>
+              <span class="shortcut-separator">-</span>
+              <span class="shortcut-key">5</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Focus search</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key">⌘</span>
+              <span class="shortcut-separator">+</span>
+              <span class="shortcut-key">K</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Set Building -->
+      <div class="shortcuts-category">
+        <div class="shortcuts-category__title">
+          <span class="shortcuts-category__title-icon">📀</span>
+          Set Building
+        </div>
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Add focused/selected to Set</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">S</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Toggle Set Builder panel</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">B</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Download focused/selected</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">D</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Clear selection</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--wide">Esc</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mixing Helpers -->
+      <div class="shortcuts-category">
+        <div class="shortcuts-category__title">
+          <span class="shortcuts-category__title-icon">🎛️</span>
+          Mixing Helpers
+        </div>
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Open Camelot Wheel</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">C</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Filter by similar BPM (±5)</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">M</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Show harmonic matches for focused</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">H</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View & UI -->
+      <div class="shortcuts-category">
+        <div class="shortcuts-category__title">
+          <span class="shortcuts-category__title-icon">👁️</span>
+          View & Interface
+        </div>
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Toggle List / Grid view</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">V</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Toggle dark / light theme</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">T</span>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-item__description">Show this shortcuts panel</span>
+            <div class="shortcut-item__keys">
+              <span class="shortcut-key shortcut-key--accent">?</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="shortcuts-panel__footer">
+      <div class="shortcuts-panel__footer-hint">
+        Press <span class="shortcut-key">?</span> anytime to toggle this panel
+      </div>
+    </div>
+  </div>
+
+  <!-- SHORTCUT FEEDBACK INDICATOR -->
+  <div class="shortcut-feedback" id="shortcutFeedback">
+    <div class="shortcut-feedback__key" id="feedbackKey">S</div>
+    <div class="shortcut-feedback__action" id="feedbackAction">Added to Set</div>
+  </div>
+
+  <!-- BACKDROP -->
+  <div class="backdrop" id="backdrop" onclick="closeAllModals()"></div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ============================================
+    // DATA - Sample tracks for the library
+    // ============================================
+    const sampleTracks = [
+      { id: 1, title: 'Espresso', artist: 'Sabrina Carpenter', bpm: 126, key: '5A', duration: '3:42', quality: '4K', genre: 'Pop', isNew: true },
+      { id: 2, title: 'Not Like Us', artist: 'Kendrick Lamar', bpm: 100, key: '8A', duration: '4:34', quality: '4K', genre: 'Hip-Hop', isHot: true },
+      { id: 3, title: 'Beautiful Things', artist: 'Benson Boone', bpm: 110, key: '3B', duration: '3:00', quality: 'HD', genre: 'Pop', isNew: true },
+      { id: 4, title: 'Lovin On Me', artist: 'Jack Harlow', bpm: 116, key: '11B', duration: '2:18', quality: '4K', genre: 'Hip-Hop' },
+      { id: 5, title: 'Too Sweet', artist: 'Hozier', bpm: 62, key: '9B', duration: '4:12', quality: '4K', genre: 'Pop' },
+      { id: 6, title: "We Can't Be Friends", artist: 'Ariana Grande', bpm: 118, key: '1A', duration: '4:16', quality: '4K', genre: 'Pop', isNew: true },
+      { id: 7, title: 'I Had Some Help', artist: 'Post Malone ft. Morgan Wallen', bpm: 108, key: '6B', duration: '3:02', quality: 'HD', genre: 'Country', isHot: true },
+      { id: 8, title: 'Million Dollar Baby', artist: 'Tommy Richman', bpm: 104, key: '2B', duration: '2:31', quality: '4K', genre: 'Pop' },
+      { id: 9, title: 'Birds of a Feather', artist: 'Billie Eilish', bpm: 105, key: '8B', duration: '3:30', quality: '4K', genre: 'Pop' },
+      { id: 10, title: 'Bonita', artist: 'Daddy Yankee', bpm: 96, key: '4A', duration: '3:25', quality: '4K', genre: 'Reggaeton', isNew: true },
+      { id: 11, title: 'La Bebe', artist: 'Yng Lvcas & Peso Pluma', bpm: 92, key: '1B', duration: '3:45', quality: '4K', genre: 'Regional Mexican', isHot: true },
+      { id: 12, title: 'Bellakeo', artist: 'Peso Pluma & Anitta', bpm: 100, key: '6A', duration: '2:55', quality: 'HD', genre: 'Reggaeton' },
+      { id: 13, title: 'Good Luck, Babe!', artist: 'Chappell Roan', bpm: 110, key: '7A', duration: '3:38', quality: '4K', genre: 'Pop', isNew: true },
+      { id: 14, title: 'Lose Control', artist: 'Teddy Swims', bpm: 97, key: '10B', duration: '3:28', quality: '4K', genre: 'R&B' },
+      { id: 15, title: 'Water', artist: 'Tyla', bpm: 114, key: '12A', duration: '3:20', quality: '4K', genre: 'Afrobeats', isHot: true },
+      { id: 16, title: 'Houdini', artist: 'Eminem', bpm: 140, key: '5B', duration: '4:22', quality: '4K', genre: 'Hip-Hop', isNew: true },
+      { id: 17, title: 'Pink Skies', artist: 'Zach Bryan', bpm: 86, key: '3A', duration: '4:05', quality: 'HD', genre: 'Country' },
+      { id: 18, title: 'Saturn', artist: 'SZA', bpm: 130, key: '9A', duration: '3:15', quality: '4K', genre: 'R&B' },
+      { id: 19, title: 'Stick Season', artist: 'Noah Kahan', bpm: 98, key: '4B', duration: '3:00', quality: '4K', genre: 'Folk Pop' },
+      { id: 20, title: 'Texas Hold Em', artist: 'Beyoncé', bpm: 120, key: '2A', duration: '3:53', quality: '4K', genre: 'Country Pop', isHot: true },
+    ];
+
+    const recentDownloads = [
+      { id: 1, title: 'Espresso', artist: 'Sabrina Carpenter', bpm: 126, key: '5A', date: '2 hours ago' },
+      { id: 6, title: "We Can't Be Friends", artist: 'Ariana Grande', bpm: 118, key: '1A', date: '5 hours ago' },
+      { id: 2, title: 'Not Like Us', artist: 'Kendrick Lamar', bpm: 100, key: '8A', date: 'Yesterday' },
+      { id: 15, title: 'Water', artist: 'Tyla', bpm: 114, key: '12A', date: 'Yesterday' },
+      { id: 20, title: 'Texas Hold Em', artist: 'Beyoncé', bpm: 120, key: '2A', date: '2 days ago' },
+      { id: 10, title: 'Bonita', artist: 'Daddy Yankee', bpm: 96, key: '4A', date: '3 days ago' },
+      { id: 14, title: 'Lose Control', artist: 'Teddy Swims', bpm: 97, key: '10B', date: '3 days ago' },
+      { id: 3, title: 'Beautiful Things', artist: 'Benson Boone', bpm: 110, key: '3B', date: '4 days ago' },
+      { id: 9, title: 'Birds of a Feather', artist: 'Billie Eilish', bpm: 105, key: '8B', date: '5 days ago' },
+      { id: 16, title: 'Houdini', artist: 'Eminem', bpm: 140, key: '5B', date: '1 week ago' },
+    ];
+
+    // Camelot wheel keys (outer = major, inner = minor)
+    const camelotKeys = [
+      { key: '1A', note: 'Abm', color: '#ff6b6b', angle: 0 },
+      { key: '2A', note: 'Ebm', color: '#ffa94d', angle: 30 },
+      { key: '3A', note: 'Bbm', color: '#ffd43b', angle: 60 },
+      { key: '4A', note: 'Fm', color: '#a9e34b', angle: 90 },
+      { key: '5A', note: 'Cm', color: '#69db7c', angle: 120 },
+      { key: '6A', note: 'Gm', color: '#38d9a9', angle: 150 },
+      { key: '7A', note: 'Dm', color: '#3bc9db', angle: 180 },
+      { key: '8A', note: 'Am', color: '#4dabf7', angle: 210 },
+      { key: '9A', note: 'Em', color: '#748ffc', angle: 240 },
+      { key: '10A', note: 'Bm', color: '#9775fa', angle: 270 },
+      { key: '11A', note: 'F#m', color: '#da77f2', angle: 300 },
+      { key: '12A', note: 'Dbm', color: '#f783ac', angle: 330 },
+      { key: '1B', note: 'B', color: '#ff8787', angle: 0 },
+      { key: '2B', note: 'F#', color: '#ffc078', angle: 30 },
+      { key: '3B', note: 'Db', color: '#ffe066', angle: 60 },
+      { key: '4B', note: 'Ab', color: '#c0eb75', angle: 90 },
+      { key: '5B', note: 'Eb', color: '#8ce99a', angle: 120 },
+      { key: '6B', note: 'Bb', color: '#63e6be', angle: 150 },
+      { key: '7B', note: 'F', color: '#66d9e8', angle: 180 },
+      { key: '8B', note: 'C', color: '#74c0fc', angle: 210 },
+      { key: '9B', note: 'G', color: '#91a7ff', angle: 240 },
+      { key: '10B', note: 'D', color: '#b197fc', angle: 270 },
+      { key: '11B', note: 'A', color: '#e599f7', angle: 300 },
+      { key: '12B', note: 'E', color: '#faa2c1', angle: 330 },
+    ];
+
+    // State
+    let currentView = localStorage.getItem('tvp-view') || 'list';
+    let selectedTracks = new Set();
+    let setBuilderTracks = JSON.parse(localStorage.getItem('tvp-set') || '[]');
+    let selectedCamelotKey = null;
+    let recentExpanded = false;
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      initView();
+      renderTracks();
+      renderRecentDownloads();
+      renderCamelotWheel();
+      updateSetBuilder();
+      loadTheme();
+    });
+
+    function loadTheme() {
+      if (localStorage.getItem('tvp-theme') === 'light') {
+        document.documentElement.classList.add('light');
+      }
+    }
+
+    function toggleTheme() {
+      document.documentElement.classList.toggle('light');
+      localStorage.setItem('tvp-theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
+    }
+
+    // ============================================
+    // VIEW TOGGLE (List/Grid)
+    // ============================================
+    function initView() {
+      setView(currentView);
+    }
+
+    function setView(view) {
+      currentView = view;
+      localStorage.setItem('tvp-view', view);
+
+      const listView = document.getElementById('videoList');
+      const gridView = document.getElementById('videoGrid');
+      const listBtn = document.getElementById('listViewBtn');
+      const gridBtn = document.getElementById('gridViewBtn');
+
+      if (view === 'list') {
+        listView.classList.add('video-list--visible');
+        listView.classList.remove('video-list--hidden');
+        gridView.classList.add('video-grid--hidden');
+        gridView.classList.remove('video-grid--visible');
+        listBtn.classList.add('view-toggle__btn--active');
+        gridBtn.classList.remove('view-toggle__btn--active');
+      } else {
+        gridView.classList.remove('video-grid--hidden');
+        gridView.classList.add('video-grid--visible');
+        listView.classList.remove('video-list--visible');
+        listView.classList.add('video-list--hidden');
+        gridBtn.classList.add('view-toggle__btn--active');
+        listBtn.classList.remove('view-toggle__btn--active');
+      }
+    }
+
+    // ============================================
+    // RENDER TRACKS
+    // ============================================
+    function renderTracks() {
+      renderListView();
+      renderGridView();
+    }
+
+    function renderListView() {
+      const container = document.getElementById('listRows');
+      container.innerHTML = sampleTracks.map((track, index) => `
+        <div class="video-list__row ${selectedTracks.has(track.id) ? 'video-list__row--selected' : ''}"
+             data-id="${track.id}"
+             onclick="handleRowClick(event, ${track.id})"
+             draggable="true"
+             ondragstart="handleDragStart(event, ${track.id})"
+             ondragend="handleDragEnd(event)">
+          <div class="video-list__checkbox ${selectedTracks.has(track.id) ? 'video-list__checkbox--checked' : ''}" onclick="event.stopPropagation(); toggleTrackSelection(${track.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </div>
+          <div class="video-list__thumb">
+            <img src="https://picsum.photos/120/68?random=${track.id + 100}" alt="">
+            <div class="video-list__thumb-play">
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            </div>
+          </div>
+          <div class="video-list__title">${track.title}</div>
+          <div class="video-list__artist">${track.artist}</div>
+          <div class="video-list__bpm">${track.bpm}</div>
+          <div class="video-list__key">${track.key}</div>
+          <div class="video-list__duration">${track.duration}</div>
+          <div class="video-list__quality video-list__quality--${track.quality.toLowerCase()}">${track.quality}</div>
+          <div class="video-list__genre">${track.genre}</div>
+          <div class="video-list__actions">
+            <button class="video-list__action-btn" onclick="event.stopPropagation(); openPreviewModal(${track.id})" title="Preview">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
+            </button>
+            <button class="video-list__action-btn" onclick="event.stopPropagation(); quickDownload(${track.id})" title="Download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderGridView() {
+      const container = document.getElementById('videoGrid');
+      container.innerHTML = sampleTracks.map(track => `
+        <div class="video-card ${selectedTracks.has(track.id) ? 'video-card--selected' : ''}"
+             data-id="${track.id}"
+             draggable="true"
+             ondragstart="handleDragStart(event, ${track.id})"
+             ondragend="handleDragEnd(event)">
+          <div class="video-card__checkbox ${selectedTracks.has(track.id) ? 'video-card__checkbox--checked' : ''}" onclick="event.stopPropagation(); toggleTrackSelection(${track.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+          </div>
+          <div class="video-card__thumb" onclick="openPreviewModal(${track.id})">
+            <img src="https://picsum.photos/400/225?random=${track.id + 100}" alt="">
+            <div class="video-card__overlay">
+              <div class="video-card__play">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+            </div>
+            ${track.isNew ? '<div class="video-card__badges"><span class="badge badge--new">NEW</span></div>' : ''}
+            ${track.isHot ? '<div class="video-card__badges"><span class="badge badge--hot">HOT</span></div>' : ''}
+            <span class="video-card__quality video-card__quality--${track.quality.toLowerCase()}">${track.quality}</span>
+            <span class="video-card__duration">${track.duration}</span>
+          </div>
+          <div class="video-card__content">
+            <h3 class="video-card__title">${track.title}</h3>
+            <p class="video-card__artist">${track.artist}</p>
+            <div class="video-card__meta">
+              <span>${track.bpm} BPM</span>
+              <span>${track.key}</span>
+            </div>
+            <div class="video-card__actions">
+              <button class="btn btn--primary" onclick="event.stopPropagation(); openPreviewModal(${track.id})">Download</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ============================================
+    // RECENTLY DOWNLOADED
+    // ============================================
+    function renderRecentDownloads() {
+      const container = document.getElementById('recentList');
+      const displayCount = recentExpanded ? recentDownloads.length : Math.min(10, recentDownloads.length);
+      const items = recentDownloads.slice(0, displayCount);
+
+      container.innerHTML = items.map(item => `
+        <div class="recent-item" onclick="openPreviewModal(${item.id})">
+          <div class="recent-item__thumb">
+            <img src="https://picsum.photos/96/54?random=${item.id + 200}" alt="">
+          </div>
+          <div class="recent-item__info">
+            <div class="recent-item__title">${item.title}</div>
+            <div class="recent-item__meta">${item.artist} • ${item.bpm} BPM • ${item.key}</div>
+          </div>
+          <div class="recent-item__date">${item.date}</div>
+          <button class="recent-item__btn" onclick="event.stopPropagation(); quickDownload(${item.id})">Re-download</button>
+        </div>
+      `).join('');
+
+      document.getElementById('recentCount').textContent = displayCount;
+      document.getElementById('recentExpandBtn').textContent = recentExpanded ? 'Show Less' : `Show All (47 total)`;
+    }
+
+    function toggleRecentExpand() {
+      recentExpanded = !recentExpanded;
+      renderRecentDownloads();
+    }
+
+    // ============================================
+    // SELECTION & BATCH OPERATIONS
+    // ============================================
+    function handleRowClick(event, trackId) {
+      if (event.shiftKey && selectedTracks.size > 0) {
+        // Shift-click for range selection
+        const lastSelected = Array.from(selectedTracks).pop();
+        const startIdx = sampleTracks.findIndex(t => t.id === lastSelected);
+        const endIdx = sampleTracks.findIndex(t => t.id === trackId);
+        const [from, to] = startIdx < endIdx ? [startIdx, endIdx] : [endIdx, startIdx];
+        for (let i = from; i <= to; i++) {
+          selectedTracks.add(sampleTracks[i].id);
+        }
+        updateSelectionUI();
+      } else if (event.ctrlKey || event.metaKey) {
+        // Ctrl/Cmd-click for toggle
+        toggleTrackSelection(trackId);
+      } else {
+        // Regular click opens preview
+        openPreviewModal(trackId);
+      }
+    }
+
+    function toggleTrackSelection(trackId) {
+      if (selectedTracks.has(trackId)) {
+        selectedTracks.delete(trackId);
+      } else {
+        selectedTracks.add(trackId);
+      }
+      updateSelectionUI();
+    }
+
+    function toggleSelectAll() {
+      if (selectedTracks.size === sampleTracks.length) {
+        selectedTracks.clear();
+      } else {
+        sampleTracks.forEach(t => selectedTracks.add(t.id));
+      }
+      updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
+      const count = selectedTracks.size;
+      document.getElementById('selectedCount').textContent = count;
+      document.getElementById('batchBar').classList.toggle('batch-bar--visible', count > 0);
+
+      // Update select all checkbox
+      const selectAllBox = document.getElementById('selectAllCheckbox');
+      if (count === sampleTracks.length) {
+        selectAllBox.classList.add('video-list__checkbox--checked');
+      } else {
+        selectAllBox.classList.remove('video-list__checkbox--checked');
+      }
+
+      renderTracks();
+    }
+
+    function clearSelection() {
+      selectedTracks.clear();
+      updateSelectionUI();
+    }
+
+    function batchDownload() {
+      const count = selectedTracks.size;
+      showToast('Batch Download Started', `Adding ${count} tracks to download queue...`, 'success');
+      clearSelection();
+    }
+
+    function addToSetBuilder() {
+      selectedTracks.forEach(id => {
+        if (!setBuilderTracks.find(t => t.id === id)) {
+          const track = sampleTracks.find(t => t.id === id);
+          if (track) setBuilderTracks.push({...track});
+        }
+      });
+      saveSetToStorage();
+      updateSetBuilder();
+      showToast('Added to Set', `${selectedTracks.size} tracks added to Set Builder`, 'success');
+      clearSelection();
+      if (!document.getElementById('setBuilder').classList.contains('set-builder--open')) {
+        toggleSetBuilder();
+      }
+    }
+
+    // ============================================
+    // SET BUILDER
+    // ============================================
+    function toggleSetBuilder() {
+      const panel = document.getElementById('setBuilder');
+      panel.classList.toggle('set-builder--open');
+    }
+
+    function updateSetBuilder() {
+      const container = document.getElementById('setTracks');
+      document.getElementById('setBuilderBadge').textContent = setBuilderTracks.length;
+      document.getElementById('setTrackCount').textContent = setBuilderTracks.length;
+
+      if (setBuilderTracks.length === 0) {
+        container.innerHTML = `
+          <div class="set-builder__empty">
+            <div class="set-builder__empty-icon">📀</div>
+            <div class="set-builder__empty-text">No tracks in your set</div>
+            <div class="set-builder__empty-hint">Drag tracks here or use "Add to Set"</div>
+          </div>
+        `;
+        document.getElementById('setDuration').textContent = '0:00';
+        document.getElementById('setBpmRange').textContent = '--';
+        return;
+      }
+
+      // Calculate stats
+      const totalSeconds = setBuilderTracks.reduce((acc, t) => {
+        const [min, sec] = t.duration.split(':').map(Number);
+        return acc + min * 60 + sec;
+      }, 0);
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      document.getElementById('setDuration').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+      const bpms = setBuilderTracks.map(t => t.bpm);
+      document.getElementById('setBpmRange').textContent = `${Math.min(...bpms)}-${Math.max(...bpms)}`;
+
+      container.innerHTML = setBuilderTracks.map((track, index) => {
+        const prevTrack = index > 0 ? setBuilderTracks[index - 1] : null;
+        const compatibility = prevTrack ? getCompatibility(prevTrack, track) : 'good';
+
+        return `
+          <div class="set-track"
+               data-index="${index}"
+               draggable="true"
+               ondragstart="handleSetDragStart(event, ${index})"
+               ondragover="handleSetDragOver(event)"
+               ondrop="handleSetDrop(event, ${index})"
+               ondragend="handleSetDragEnd(event)">
+            <div class="set-track__order">${index + 1}</div>
+            <div class="set-track__thumb">
+              <img src="https://picsum.photos/96/54?random=${track.id + 300}" alt="">
+            </div>
+            <div class="set-track__info">
+              <div class="set-track__title">${track.title}</div>
+              <div class="set-track__meta">
+                <span>${track.bpm} BPM</span>
+                <span>${track.key}</span>
+              </div>
+            </div>
+            ${index > 0 ? `<div class="set-track__compatibility set-track__compatibility--${compatibility}" title="${compatibility === 'good' ? 'Great mix!' : compatibility === 'ok' ? 'Acceptable' : 'Key clash'}"></div>` : ''}
+            <button class="set-track__remove" onclick="removeFromSet(${index})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getCompatibility(track1, track2) {
+      // Simplified Camelot compatibility check
+      const key1Num = parseInt(track1.key);
+      const key2Num = parseInt(track2.key);
+      const key1Letter = track1.key.slice(-1);
+      const key2Letter = track2.key.slice(-1);
+
+      // Same key = perfect
+      if (track1.key === track2.key) return 'good';
+
+      // Adjacent keys (+/- 1) on same letter = good
+      if (key1Letter === key2Letter && Math.abs(key1Num - key2Num) <= 1) return 'good';
+
+      // Same number, different letter = good (relative major/minor)
+      if (key1Num === key2Num && key1Letter !== key2Letter) return 'good';
+
+      // 2 steps away = ok
+      if (Math.abs(key1Num - key2Num) <= 2) return 'ok';
+
+      // BPM check
+      const bpmDiff = Math.abs(track1.bpm - track2.bpm);
+      if (bpmDiff > 8) return 'bad';
+
+      return 'ok';
+    }
+
+    let draggedSetIndex = null;
+
+    function handleSetDragStart(event, index) {
+      draggedSetIndex = index;
+      event.target.classList.add('set-track--dragging');
+    }
+
+    function handleSetDragOver(event) {
+      event.preventDefault();
+      event.currentTarget.classList.add('set-track--drag-over');
+    }
+
+    function handleSetDrop(event, targetIndex) {
+      event.preventDefault();
+      event.currentTarget.classList.remove('set-track--drag-over');
+
+      if (draggedSetIndex !== null && draggedSetIndex !== targetIndex) {
+        const [removed] = setBuilderTracks.splice(draggedSetIndex, 1);
+        setBuilderTracks.splice(targetIndex, 0, removed);
+        saveSetToStorage();
+        updateSetBuilder();
+      }
+    }
+
+    function handleSetDragEnd(event) {
+      event.target.classList.remove('set-track--dragging');
+      document.querySelectorAll('.set-track--drag-over').forEach(el => el.classList.remove('set-track--drag-over'));
+      draggedSetIndex = null;
+    }
+
+    function removeFromSet(index) {
+      setBuilderTracks.splice(index, 1);
+      saveSetToStorage();
+      updateSetBuilder();
+    }
+
+    function clearSet() {
+      if (confirm('Clear all tracks from your set?')) {
+        setBuilderTracks = [];
+        saveSetToStorage();
+        updateSetBuilder();
+      }
+    }
+
+    function saveSet() {
+      showToast('Set Saved', `"My Set" saved with ${setBuilderTracks.length} tracks`, 'success');
+    }
+
+    function downloadSet() {
+      if (setBuilderTracks.length === 0) {
+        showToast('Empty Set', 'Add tracks to your set first', 'info');
+        return;
+      }
+      showToast('Downloading Set', `Downloading ${setBuilderTracks.length} tracks...`, 'success');
+    }
+
+    function saveSetToStorage() {
+      localStorage.setItem('tvp-set', JSON.stringify(setBuilderTracks));
+    }
+
+    // ============================================
+    // DRAG & DROP TO SET BUILDER
+    // ============================================
+    let draggedTrackId = null;
+
+    function handleDragStart(event, trackId) {
+      draggedTrackId = trackId;
+      event.dataTransfer.effectAllowed = 'copy';
+    }
+
+    function handleDragEnd(event) {
+      draggedTrackId = null;
+    }
+
+    // Set builder drop zone
+    document.addEventListener('DOMContentLoaded', () => {
+      const setBuilder = document.getElementById('setBuilder');
+      const setTracks = document.getElementById('setTracks');
+
+      setTracks.addEventListener('dragover', (e) => {
+        if (draggedTrackId) {
+          e.preventDefault();
+          setTracks.style.background = 'var(--accent-cyan-subtle)';
+        }
+      });
+
+      setTracks.addEventListener('dragleave', () => {
+        setTracks.style.background = '';
+      });
+
+      setTracks.addEventListener('drop', (e) => {
+        e.preventDefault();
+        setTracks.style.background = '';
+
+        if (draggedTrackId && !setBuilderTracks.find(t => t.id === draggedTrackId)) {
+          const track = sampleTracks.find(t => t.id === draggedTrackId);
+          if (track) {
+            setBuilderTracks.push({...track});
+            saveSetToStorage();
+            updateSetBuilder();
+            showToast('Added to Set', `${track.title} added to Set Builder`, 'success');
+          }
+        }
+        draggedTrackId = null;
+      });
+    });
+
+    // ============================================
+    // CAMELOT WHEEL
+    // ============================================
+    function renderCamelotWheel() {
+      const svg = document.getElementById('camelotWheelSvg');
+      const centerX = 175;
+      const centerY = 175;
+      const outerRadius = 160;
+      const innerRadius = 100;
+      const middleRadius = 130;
+
+      let paths = '';
+
+      // Render outer ring (A keys - minor)
+      camelotKeys.slice(0, 12).forEach((key, i) => {
+        const startAngle = (key.angle - 15) * Math.PI / 180;
+        const endAngle = (key.angle + 15) * Math.PI / 180;
+
+        const x1 = centerX + middleRadius * Math.cos(startAngle);
+        const y1 = centerY + middleRadius * Math.sin(startAngle);
+        const x2 = centerX + outerRadius * Math.cos(startAngle);
+        const y2 = centerY + outerRadius * Math.sin(startAngle);
+        const x3 = centerX + outerRadius * Math.cos(endAngle);
+        const y3 = centerY + outerRadius * Math.sin(endAngle);
+        const x4 = centerX + middleRadius * Math.cos(endAngle);
+        const y4 = centerY + middleRadius * Math.sin(endAngle);
+
+        paths += `
+          <path class="camelot-segment" data-key="${key.key}"
+                d="M ${x1} ${y1} L ${x2} ${y2} A ${outerRadius} ${outerRadius} 0 0 1 ${x3} ${y3} L ${x4} ${y4} A ${middleRadius} ${middleRadius} 0 0 0 ${x1} ${y1}"
+                fill="${key.color}" stroke="var(--bg-primary)" stroke-width="2"
+                onclick="selectCamelotKey('${key.key}')"/>
+          <text x="${centerX + (outerRadius - 20) * Math.cos(key.angle * Math.PI / 180)}"
+                y="${centerY + (outerRadius - 20) * Math.sin(key.angle * Math.PI / 180)}"
+                text-anchor="middle" dominant-baseline="middle"
+                fill="#000" font-size="11" font-weight="700" pointer-events="none">${key.key}</text>
+        `;
+      });
+
+      // Render inner ring (B keys - major)
+      camelotKeys.slice(12).forEach((key, i) => {
+        const startAngle = (key.angle - 15) * Math.PI / 180;
+        const endAngle = (key.angle + 15) * Math.PI / 180;
+
+        const x1 = centerX + innerRadius * Math.cos(startAngle);
+        const y1 = centerY + innerRadius * Math.sin(startAngle);
+        const x2 = centerX + middleRadius * Math.cos(startAngle);
+        const y2 = centerY + middleRadius * Math.sin(startAngle);
+        const x3 = centerX + middleRadius * Math.cos(endAngle);
+        const y3 = centerY + middleRadius * Math.sin(endAngle);
+        const x4 = centerX + innerRadius * Math.cos(endAngle);
+        const y4 = centerY + innerRadius * Math.sin(endAngle);
+
+        paths += `
+          <path class="camelot-segment" data-key="${key.key}"
+                d="M ${x1} ${y1} L ${x2} ${y2} A ${middleRadius} ${middleRadius} 0 0 1 ${x3} ${y3} L ${x4} ${y4} A ${innerRadius} ${innerRadius} 0 0 0 ${x1} ${y1}"
+                fill="${key.color}" stroke="var(--bg-primary)" stroke-width="2"
+                onclick="selectCamelotKey('${key.key}')"/>
+          <text x="${centerX + (innerRadius + 18) * Math.cos(key.angle * Math.PI / 180)}"
+                y="${centerY + (innerRadius + 18) * Math.sin(key.angle * Math.PI / 180)}"
+                text-anchor="middle" dominant-baseline="middle"
+                fill="#000" font-size="11" font-weight="700" pointer-events="none">${key.key}</text>
+        `;
+      });
+
+      // Center circle
+      paths += `<circle cx="${centerX}" cy="${centerY}" r="${innerRadius - 10}" fill="var(--bg-secondary)" stroke="var(--border-default)" stroke-width="2"/>`;
+      paths += `<text x="${centerX}" y="${centerY - 10}" text-anchor="middle" fill="var(--text-primary)" font-size="14" font-weight="700">CAMELOT</text>`;
+      paths += `<text x="${centerX}" y="${centerY + 10}" text-anchor="middle" fill="var(--text-muted)" font-size="11">Click to filter</text>`;
+
+      svg.innerHTML = paths;
+    }
+
+    function openCamelotWheel() {
+      document.getElementById('camelotModal').classList.add('camelot-modal--open');
+      document.getElementById('backdrop').classList.add('backdrop--visible');
+      document.getElementById('camelotBtn').classList.add('camelot-btn--active');
+    }
+
+    function closeCamelotWheel() {
+      document.getElementById('camelotModal').classList.remove('camelot-modal--open');
+      document.getElementById('backdrop').classList.remove('backdrop--visible');
+      if (!selectedCamelotKey) {
+        document.getElementById('camelotBtn').classList.remove('camelot-btn--active');
+      }
+    }
+
+    function selectCamelotKey(key) {
+      selectedCamelotKey = key;
+
+      // Update visual
+      document.querySelectorAll('.camelot-segment').forEach(seg => {
+        seg.classList.remove('camelot-segment--active', 'camelot-segment--compatible');
+        if (seg.dataset.key === key) {
+          seg.classList.add('camelot-segment--active');
+        } else if (isCompatibleKey(key, seg.dataset.key)) {
+          seg.classList.add('camelot-segment--compatible');
+        }
+      });
+
+      document.getElementById('camelotSelected').style.display = 'inline-flex';
+      document.getElementById('camelotSelectedKey').textContent = key;
+    }
+
+    function isCompatibleKey(key1, key2) {
+      const num1 = parseInt(key1);
+      const num2 = parseInt(key2);
+      const letter1 = key1.slice(-1);
+      const letter2 = key2.slice(-1);
+
+      // Same key
+      if (key1 === key2) return true;
+
+      // Adjacent numbers on same letter
+      if (letter1 === letter2 && (Math.abs(num1 - num2) === 1 || Math.abs(num1 - num2) === 11)) return true;
+
+      // Same number, different letter (relative major/minor)
+      if (num1 === num2 && letter1 !== letter2) return true;
+
+      return false;
+    }
+
+    function clearCamelotFilter() {
+      selectedCamelotKey = null;
+      document.querySelectorAll('.camelot-segment').forEach(seg => {
+        seg.classList.remove('camelot-segment--active', 'camelot-segment--compatible');
+      });
+      document.getElementById('camelotSelected').style.display = 'none';
+      document.getElementById('camelotBtn').classList.remove('camelot-btn--active');
+      showToast('Filter Cleared', 'Showing all tracks', 'info');
+    }
+
+    function applyCamelotFilter() {
+      if (selectedCamelotKey) {
+        closeCamelotWheel();
+        showToast('Key Filter Applied', `Showing tracks compatible with ${selectedCamelotKey}`, 'success');
+        // In production, this would filter the track list
+      }
+    }
+
+    // ============================================
+    // PREVIEW MODAL
+    // ============================================
+    let currentPreviewTrack = null;
+
+    function openPreviewModal(trackId) {
+      const track = sampleTracks.find(t => t.id === trackId) || recentDownloads.find(t => t.id === trackId);
+      if (!track) return;
+
+      currentPreviewTrack = track;
+
+      document.getElementById('previewTitle').textContent = track.title;
+      document.getElementById('previewArtist').textContent = track.artist;
+      document.getElementById('previewBpm').textContent = track.bpm;
+      document.getElementById('previewKey').textContent = track.key;
+      document.getElementById('previewDuration').textContent = track.duration || '3:30';
+      document.getElementById('previewQuality').textContent = track.quality || '4K';
+      document.getElementById('previewImage').src = `https://picsum.photos/600/338?random=${track.id + 400}`;
+
+      document.getElementById('previewModal').classList.add('preview-modal--open');
+      document.getElementById('backdrop').classList.add('backdrop--visible');
+    }
+
+    function closePreviewModal() {
+      document.getElementById('previewModal').classList.remove('preview-modal--open');
+      document.getElementById('backdrop').classList.remove('backdrop--visible');
+      currentPreviewTrack = null;
+    }
+
+    function toggleOption(el) {
+      const check = el.querySelector('.preview-modal__option-check');
+      check.classList.toggle('preview-modal__option-check--checked');
+    }
+
+    function downloadFromModal() {
+      if (currentPreviewTrack) {
+        showToast('Download Started', `${currentPreviewTrack.title} added to queue`, 'success');
+        closePreviewModal();
+      }
+    }
+
+    function addToSetFromModal() {
+      if (currentPreviewTrack && !setBuilderTracks.find(t => t.id === currentPreviewTrack.id)) {
+        setBuilderTracks.push({...currentPreviewTrack});
+        saveSetToStorage();
+        updateSetBuilder();
+        showToast('Added to Set', `${currentPreviewTrack.title} added to Set Builder`, 'success');
+        closePreviewModal();
+        if (!document.getElementById('setBuilder').classList.contains('set-builder--open')) {
+          toggleSetBuilder();
+        }
+      }
+    }
+
+    function quickDownload(trackId) {
+      const track = sampleTracks.find(t => t.id === trackId);
+      if (track) {
+        showToast('Download Started', `${track.title} added to queue`, 'success');
+      }
+    }
+
+    // ============================================
+    // UTILITIES
+    // ============================================
+    function closeAllModals() {
+      closePreviewModal();
+      closeCamelotWheel();
+    }
+
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast--${type}`;
+      toast.innerHTML = `
+        <div class="toast__content">
+          <div class="toast__title">${title}</div>
+          <div class="toast__message">${message}</div>
+        </div>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('toast--show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('toast--show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // ============================================
+    // KEYBOARD SHORTCUTS SYSTEM
+    // ============================================
+    let focusedTrackIndex = 0;
+    let isPreviewPlaying = false;
+
+    // Shortcuts Panel
+    function toggleShortcutsPanel() {
+      const panel = document.getElementById('shortcutsPanel');
+      const backdrop = document.getElementById('backdrop');
+      panel.classList.toggle('shortcuts-panel--open');
+      if (panel.classList.contains('shortcuts-panel--open')) {
+        backdrop.classList.add('backdrop--visible');
+      } else if (!document.getElementById('previewModal').classList.contains('preview-modal--open') &&
+                 !document.getElementById('camelotModal').classList.contains('camelot-modal--open')) {
+        backdrop.classList.remove('backdrop--visible');
+      }
+    }
+
+    // Visual Feedback for Shortcuts
+    function showShortcutFeedback(key, action) {
+      const feedback = document.getElementById('shortcutFeedback');
+      document.getElementById('feedbackKey').textContent = key;
+      document.getElementById('feedbackAction').textContent = action;
+      feedback.classList.add('shortcut-feedback--show');
+      setTimeout(() => feedback.classList.remove('shortcut-feedback--show'), 800);
+    }
+
+    // Update focused track visual
+    function updateFocusedTrack() {
+      // Remove all focus indicators
+      document.querySelectorAll('.video-list__row--focused, .video-card--focused').forEach(el => {
+        el.classList.remove('video-list__row--focused', 'video-card--focused');
+      });
+
+      // Add focus to current track
+      const track = sampleTracks[focusedTrackIndex];
+      if (track) {
+        const listRow = document.querySelector(`.video-list__row[data-id="${track.id}"]`);
+        const gridCard = document.querySelector(`.video-card[data-id="${track.id}"]`);
+        if (listRow) {
+          listRow.classList.add('video-list__row--focused');
+          listRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+        if (gridCard) {
+          gridCard.classList.add('video-card--focused');
+          gridCard.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      }
+    }
+
+    // Navigation shortcuts
+    function navigateTrack(direction) {
+      if (direction === 'next') {
+        focusedTrackIndex = Math.min(focusedTrackIndex + 1, sampleTracks.length - 1);
+      } else {
+        focusedTrackIndex = Math.max(focusedTrackIndex - 1, 0);
+      }
+      updateFocusedTrack();
+    }
+
+    // Add focused track to set
+    function addFocusedToSet() {
+      const track = sampleTracks[focusedTrackIndex];
+      if (track && !setBuilderTracks.find(t => t.id === track.id)) {
+        setBuilderTracks.push({...track});
+        saveSetToStorage();
+        updateSetBuilder();
+        showShortcutFeedback('S', `Added "${track.title}" to Set`);
+        showToast('Added to Set', track.title, 'success');
+      } else if (selectedTracks.size > 0) {
+        addToSetBuilder();
+        showShortcutFeedback('S', `Added ${selectedTracks.size} tracks to Set`);
+      }
+    }
+
+    // Download focused/selected
+    function downloadFocusedOrSelected() {
+      if (selectedTracks.size > 0) {
+        showShortcutFeedback('D', `Downloading ${selectedTracks.size} tracks`);
+        batchDownload();
+      } else {
+        const track = sampleTracks[focusedTrackIndex];
+        if (track) {
+          showShortcutFeedback('D', `Downloading "${track.title}"`);
+          quickDownload(track.id);
+        }
+      }
+    }
+
+    // Toggle selection of focused track
+    function toggleFocusedSelection() {
+      const track = sampleTracks[focusedTrackIndex];
+      if (track) {
+        toggleTrackSelection(track.id);
+        showShortcutFeedback('X', selectedTracks.has(track.id) ? 'Selected' : 'Deselected');
+      }
+    }
+
+    // Preview focused track
+    function previewFocusedTrack() {
+      const track = sampleTracks[focusedTrackIndex];
+      if (track) {
+        openPreviewModal(track.id);
+        showShortcutFeedback('P', 'Preview');
+      }
+    }
+
+    // Toggle play/pause
+    function togglePlayPause() {
+      isPreviewPlaying = !isPreviewPlaying;
+      showShortcutFeedback('Space', isPreviewPlaying ? 'Playing' : 'Paused');
+      showToast(isPreviewPlaying ? 'Playing' : 'Paused', 'Preview playback', 'info');
+    }
+
+    // Filter by similar BPM
+    function filterSimilarBPM() {
+      const track = sampleTracks[focusedTrackIndex];
+      if (track) {
+        showShortcutFeedback('M', `BPM ${track.bpm - 5} - ${track.bpm + 5}`);
+        showToast('BPM Filter', `Showing tracks ${track.bpm - 5} - ${track.bpm + 5} BPM`, 'info');
+      }
+    }
+
+    // Show harmonic matches
+    function showHarmonicMatches() {
+      const track = sampleTracks[focusedTrackIndex];
+      if (track) {
+        showShortcutFeedback('H', `Harmonic: ${track.key}`);
+        selectCamelotKey(track.key);
+        showToast('Harmonic Filter', `Showing tracks compatible with ${track.key}`, 'info');
+      }
+    }
+
+    // Jump to section
+    function jumpToSection(num) {
+      const sections = ['recentSection', 'section-browse'];
+      const sectionNames = ['Recently Downloaded', 'Browse Library'];
+      const idx = num - 1;
+      if (idx < sections.length) {
+        const section = document.getElementById(sections[idx]);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          showShortcutFeedback(num.toString(), sectionNames[idx]);
+        }
+      }
+    }
+
+    // Close all modals including shortcuts
+    function closeAllModals() {
+      closePreviewModal();
+      closeCamelotWheel();
+      const shortcutsPanel = document.getElementById('shortcutsPanel');
+      if (shortcutsPanel.classList.contains('shortcuts-panel--open')) {
+        shortcutsPanel.classList.remove('shortcuts-panel--open');
+      }
+      document.getElementById('backdrop').classList.remove('backdrop--visible');
+      clearSelection();
+    }
+
+    // Main keyboard event handler
+    document.addEventListener('keydown', (e) => {
+      // Don't trigger shortcuts when typing in input
+      const isTyping = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
+
+      // Global shortcuts (work even when typing)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('mainSearch').focus();
+        showShortcutFeedback('⌘K', 'Search');
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeAllModals();
+        return;
+      }
+
+      // Don't process other shortcuts if typing
+      if (isTyping) return;
+
+      // Playback Controls
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        togglePlayPause();
+        return;
+      }
+
+      if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        previewFocusedTrack();
+        return;
+      }
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        showShortcutFeedback('←', 'Seek -5s');
+        return;
+      }
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        showShortcutFeedback('→', 'Seek +5s');
+        return;
+      }
+
+      // Navigation
+      if (e.key === 'j' || e.key === 'J' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        navigateTrack('next');
+        showShortcutFeedback(e.key === 'ArrowDown' ? '↓' : 'J', 'Next track');
+        return;
+      }
+
+      if (e.key === 'k' || e.key === 'K' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateTrack('prev');
+        showShortcutFeedback(e.key === 'ArrowUp' ? '↑' : 'K', 'Previous track');
+        return;
+      }
+
+      if (e.key === 'x' || e.key === 'X') {
+        e.preventDefault();
+        toggleFocusedSelection();
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        toggleSelectAll();
+        showShortcutFeedback('⌘A', 'Select All');
+        return;
+      }
+
+      // Number keys for section jump
+      if (e.key >= '1' && e.key <= '5') {
+        e.preventDefault();
+        jumpToSection(parseInt(e.key));
+        return;
+      }
+
+      // Set Building
+      if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        addFocusedToSet();
+        return;
+      }
+
+      if (e.key === 'b' || e.key === 'B') {
+        e.preventDefault();
+        toggleSetBuilder();
+        showShortcutFeedback('B', 'Set Builder');
+        return;
+      }
+
+      if (e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        downloadFocusedOrSelected();
+        return;
+      }
+
+      // Mixing Helpers
+      if (e.key === 'c' || e.key === 'C') {
+        e.preventDefault();
+        openCamelotWheel();
+        showShortcutFeedback('C', 'Camelot Wheel');
+        return;
+      }
+
+      if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        filterSimilarBPM();
+        return;
+      }
+
+      if (e.key === 'h' || e.key === 'H') {
+        e.preventDefault();
+        showHarmonicMatches();
+        return;
+      }
+
+      // View & Interface
+      if (e.key === 'v' || e.key === 'V') {
+        e.preventDefault();
+        const newView = currentView === 'list' ? 'grid' : 'list';
+        setView(newView);
+        showShortcutFeedback('V', newView === 'list' ? 'List View' : 'Grid View');
+        return;
+      }
+
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        toggleTheme();
+        showShortcutFeedback('T', 'Toggle Theme');
+        return;
+      }
+
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        toggleShortcutsPanel();
+        return;
+      }
+    });
+
+    // Initialize focus on first track
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(updateFocusedTrack, 100);
+    });
+  </script>
+</body>
+</html>

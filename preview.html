@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Phase 5 Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a24;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0b0;
+      --text-muted: #606070;
+      --accent-cyan: #00d4ff;
+      --accent-coral: #ff6b6b;
+      --border-subtle: #2a2a3a;
+    }
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, transparent 50%, rgba(255,107,107,0.1) 100%);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px rgba(0,212,255,0.3);
+    }
+    .section-title {
+      color: var(--accent-cyan);
+      border-bottom: 2px solid var(--accent-cyan);
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 flex items-center gap-6 h-[72px] px-6 border-b" style="background: var(--bg-secondary); border-color: var(--border-subtle);">
+    <!-- Logo -->
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--accent-cyan);">
+        <span class="text-black font-bold text-sm">TVP</span>
+      </div>
+      <span class="font-bold text-lg">The Video Pool</span>
+    </div>
+
+    <!-- Search -->
+    <div class="flex-1 max-w-xl">
+      <div class="flex items-center gap-2 px-4 py-2 rounded-xl border" style="background: var(--bg-tertiary); border-color: var(--border-subtle);">
+        <svg class="w-5 h-5" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <span style="color: var(--text-muted);">Search videos, artists...</span>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex items-center gap-4">
+      <a href="#" class="text-sm" style="color: var(--text-secondary);">Browse</a>
+      <a href="#" class="text-sm" style="color: var(--text-secondary);">Library</a>
+    </nav>
+
+    <!-- Download Counter (NEW Phase 5) -->
+    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border" style="background: var(--bg-tertiary); border-color: var(--border-subtle);">
+      <svg class="w-4 h-4" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+      </svg>
+      <span class="text-sm font-mono" style="color: var(--accent-cyan);">45 / 200</span>
+    </div>
+
+    <!-- Set Builder Button -->
+    <button class="flex items-center gap-2 px-3 py-2 rounded-lg border" style="border-color: var(--accent-cyan); color: var(--accent-cyan);">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+      </svg>
+      <span class="text-sm font-medium">Set Builder</span>
+      <span class="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white" style="background: var(--accent-coral);">3</span>
+    </button>
+
+    <!-- User -->
+    <div class="w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm text-black" style="background: var(--accent-cyan);">DJ</div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Free Trial Banner (NEW Phase 5) -->
+    <div class="mb-8 p-4 rounded-xl border flex items-center justify-between" style="background: linear-gradient(90deg, rgba(0,212,255,0.1), rgba(255,107,107,0.1)); border-color: var(--border-subtle);">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: rgba(0,212,255,0.2);">
+          <svg class="w-5 h-5" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="font-semibold">Free Trial: 142 days remaining</p>
+          <p class="text-sm" style="color: var(--text-secondary);">Upgrade to Pro for unlimited downloads and premium features</p>
+        </div>
+      </div>
+      <button class="px-4 py-2 rounded-lg font-semibold text-black" style="background: var(--accent-cyan);">Upgrade Now</button>
+    </div>
+
+    <!-- AI Search Hero (NEW Phase 5) -->
+    <section class="mb-12 gradient-bg rounded-2xl p-8">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2);">
+          <svg class="w-4 h-4" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+          </svg>
+          <span class="text-sm font-medium" style="color: var(--accent-cyan);">AI-Powered Search</span>
+        </div>
+        <h2 class="text-3xl font-bold mb-3">Find the perfect track in <span style="color: var(--accent-cyan);">natural language</span></h2>
+        <p style="color: var(--text-secondary);">Describe what you're looking for and our AI will find matching tracks.</p>
+      </div>
+
+      <!-- AI Search Input -->
+      <div class="max-w-2xl mx-auto">
+        <div class="flex items-center gap-3 px-4 py-3 rounded-2xl border-2" style="background: linear-gradient(90deg, var(--bg-secondary), var(--bg-tertiary)); border-color: var(--accent-cyan);">
+          <svg class="w-5 h-5" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+          </svg>
+          <span style="color: var(--text-muted);">Try: "upbeat hip-hop tracks for a club warmup"</span>
+          <button class="ml-auto px-4 py-2 rounded-xl font-medium text-black" style="background: var(--accent-cyan);">Search</button>
+        </div>
+
+        <!-- Parse Preview -->
+        <div class="mt-3 p-3 rounded-xl flex items-center gap-2 text-sm" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle);">
+          <span style="color: var(--text-muted);">AI understood:</span>
+          <span>Genre: Hip-Hop • Tempo: upbeat (110-140 BPM)</span>
+          <span class="ml-auto px-2 py-0.5 rounded-full text-xs" style="background: var(--bg-tertiary); color: #4ade80;">high match</span>
+        </div>
+      </div>
+
+      <!-- Quick Filters -->
+      <div class="flex justify-center gap-3 mt-6">
+        <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); color: var(--text-secondary);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+          Trending Now
+        </button>
+        <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); color: var(--text-secondary);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          New Releases
+        </button>
+        <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); color: var(--text-secondary);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+          Hip-Hop Bangers
+        </button>
+      </div>
+    </section>
+
+    <!-- Video Grid Section -->
+    <section class="mb-12">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold">Trending Now</h3>
+        <a href="#" class="text-sm" style="color: var(--accent-cyan);">See All →</a>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <!-- Video Cards -->
+        <div class="group cursor-pointer">
+          <div class="aspect-video rounded-lg mb-2 relative overflow-hidden" style="background: var(--bg-tertiary);">
+            <img src="https://picsum.photos/320/180?random=1" class="w-full h-full object-cover" alt="">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--accent-cyan);">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+            <span class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-xs font-medium text-black" style="background: var(--accent-cyan);">4K</span>
+          </div>
+          <p class="text-sm font-medium truncate">APT.</p>
+          <p class="text-xs truncate" style="color: var(--text-muted);">ROSÉ & Bruno Mars</p>
+          <div class="flex items-center gap-2 mt-1 text-xs" style="color: var(--text-muted);">
+            <span class="font-mono">128 BPM</span>
+            <span style="color: var(--accent-cyan);">Am</span>
+          </div>
+        </div>
+        <div class="group cursor-pointer">
+          <div class="aspect-video rounded-lg mb-2 relative overflow-hidden" style="background: var(--bg-tertiary);">
+            <img src="https://picsum.photos/320/180?random=2" class="w-full h-full object-cover" alt="">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--accent-cyan);">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+          </div>
+          <p class="text-sm font-medium truncate">Not Like Us</p>
+          <p class="text-xs truncate" style="color: var(--text-muted);">Kendrick Lamar</p>
+          <div class="flex items-center gap-2 mt-1 text-xs" style="color: var(--text-muted);">
+            <span class="font-mono">102 BPM</span>
+            <span style="color: var(--accent-cyan);">Dm</span>
+          </div>
+        </div>
+        <div class="group cursor-pointer">
+          <div class="aspect-video rounded-lg mb-2 relative overflow-hidden" style="background: var(--bg-tertiary);">
+            <img src="https://picsum.photos/320/180?random=3" class="w-full h-full object-cover" alt="">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--accent-cyan);">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+            <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded text-xs font-medium text-white" style="background: var(--accent-coral);">NEW</span>
+          </div>
+          <p class="text-sm font-medium truncate">Die With A Smile</p>
+          <p class="text-xs truncate" style="color: var(--text-muted);">Lady Gaga & Bruno Mars</p>
+          <div class="flex items-center gap-2 mt-1 text-xs" style="color: var(--text-muted);">
+            <span class="font-mono">158 BPM</span>
+            <span style="color: var(--accent-cyan);">F</span>
+          </div>
+        </div>
+        <div class="group cursor-pointer">
+          <div class="aspect-video rounded-lg mb-2 relative overflow-hidden" style="background: var(--bg-tertiary);">
+            <img src="https://picsum.photos/320/180?random=4" class="w-full h-full object-cover" alt="">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--accent-cyan);">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+          </div>
+          <p class="text-sm font-medium truncate">Birds of a Feather</p>
+          <p class="text-xs truncate" style="color: var(--text-muted);">Billie Eilish</p>
+          <div class="flex items-center gap-2 mt-1 text-xs" style="color: var(--text-muted);">
+            <span class="font-mono">105 BPM</span>
+            <span style="color: var(--accent-cyan);">A</span>
+          </div>
+        </div>
+        <div class="group cursor-pointer">
+          <div class="aspect-video rounded-lg mb-2 relative overflow-hidden" style="background: var(--bg-tertiary);">
+            <img src="https://picsum.photos/320/180?random=5" class="w-full h-full object-cover" alt="">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--accent-cyan);">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+          </div>
+          <p class="text-sm font-medium truncate">Espresso</p>
+          <p class="text-xs truncate" style="color: var(--text-muted);">Sabrina Carpenter</p>
+          <div class="flex items-center gap-2 mt-1 text-xs" style="color: var(--text-muted);">
+            <span class="font-mono">104 BPM</span>
+            <span style="color: var(--accent-cyan);">Cm</span>
+          </div>
+        </div>
+        <div class="group cursor-pointer">
+          <div class="aspect-video rounded-lg mb-2 relative overflow-hidden" style="background: var(--bg-tertiary);">
+            <img src="https://picsum.photos/320/180?random=6" class="w-full h-full object-cover" alt="">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--accent-cyan);">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+          </div>
+          <p class="text-sm font-medium truncate">Carnival</p>
+          <p class="text-xs truncate" style="color: var(--text-muted);">¥$, Kanye West</p>
+          <div class="flex items-center gap-2 mt-1 text-xs" style="color: var(--text-muted);">
+            <span class="font-mono">138 BPM</span>
+            <span style="color: var(--accent-cyan);">Em</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Membership Pricing (Phase 5) -->
+    <section class="mb-12">
+      <h3 class="section-title text-xl font-bold">Membership Plans (Phase 5 - PRD Pricing)</h3>
+      <div class="grid md:grid-cols-2 gap-6 max-w-3xl">
+        <!-- Free Tier -->
+        <div class="p-6 rounded-xl border" style="background: var(--bg-secondary); border-color: var(--border-subtle);">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+            </svg>
+            <h4 class="text-lg font-bold">Free Trial</h4>
+          </div>
+          <div class="mb-4">
+            <span class="text-3xl font-bold">$0</span>
+            <span style="color: var(--text-muted);">/mo</span>
+          </div>
+          <ul class="space-y-2 text-sm mb-6" style="color: var(--text-secondary);">
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" style="color: #4ade80;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              2 downloads/month
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" style="color: #4ade80;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              HD quality
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" style="color: #4ade80;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              6-month trial period
+            </li>
+          </ul>
+          <button class="w-full py-3 rounded-lg font-medium border" style="border-color: var(--border-subtle); color: var(--text-secondary);">Current Plan</button>
+        </div>
+
+        <!-- Pro Tier -->
+        <div class="p-6 rounded-xl border relative" style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary)); border-color: var(--accent-cyan);">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-black" style="background: var(--accent-cyan);">POPULAR</div>
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+            </svg>
+            <h4 class="text-lg font-bold">Video Pool Pro</h4>
+          </div>
+          <div class="mb-2">
+            <span class="text-3xl font-bold" style="color: var(--accent-cyan);">$34.99</span>
+            <span style="color: var(--text-muted);">/mo</span>
+          </div>
+          <p class="text-xs mb-4" style="color: var(--text-muted);">or $99.99/quarter • $299.99/year</p>
+          <ul class="space-y-2 text-sm mb-6" style="color: var(--text-secondary);">
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              200+ downloads/month
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              4K quality
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              AI Search & Set Builder Pro
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              Priority support
+            </li>
+          </ul>
+          <button class="w-full py-3 rounded-lg font-semibold text-black glow-cyan" style="background: var(--accent-cyan);">Upgrade Now</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Set Builder Panel Preview -->
+    <section class="mb-12">
+      <h3 class="section-title text-xl font-bold">Set Builder with Sharing (Phase 5 - NEW)</h3>
+      <div class="max-w-md rounded-xl border overflow-hidden" style="background: var(--bg-secondary); border-color: var(--border-subtle);">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b" style="border-color: var(--border-subtle);">
+          <div>
+            <h4 class="font-bold flex items-center gap-2">
+              <svg class="w-5 h-5" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+              </svg>
+              Friday Night Club Set
+            </h4>
+            <p class="text-xs" style="color: var(--text-muted);">3 tracks • 12m</p>
+          </div>
+          <button class="p-2 rounded-lg" style="background: var(--bg-tertiary); color: var(--accent-cyan);" title="Share Set">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Track List -->
+        <div class="p-4 space-y-2">
+          <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--bg-tertiary);">
+            <svg class="w-4 h-4" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+            </svg>
+            <span class="w-6 text-center text-xs font-mono" style="color: var(--text-muted);">1</span>
+            <div class="flex-1">
+              <p class="text-sm font-medium">Not Like Us</p>
+              <p class="text-xs" style="color: var(--text-muted);">Kendrick Lamar</p>
+            </div>
+            <span class="text-xs font-mono" style="color: var(--text-muted);">102</span>
+            <span class="text-xs font-mono" style="color: var(--accent-cyan);">Dm</span>
+          </div>
+          <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--bg-tertiary);">
+            <svg class="w-4 h-4" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+            </svg>
+            <span class="w-6 text-center text-xs font-mono" style="color: var(--text-muted);">2</span>
+            <div class="flex-1">
+              <p class="text-sm font-medium">APT.</p>
+              <p class="text-xs" style="color: var(--text-muted);">ROSÉ & Bruno Mars</p>
+            </div>
+            <span class="text-xs font-mono" style="color: var(--text-muted);">128</span>
+            <span class="text-xs font-mono" style="color: var(--accent-cyan);">Am</span>
+          </div>
+          <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--bg-tertiary);">
+            <svg class="w-4 h-4" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+            </svg>
+            <span class="w-6 text-center text-xs font-mono" style="color: var(--text-muted);">3</span>
+            <div class="flex-1">
+              <p class="text-sm font-medium">Espresso</p>
+              <p class="text-xs" style="color: var(--text-muted);">Sabrina Carpenter</p>
+            </div>
+            <span class="text-xs font-mono" style="color: var(--text-muted);">104</span>
+            <span class="text-xs font-mono" style="color: var(--accent-cyan);">Cm</span>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-4 py-4 border-t flex gap-3" style="border-color: var(--border-subtle);">
+          <button class="flex-1 py-3 rounded-lg font-medium border flex items-center justify-center gap-2" style="border-color: var(--border-subtle); color: var(--text-secondary);">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            Clear
+          </button>
+          <button class="flex-[2] py-3 rounded-lg font-semibold text-black flex items-center justify-center gap-2" style="background: var(--accent-cyan);">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Download Set
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Share Modal Preview -->
+    <section class="mb-12">
+      <h3 class="section-title text-xl font-bold">Share Set Modal (Phase 5 - NEW)</h3>
+      <div class="max-w-lg rounded-xl border overflow-hidden" style="background: var(--bg-secondary); border-color: var(--border-subtle);">
+        <!-- Header -->
+        <div class="px-6 py-5 border-b" style="border-color: var(--border-subtle); background: linear-gradient(90deg, rgba(0,212,255,0.1), rgba(255,107,107,0.1));">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(0,212,255,0.2);">
+              <svg class="w-6 h-6" style="color: var(--accent-cyan);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold">Share Your Set</h4>
+              <p class="text-sm" style="color: var(--text-muted);">Let other DJs discover your curation</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Share Link -->
+        <div class="px-6 py-4 border-b" style="border-color: var(--border-subtle);">
+          <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Share Link</label>
+          <div class="flex gap-2">
+            <div class="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl" style="background: var(--bg-tertiary);">
+              <svg class="w-4 h-4" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+              </svg>
+              <span class="text-sm truncate" style="color: var(--text-secondary);">thevideopool.com/set/abc123xyz</span>
+            </div>
+            <button class="px-4 py-3 rounded-xl font-medium text-black" style="background: var(--accent-cyan);">Copy</button>
+          </div>
+        </div>
+
+        <!-- Social Share -->
+        <div class="px-6 py-4">
+          <label class="block text-sm font-medium mb-3" style="color: var(--text-secondary);">Share on Social</label>
+          <div class="flex gap-3">
+            <button class="flex-1 py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2" style="background: #1DA1F2;">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+              Twitter
+            </button>
+            <button class="flex-1 py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2" style="background: #4267B2;">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              Facebook
+            </button>
+            <button class="flex-1 py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2" style="background: #25D366;">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              WhatsApp
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="px-6 py-4 flex items-center gap-4 text-sm" style="background: rgba(0,0,0,0.2);">
+          <span style="color: var(--text-muted);">0 views</span>
+          <span style="color: var(--text-muted);">0 copies</span>
+          <span class="ml-auto text-xs" style="color: var(--text-muted);">Link never expires</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Google OAuth Button -->
+    <section class="mb-12">
+      <h3 class="section-title text-xl font-bold">Google OAuth Login (Phase 5 - NEW)</h3>
+      <div class="max-w-sm p-6 rounded-xl border" style="background: var(--bg-secondary); border-color: var(--border-subtle);">
+        <button class="w-full flex items-center justify-center gap-3 py-3 rounded-lg font-medium border" style="background: white; color: #333; border-color: #ddd;">
+          <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <div class="flex items-center gap-4 my-4">
+          <div class="flex-1 h-px" style="background: var(--border-subtle);"></div>
+          <span class="text-xs" style="color: var(--text-muted);">or</span>
+          <div class="flex-1 h-px" style="background: var(--border-subtle);"></div>
+        </div>
+        <input type="text" placeholder="Username or email" class="w-full px-4 py-3 rounded-lg border mb-3 text-sm" style="background: var(--bg-tertiary); border-color: var(--border-subtle); color: var(--text-primary);">
+        <input type="password" placeholder="Password" class="w-full px-4 py-3 rounded-lg border mb-4 text-sm" style="background: var(--bg-tertiary); border-color: var(--border-subtle); color: var(--text-primary);">
+        <button class="w-full py-3 rounded-lg font-semibold text-black" style="background: var(--accent-cyan);">Sign In</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-8 border-t" style="border-color: var(--border-subtle);">
+    <p class="text-sm" style="color: var(--text-muted);">
+      The Video Pool - Phase 5 UI Preview<br>
+      Authentication & Billing • AI Search • Viral Sharing
+    </p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "/api/auth/login": "/sessions",
+  "/api/auth/register": "/users",
+  "/api/auth/me": "/users/1",
+  "/api/auth/logout": "/sessions",
+  "/api/auth/verify-email": "/verification_codes",
+  "/api/memberships": "/memberships",
+  "/api/memberships/status": "/users/1",
+  "/api/videos": "/videos",
+  "/api/videos/featured": "/videos?isTrending=true",
+  "/api/videos/recommended": "/videos?_limit=10",
+  "/api/categories": "/categories",
+  "/api/user/downloads": "/downloads",
+  "/api/user/downloads/recent": "/downloads?_limit=10&_sort=downloadedAt&_order=desc",
+  "/api/playlists": "/playlists",
+  "/api/favorites": "/favorites",
+  "/api/credits/packs": "/credit_packs",
+  "/api/admin/stats": "/admin_stats"
+}

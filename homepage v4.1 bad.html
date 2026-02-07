@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<!--
+  THE VIDEO POOL - PREVIEW MODAL v6.0
+  Standalone HTML Preview
+
+  NEW IN V6.0:
+  ✓ Artist positioned LEFT of Title (Spotify-style side-by-side layout)
+  ✓ Visible drag handles (50% opacity, cyan glow on hover)
+  ✓ "How Scoring Works" algorithm explanation modal
+  ✓ Bulk "Add Top 5" recommendations button
+  ✓ Smart duplicate detection with warning modal
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Preview Modal v6.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS VARIABLES
+       ============================================ */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111116;
+      --bg-tertiary: #1a1a22;
+      --bg-elevated: #222230;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #6b6b76;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.1);
+      --accent-cyan: #00d4ff;
+      --accent-cyan-hover: #33ddff;
+      --accent-cyan-glow: rgba(0, 212, 255, 0.3);
+      --accent-cyan-subtle: rgba(0, 212, 255, 0.1);
+      --success: #00e676;
+      --warning: #ffab00;
+      --error: #ff4757;
+      --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: var(--accent-cyan);
+    }
+
+    .version-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--accent-cyan);
+      color: #000;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 20px;
+      margin-bottom: 30px;
+    }
+
+    .section-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 40px 0 20px;
+      text-align: center;
+    }
+
+    /* ============================================
+       PREVIEW MODAL
+       ============================================ */
+    .preview-modal {
+      width: 900px;
+      max-width: 95vw;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      box-shadow: var(--shadow-elevated);
+      overflow: hidden;
+    }
+
+    .preview-modal__video {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: #000;
+    }
+
+    .preview-modal__video img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-modal__play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.4);
+    }
+
+    .preview-modal__play-btn {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+
+    .preview-modal__play-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .preview-modal__play-btn svg {
+      width: 32px;
+      height: 32px;
+      fill: #000;
+      margin-left: 4px;
+    }
+
+    .preview-modal__close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      transition: background 0.2s;
+    }
+
+    .preview-modal__close:hover {
+      background: rgba(0,0,0,0.8);
+    }
+
+    .preview-modal__content {
+      padding: 24px;
+    }
+
+    /* V6 NEW: Artist LEFT of Title Layout */
+    .preview-modal__track-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .preview-modal__artist-col {
+      flex-shrink: 0;
+    }
+
+    .preview-modal__artist {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .preview-modal__divider {
+      width: 1px;
+      align-self: stretch;
+      min-height: 48px;
+      background: var(--border-subtle);
+    }
+
+    .preview-modal__title-col {
+      flex: 1;
+    }
+
+    .preview-modal__title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .preview-modal__meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .preview-modal__meta-divider {
+      color: var(--border-default);
+    }
+
+    .preview-modal__key {
+      color: var(--accent-cyan);
+    }
+
+    .preview-modal__genre-badge {
+      flex-shrink: 0;
+      padding: 6px 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Versions Section */
+    .preview-modal__section-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .preview-modal__versions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .version-btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .version-btn:hover {
+      border-color: var(--accent-cyan);
+    }
+
+    .version-btn--active {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+      color: #000;
+    }
+
+    /* Quality Dropdowns */
+    .preview-modal__quality-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .quality-select-wrapper {
+      position: relative;
+    }
+
+    .quality-select-wrapper label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .quality-select {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      color: var(--text-primary);
+      font-size: 14px;
+      cursor: pointer;
+      appearance: none;
+    }
+
+    .quality-select:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+    }
+
+    .quality-select-arrow {
+      position: absolute;
+      right: 12px;
+      bottom: 14px;
+      pointer-events: none;
+      color: var(--text-muted);
+    }
+
+    /* Action Buttons */
+    .preview-modal__actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn--secondary {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .btn--secondary:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .btn--primary {
+      flex: 2;
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .btn--primary:hover {
+      background: var(--accent-cyan-hover);
+    }
+
+    /* ============================================
+       DRAG HANDLE DEMO
+       ============================================ */
+    .drag-demo {
+      width: 600px;
+      max-width: 95vw;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .section-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-item:last-child {
+      border-bottom: none;
+    }
+
+    /* V6 NEW: Visible drag handles at 50% */
+    .drag-handle {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      opacity: 0.5;
+      cursor: grab;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+
+    .drag-handle:hover {
+      opacity: 1;
+      color: var(--accent-cyan);
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .section-title {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .section-count {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       SCORING MODAL PREVIEW
+       ============================================ */
+    .scoring-modal {
+      width: 600px;
+      max-width: 95vw;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .scoring-modal__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .scoring-modal__title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .scoring-modal__content {
+      padding: 24px;
+    }
+
+    .scoring-modal__intro {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .scoring-category {
+      padding: 16px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .scoring-category__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .scoring-category__icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scoring-category__icon--bpm {
+      background: rgba(0, 212, 255, 0.2);
+      color: var(--accent-cyan);
+    }
+
+    .scoring-category__icon--key {
+      background: rgba(168, 85, 247, 0.2);
+      color: #a855f7;
+    }
+
+    .scoring-category__icon--genre {
+      background: rgba(249, 115, 22, 0.2);
+      color: #f97316;
+    }
+
+    .scoring-category__name {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .scoring-category__points {
+      font-size: 13px;
+      color: var(--accent-cyan);
+    }
+
+    .scoring-category__desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .score-legend {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+      padding: 16px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+
+    .score-legend__item {
+      text-align: center;
+    }
+
+    .score-legend__circle {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .score-legend__circle--excellent {
+      background: rgba(0, 230, 118, 0.2);
+      border: 2px solid var(--success);
+      color: var(--success);
+    }
+
+    .score-legend__circle--great {
+      background: rgba(0, 212, 255, 0.2);
+      border: 2px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .score-legend__circle--good {
+      background: rgba(255, 171, 0, 0.2);
+      border: 2px solid var(--warning);
+      color: var(--warning);
+    }
+
+    .score-legend__circle--fair {
+      background: rgba(107, 107, 118, 0.2);
+      border: 2px solid var(--text-muted);
+      color: var(--text-muted);
+    }
+
+    .score-legend__label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* ============================================
+       DUPLICATE WARNING MODAL
+       ============================================ */
+    .duplicate-modal {
+      width: 450px;
+      max-width: 95vw;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .duplicate-modal__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .duplicate-modal__icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 171, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--warning);
+    }
+
+    .duplicate-modal__title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .duplicate-modal__subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .duplicate-modal__content {
+      padding: 24px;
+    }
+
+    .duplicate-modal__label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .duplicate-modal__track {
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 16px;
+    }
+
+    .duplicate-modal__track--new {
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .duplicate-modal__track-title {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .duplicate-modal__track-artist {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .duplicate-modal__track-meta {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .duplicate-modal__actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    /* ============================================
+       SET BUILDER RECOMMENDATIONS HEADER
+       ============================================ */
+    .rec-header {
+      width: 400px;
+      max-width: 95vw;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+
+    .rec-header__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rec-header__title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    .rec-header__actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .rec-header__link {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .rec-header__link:hover {
+      color: var(--accent-cyan);
+      text-decoration: underline;
+    }
+
+    .rec-header__bulk {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--accent-cyan);
+      cursor: pointer;
+    }
+
+    .rec-header__bulk:hover {
+      text-decoration: underline;
+    }
+
+    /* Icons */
+    .icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .icon-sm {
+      width: 12px;
+      height: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>The Video Pool</h1>
+  <span class="version-badge">Preview v6.0</span>
+
+  <!-- ============================================
+       FEATURE 1: PREVIEW MODAL WITH ARTIST LEFT OF TITLE
+       ============================================ -->
+  <div class="section-label">Feature 1: Artist LEFT of Title (Spotify-style)</div>
+
+  <div class="preview-modal">
+    <!-- Video Player -->
+    <div class="preview-modal__video">
+      <img src="https://picsum.photos/900/506?random=42" alt="Video thumbnail">
+      <div class="preview-modal__play-overlay">
+        <button class="preview-modal__play-btn">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+      </div>
+      <button class="preview-modal__close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="preview-modal__content">
+      <!-- V6 NEW: Track Info with Artist LEFT of Title -->
+      <div class="preview-modal__track-info">
+        <!-- Artist Column (LEFT) -->
+        <div class="preview-modal__artist-col">
+          <p class="preview-modal__artist">Dua Lipa</p>
+        </div>
+
+        <!-- Divider -->
+        <div class="preview-modal__divider"></div>
+
+        <!-- Title & Metadata Column (RIGHT) -->
+        <div class="preview-modal__title-col">
+          <h2 class="preview-modal__title">Levitating (feat. DaBaby)</h2>
+          <div class="preview-modal__meta">
+            <span>103 BPM</span>
+            <span class="preview-modal__meta-divider">|</span>
+            <span class="preview-modal__key">6B</span>
+            <span class="preview-modal__meta-divider">|</span>
+            <span>3:23</span>
+            <span class="preview-modal__meta-divider">|</span>
+            <span>Warner Records</span>
+          </div>
+        </div>
+
+        <!-- Genre Badge (FAR RIGHT) -->
+        <span class="preview-modal__genre-badge">Dance Pop</span>
+      </div>
+
+      <!-- Versions -->
+      <div class="preview-modal__section-label">Available Versions</div>
+      <div class="preview-modal__versions">
+        <button class="version-btn version-btn--active">Clean</button>
+        <button class="version-btn">Explicit</button>
+        <button class="version-btn">Intro</button>
+        <button class="version-btn">Quick Hit</button>
+      </div>
+
+      <!-- Quality Selection -->
+      <div class="preview-modal__quality-grid">
+        <div class="quality-select-wrapper">
+          <label>Video Quality</label>
+          <select class="quality-select">
+            <option>1080p Full HD (~800 MB)</option>
+            <option>4K Ultra HD (~2.5 GB)</option>
+            <option>720p HD (~400 MB)</option>
+          </select>
+          <svg class="quality-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"/>
+          </svg>
+        </div>
+        <div class="quality-select-wrapper">
+          <label>Audio Quality</label>
+          <select class="quality-select">
+            <option>320 kbps (~12 MB)</option>
+            <option>192 kbps (~8 MB)</option>
+          </select>
+          <svg class="quality-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="preview-modal__actions">
+        <button class="btn btn--secondary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add to Set
+        </button>
+        <button class="btn btn--primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Download Clean
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       FEATURE 2: VISIBLE DRAG HANDLES
+       ============================================ -->
+  <div class="section-label">Feature 2: Visible Drag Handles (50% opacity, cyan on hover)</div>
+
+  <div class="drag-demo">
+    <div class="section-item">
+      <div class="drag-handle" title="Drag to reorder sections">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/>
+          <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+          <circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/>
+        </svg>
+      </div>
+      <span class="section-title">Trending Now</span>
+      <span class="section-count">24 videos</span>
+    </div>
+    <div class="section-item">
+      <div class="drag-handle" title="Drag to reorder sections">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/>
+          <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+          <circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/>
+        </svg>
+      </div>
+      <span class="section-title">For You</span>
+      <span class="section-count">18 videos</span>
+    </div>
+    <div class="section-item">
+      <div class="drag-handle" title="Drag to reorder sections">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/>
+          <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+          <circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/>
+        </svg>
+      </div>
+      <span class="section-title">Latest Releases</span>
+      <span class="section-count">32 videos</span>
+    </div>
+    <div class="section-item">
+      <div class="drag-handle" title="Drag to reorder sections">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/>
+          <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+          <circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/>
+        </svg>
+      </div>
+      <span class="section-title">Browse Library</span>
+      <span class="section-count">30,247 videos</span>
+    </div>
+  </div>
+
+  <!-- ============================================
+       FEATURE 3: HOW SCORING WORKS MODAL
+       ============================================ -->
+  <div class="section-label">Feature 3: "How Scoring Works" Algorithm Explanation</div>
+
+  <div class="scoring-modal">
+    <div class="scoring-modal__header">
+      <h2 class="scoring-modal__title">How Track Recommendations Work</h2>
+    </div>
+    <div class="scoring-modal__content">
+      <p class="scoring-modal__intro">
+        Our recommendation algorithm scores tracks based on how well they'll mix
+        with the last track in your set. Higher scores mean smoother transitions.
+      </p>
+
+      <!-- BPM -->
+      <div class="scoring-category">
+        <div class="scoring-category__header">
+          <div class="scoring-category__icon scoring-category__icon--bpm">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+            </svg>
+          </div>
+          <div>
+            <div class="scoring-category__name">BPM Compatibility</div>
+            <div class="scoring-category__points">Up to 40 points</div>
+          </div>
+        </div>
+        <p class="scoring-category__desc">
+          Tracks within <strong>±8 BPM</strong> of your last track score highest.
+          This range allows smooth beatmatching without dramatic tempo changes.
+        </p>
+      </div>
+
+      <!-- Key -->
+      <div class="scoring-category">
+        <div class="scoring-category__header">
+          <div class="scoring-category__icon scoring-category__icon--key">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+            </svg>
+          </div>
+          <div>
+            <div class="scoring-category__name">Key Compatibility (Harmonic Mixing)</div>
+            <div class="scoring-category__points" style="color: #a855f7;">Up to 35 points</div>
+          </div>
+        </div>
+        <p class="scoring-category__desc">
+          Uses the <strong>Camelot Wheel</strong> to find harmonically compatible keys.
+          Adjacent keys on the wheel mix smoothly together.
+        </p>
+      </div>
+
+      <!-- Genre -->
+      <div class="scoring-category">
+        <div class="scoring-category__header">
+          <div class="scoring-category__icon scoring-category__icon--genre">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h4v4H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h4v4h-4z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="scoring-category__name">Genre & Subgenre Match</div>
+            <div class="scoring-category__points" style="color: #f97316;">Up to 25 points</div>
+          </div>
+        </div>
+        <p class="scoring-category__desc">
+          Same subgenre = 15 points. Same genre = 10 points.
+          Helps maintain stylistic consistency in your set.
+        </p>
+      </div>
+
+      <!-- Score Legend -->
+      <div class="score-legend">
+        <div class="score-legend__item">
+          <div class="score-legend__circle score-legend__circle--excellent">75+</div>
+          <div class="score-legend__label" style="color: var(--success);">Excellent</div>
+        </div>
+        <div class="score-legend__item">
+          <div class="score-legend__circle score-legend__circle--great">60-74</div>
+          <div class="score-legend__label" style="color: var(--accent-cyan);">Great</div>
+        </div>
+        <div class="score-legend__item">
+          <div class="score-legend__circle score-legend__circle--good">40-59</div>
+          <div class="score-legend__label" style="color: var(--warning);">Good</div>
+        </div>
+        <div class="score-legend__item">
+          <div class="score-legend__circle score-legend__circle--fair">20-39</div>
+          <div class="score-legend__label" style="color: var(--text-muted);">Fair</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       FEATURE 4: BULK ADD + HOW SCORING WORKS LINK
+       ============================================ -->
+  <div class="section-label">Feature 4: Bulk "Add Top 5" + "How Scoring Works" Link</div>
+
+  <div class="rec-header">
+    <div class="rec-header__row">
+      <div class="rec-header__title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+        </svg>
+        Recommended Next
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+        </svg>
+      </div>
+      <div class="rec-header__actions">
+        <span class="rec-header__link">How scoring works</span>
+        <span class="rec-header__bulk">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add Top 5
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       FEATURE 5: DUPLICATE WARNING MODAL
+       ============================================ -->
+  <div class="section-label">Feature 5: Smart Duplicate Detection Warning</div>
+
+  <div class="duplicate-modal">
+    <div class="duplicate-modal__header">
+      <div class="duplicate-modal__icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="duplicate-modal__title">Similar Track Detected</h3>
+        <p class="duplicate-modal__subtitle">You may already have this track in your set</p>
+      </div>
+    </div>
+    <div class="duplicate-modal__content">
+      <div class="duplicate-modal__label">Already in your set</div>
+      <div class="duplicate-modal__track">
+        <div class="duplicate-modal__track-title">Levitating (Clean)</div>
+        <div class="duplicate-modal__track-artist">Dua Lipa</div>
+        <div class="duplicate-modal__track-meta">
+          <span>103 BPM</span>
+          <span>•</span>
+          <span style="color: var(--accent-cyan);">6B</span>
+        </div>
+      </div>
+
+      <div class="duplicate-modal__label">Track you're adding</div>
+      <div class="duplicate-modal__track duplicate-modal__track--new">
+        <div class="duplicate-modal__track-title">Levitating (Explicit)</div>
+        <div class="duplicate-modal__track-artist">Dua Lipa</div>
+        <div class="duplicate-modal__track-meta">
+          <span>103 BPM</span>
+          <span>•</span>
+          <span style="color: var(--accent-cyan);">6B</span>
+        </div>
+      </div>
+
+      <div class="duplicate-modal__actions">
+        <button class="btn btn--secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>
+          </svg>
+          Cancel
+        </button>
+        <button class="btn btn--primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add Anyway
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 60px; text-align: center; color: var(--text-muted); font-size: 13px;">
+    <p>The Video Pool v6.0 - January 2026</p>
+    <p style="margin-top: 8px;">Open this file directly in your browser to preview all new features.</p>
+  </div>
+
+</body>
+</html>

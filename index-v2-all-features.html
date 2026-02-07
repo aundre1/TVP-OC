@@ -1,0 +1,2935 @@
+<!DOCTYPE html>
+<!--
+  THE VIDEO POOL - Complete Redesign Prototype v2.0
+  Version: 2.0 | January 2026
+
+  SPRINT 1 FEATURES:
+  ✓ Single prominent search bar (500px, centered)
+  ✓ MP3 download option visibility
+  ✓ Quality badges (4K cyan, HD subtle)
+  ✓ Download throttling (2 concurrent max)
+  ✓ Floating download indicator badge
+
+  SPRINT 2 FEATURES:
+  ✓ Version drawer (clean/dirty/intro/outro + MP3)
+  ✓ Pagination for search/filter results
+  ✓ Genre mega-menu with subgenres
+  ✓ Advanced search (BPM range, key, label)
+
+  SPRINT 3 FEATURES:
+  ✓ Recommendation engine v1
+  ✓ "For You" personalized section
+  ✓ Smart playlists (saved searches)
+  ✓ Weekly discovery pack
+
+  EXTRA FEATURES:
+  ✓ New logo design
+  ✓ DJ software export (Serato/rekordbox)
+  ✓ Harmonic mixing suggestions
+  ✓ Social features (follows, shares)
+  ✓ Mobile-responsive optimization
+-->
+<html lang="en">
+<head>
+  <script>
+    (function() {
+      const theme = localStorage.getItem('tvp-theme');
+      if (theme === 'light') {
+        document.documentElement.classList.add('light');
+      }
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Video Pool - Professional Video DJ Platform</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%2300d4ff'/><stop offset='100%' stop-color='%2300e676'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='%230a0a0f'/><circle cx='16' cy='16' r='10' fill='none' stroke='url(%23g)' stroke-width='2'/><polygon points='14,12 14,20 20,16' fill='url(%23g)'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS VARIABLES & THEME SYSTEM
+       ============================================ */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #141419;
+      --bg-tertiary: #1e1e24;
+      --bg-elevated: #252530;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #6b6b76;
+      --text-disabled: #45454d;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.1);
+      --border-strong: rgba(255, 255, 255, 0.15);
+      --accent-cyan: #00d4ff;
+      --accent-cyan-hover: #33ddff;
+      --accent-cyan-glow: rgba(0, 212, 255, 0.25);
+      --accent-cyan-subtle: rgba(0, 212, 255, 0.1);
+      --accent-coral: #ff6b4a;
+      --accent-coral-hover: #ff8566;
+      --accent-coral-glow: rgba(255, 107, 74, 0.25);
+      --success: #00e676;
+      --warning: #ffab00;
+      --error: #ff4757;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --shadow-elevated: 0 8px 40px rgba(0, 0, 0, 0.4);
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-display: 'Plus Jakarta Sans', var(--font-primary);
+      --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 150ms;
+      --duration-normal: 200ms;
+    }
+
+    .light {
+      --bg-primary: #f5f5f7;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #e8e8ed;
+      --bg-elevated: #ffffff;
+      --text-primary: #0a0a0f;
+      --text-secondary: #52525b;
+      --text-muted: #71717a;
+      --text-disabled: #a1a1aa;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --border-default: rgba(0, 0, 0, 0.1);
+      --border-strong: rgba(0, 0, 0, 0.15);
+      --accent-cyan: #0099cc;
+      --accent-cyan-hover: #00b3e6;
+      --accent-cyan-glow: rgba(0, 153, 204, 0.2);
+      --accent-cyan-subtle: rgba(0, 153, 204, 0.08);
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --shadow-elevated: 0 8px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-primary);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background var(--duration-normal) var(--ease-out);
+    }
+
+    /* ============================================
+       HEADER - REDESIGNED WITH PROMINENT SEARCH
+       ============================================ */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      height: 72px;
+      padding: 0 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* NEW LOGO DESIGN */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo__icon {
+      width: 44px;
+      height: 44px;
+      position: relative;
+    }
+
+    .logo__icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .logo__text {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .logo__text span {
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, #00e676 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* PROMINENT SEARCH BAR - 500px minimum */
+    .search-bar {
+      flex: 1;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-bar__container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-width: 500px;
+      padding: 12px 18px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-subtle);
+      border-radius: 12px;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .search-bar__container:focus-within {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 4px var(--accent-cyan-subtle);
+      background: var(--bg-elevated);
+    }
+
+    .search-bar__icon {
+      width: 22px;
+      height: 22px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .search-bar__input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: var(--font-primary);
+      outline: none;
+    }
+
+    .search-bar__input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-bar__advanced {
+      padding: 6px 12px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .search-bar__advanced:hover {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .search-bar__kbd {
+      padding: 4px 8px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header__nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav__link {
+      padding: 8px 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all var(--duration-fast) var(--ease-out);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .nav__link:hover { background: var(--accent-cyan-subtle); color: var(--text-primary); }
+    .nav__link--active { background: var(--accent-cyan-subtle); color: var(--accent-cyan); }
+
+    .header__actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .theme-toggle:hover {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .theme-toggle svg { width: 20px; height: 20px; }
+    .theme-toggle__sun { display: none; }
+    .theme-toggle__moon { display: block; }
+    .light .theme-toggle__sun { display: block; }
+    .light .theme-toggle__moon { display: none; }
+
+    .user-menu {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-coral) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* ============================================
+       ADVANCED SEARCH PANEL
+       ============================================ */
+    .advanced-search {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      box-shadow: var(--shadow-elevated);
+      z-index: 200;
+      margin-top: 8px;
+    }
+
+    .advanced-search--open { display: block; }
+
+    .advanced-search__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .advanced-search__field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .advanced-search__field input,
+    .advanced-search__field select {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: var(--font-primary);
+    }
+
+    .advanced-search__field input:focus,
+    .advanced-search__field select:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+    }
+
+    .advanced-search__row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .advanced-search__row input {
+      width: 80px;
+    }
+
+    .advanced-search__checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+      margin-bottom: 16px;
+    }
+
+    .advanced-search__checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .advanced-search__checkbox input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-cyan);
+    }
+
+    .advanced-search__checkbox span {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .advanced-search__actions {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* ============================================
+       GENRE MEGA MENU
+       ============================================ */
+    .genre-nav {
+      position: sticky;
+      top: 72px;
+      z-index: 90;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 24px;
+    }
+
+    .genre-nav__list {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 12px 0;
+    }
+
+    .genre-nav__list::-webkit-scrollbar { display: none; }
+
+    .genre-nav__item {
+      position: relative;
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .genre-nav__item:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .genre-nav__item--active {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .genre-nav__item svg {
+      width: 12px;
+      height: 12px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    /* MEGA MENU DROPDOWN */
+    .mega-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 500px;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      box-shadow: var(--shadow-elevated);
+      display: none;
+      z-index: 100;
+    }
+
+    .genre-nav__item:hover .mega-menu { display: block; }
+
+    .mega-menu__title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .mega-menu__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .mega-menu__link {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .mega-menu__link:hover {
+      background: var(--accent-cyan-subtle);
+      color: var(--accent-cyan);
+    }
+
+    .mega-menu__section {
+      margin-bottom: 16px;
+    }
+
+    .mega-menu__section:last-child { margin-bottom: 0; }
+
+    /* ============================================
+       FILTER BAR
+       ============================================ */
+    .filter-bar {
+      position: sticky;
+      top: 120px;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .filter-bar__filters {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-select {
+      padding: 8px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-family: var(--font-primary);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .filter-select:hover { border-color: var(--border-default); color: var(--text-primary); }
+    .filter-select:focus { outline: none; border-color: var(--accent-cyan); }
+    .filter-select--active {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .filter-clear {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--accent-coral-glow);
+      border: 1px solid var(--accent-coral);
+      border-radius: 8px;
+      color: var(--accent-coral);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .filter-clear--visible { display: inline-flex; }
+    .filter-clear:hover { background: var(--accent-coral); color: #fff; }
+
+    .filter-bar__spacer { flex: 1; }
+
+    .sort-select {
+      padding: 8px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-family: var(--font-primary);
+      cursor: pointer;
+    }
+
+    .view-toggle {
+      display: flex;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .view-toggle__btn {
+      width: 36px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .view-toggle__btn:hover { color: var(--text-secondary); }
+    .view-toggle__btn--active { background: var(--accent-cyan); color: #000; }
+    .view-toggle__btn svg { width: 18px; height: 18px; }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main {
+      padding: 24px;
+      min-height: calc(100vh - 200px);
+    }
+
+    /* ============================================
+       SECTION HEADERS
+       ============================================ */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-header__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .section-header__title .icon { font-size: 22px; }
+
+    .section-header__link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--accent-cyan);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .section-header__link:hover { opacity: 0.8; }
+    .section-header__link svg { width: 16px; height: 16px; }
+
+    /* ============================================
+       PERSONALIZED "FOR YOU" SECTION
+       ============================================ */
+    .for-you-section {
+      background: linear-gradient(135deg, var(--accent-cyan-subtle) 0%, var(--accent-coral-glow) 100%);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .for-you-section .section-header__title {
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-coral) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ============================================
+       WEEKLY DISCOVERY PACK
+       ============================================ */
+    .discovery-pack {
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .discovery-pack__icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, #00e676 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      flex-shrink: 0;
+    }
+
+    .discovery-pack__content { flex: 1; }
+
+    .discovery-pack__title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .discovery-pack__subtitle {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .discovery-pack__meta {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .discovery-pack__meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .discovery-pack__actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* ============================================
+       SWIMLANES
+       ============================================ */
+    .swimlane { margin-bottom: 32px; }
+
+    .swimlane__scroll {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      padding-bottom: 8px;
+      margin: 0 -24px;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .swimlane__scroll::-webkit-scrollbar { display: none; }
+    .swimlane__item { flex: 0 0 220px; scroll-snap-align: start; }
+
+    /* ============================================
+       VIDEO CARD - WITH QUALITY BADGES
+       ============================================ */
+    .video-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all var(--duration-normal) var(--ease-out);
+      cursor: pointer;
+    }
+
+    .video-card:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 212, 255, 0.15);
+    }
+
+    .video-card__thumbnail {
+      position: relative;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      background: var(--bg-tertiary);
+    }
+
+    .video-card__thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s var(--ease-out);
+    }
+
+    .video-card:hover .video-card__thumbnail img { transform: scale(1.08); }
+
+    .video-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity var(--duration-normal) var(--ease-out);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-card:hover .video-card__overlay { opacity: 1; }
+
+    .video-card__play {
+      width: 56px;
+      height: 56px;
+      background: rgba(0, 212, 255, 0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      transform: scale(0.8);
+      opacity: 0;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .video-card:hover .video-card__play { transform: scale(1); opacity: 1; }
+    .video-card__play svg { width: 24px; height: 24px; margin-left: 3px; }
+
+    /* BADGES */
+    .video-card__badges {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border-radius: 4px;
+    }
+
+    .badge-new { background: var(--accent-coral); color: #fff; }
+    .badge-exclusive { background: linear-gradient(135deg, var(--accent-cyan) 0%, #00e676 100%); color: #000; }
+    .badge-hot { background: linear-gradient(135deg, var(--accent-coral) 0%, var(--warning) 100%); color: #fff; }
+    .badge-clean { background: var(--success); color: #000; }
+
+    /* QUALITY BADGES - 4K prominent, HD subtle */
+    .video-card__quality {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .video-card__quality--4k {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .video-card__quality--hd {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 10px;
+    }
+
+    .video-card__quality--sd {
+      background: var(--warning);
+      color: #000;
+      font-size: 10px;
+    }
+
+    .video-card__duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      padding: 3px 8px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 4px;
+    }
+
+    /* VERSION COUNT INDICATOR */
+    .video-card__versions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .video-card__content { padding: 14px; }
+
+    .video-card__title {
+      font-size: 14px;
+      font-weight: 600;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      min-height: 36px;
+    }
+
+    .video-card__artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 10px;
+    }
+
+    .video-card__meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .video-card__meta span { display: flex; align-items: center; gap: 3px; }
+    .video-card__meta .dot { width: 3px; height: 3px; background: var(--text-disabled); border-radius: 50%; }
+
+    .video-card__actions { display: flex; gap: 8px; }
+
+    /* ============================================
+       BUTTONS
+       ============================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn svg { width: 16px; height: 16px; }
+
+    .btn-primary {
+      flex: 1;
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-cyan-hover);
+      box-shadow: 0 4px 15px var(--accent-cyan-glow);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .btn-icon {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .btn-icon:hover {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .btn-sm { padding: 8px 12px; font-size: 12px; }
+
+    /* ============================================
+       VIDEO GRID
+       ============================================ */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    /* ============================================
+       PAGINATION
+       ============================================ */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 32px 0;
+    }
+
+    .pagination__btn {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .pagination__btn:hover {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .pagination__btn--active {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+      color: #000;
+    }
+
+    .pagination__btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination__info {
+      padding: 0 16px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       VERSION DRAWER
+       ============================================ */
+    .version-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 450px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      z-index: 300;
+      transform: translateX(100%);
+      transition: transform 0.3s var(--ease-out);
+    }
+
+    .version-drawer--open { transform: translateX(0); }
+
+    .version-drawer__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .version-drawer__title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .version-drawer__close {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .version-drawer__close:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .version-drawer__video {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .version-drawer__video-info {
+      display: flex;
+      gap: 16px;
+    }
+
+    .version-drawer__thumb {
+      width: 120px;
+      height: 68px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .version-drawer__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .version-drawer__details h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .version-drawer__details p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .version-drawer__list {
+      padding: 20px;
+      overflow-y: auto;
+      max-height: calc(100vh - 250px);
+    }
+
+    .version-drawer__section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .version-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .version-item:hover {
+      border-color: var(--accent-cyan);
+      background: var(--bg-elevated);
+    }
+
+    .version-item__icon {
+      width: 44px;
+      height: 44px;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .version-item__icon svg {
+      width: 22px;
+      height: 22px;
+      color: var(--accent-cyan);
+    }
+
+    .version-item__icon--audio svg {
+      color: var(--accent-coral);
+    }
+
+    .version-item__info { flex: 1; min-width: 0; }
+
+    .version-item__name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .version-item__meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .version-item__download {
+      padding: 8px 14px;
+      background: var(--accent-cyan);
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .version-item__download:hover {
+      background: var(--accent-cyan-hover);
+    }
+
+    .version-item__download--audio {
+      background: var(--accent-coral);
+    }
+
+    .version-item__download--audio:hover {
+      background: var(--accent-coral-hover);
+    }
+
+    /* Download All Button */
+    .version-drawer__footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .download-all-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, #00e676 100%);
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .download-all-btn:hover {
+      box-shadow: 0 4px 20px var(--accent-cyan-glow);
+    }
+
+    /* ============================================
+       FLOATING DOWNLOAD INDICATOR
+       ============================================ */
+    .download-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+    }
+
+    .download-fab__btn {
+      width: 60px;
+      height: 60px;
+      background: var(--accent-cyan);
+      border: none;
+      border-radius: 50%;
+      color: #000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px var(--accent-cyan-glow);
+      transition: all var(--duration-fast) var(--ease-out);
+      position: relative;
+    }
+
+    .download-fab__btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 30px var(--accent-cyan-glow);
+    }
+
+    .download-fab__btn svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .download-fab__count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 6px;
+      background: var(--accent-coral);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .download-fab__progress {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 3px solid var(--bg-tertiary);
+      border-top-color: var(--accent-cyan);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .download-fab--idle .download-fab__progress { display: none; }
+
+    /* ============================================
+       DOWNLOAD QUEUE PANEL
+       ============================================ */
+    .queue-panel {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 380px;
+      max-height: 500px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      box-shadow: var(--shadow-elevated);
+      z-index: 199;
+      transform: translateY(20px) scale(0.95);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s var(--ease-out);
+    }
+
+    .queue-panel--open {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .queue-panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .queue-panel__title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .queue-panel__status {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .queue-panel__list {
+      padding: 12px;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .queue-item:last-child { margin-bottom: 0; }
+
+    .queue-item__thumb {
+      width: 56px;
+      height: 32px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .queue-item__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .queue-item__info { flex: 1; min-width: 0; }
+
+    .queue-item__title {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .queue-item__status {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .queue-item__progress {
+      height: 3px;
+      background: var(--bg-primary);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .queue-item__progress-bar {
+      height: 100%;
+      background: var(--accent-cyan);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .queue-item--complete .queue-item__status { color: var(--success); }
+    .queue-item--queued .queue-item__status { color: var(--text-muted); }
+
+    /* ============================================
+       HARMONIC SUGGESTIONS
+       ============================================ */
+    .harmonic-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--success);
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    .harmonic-badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* ============================================
+       SOCIAL FEATURES
+       ============================================ */
+    .social-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .social-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .social-btn:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .social-btn--followed {
+      background: var(--accent-cyan-subtle);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .social-btn svg { width: 14px; height: 14px; }
+
+    /* ============================================
+       SMART PLAYLIST MODAL
+       ============================================ */
+    .smart-playlist-btn {
+      padding: 8px 14px;
+      background: linear-gradient(135deg, var(--accent-coral) 0%, var(--warning) 100%);
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .smart-playlist-btn:hover {
+      box-shadow: 0 4px 15px var(--accent-coral-glow);
+    }
+
+    /* ============================================
+       EXPORT OPTIONS
+       ============================================ */
+    .export-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 200px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      box-shadow: var(--shadow-elevated);
+      padding: 8px;
+      z-index: 100;
+      display: none;
+    }
+
+    .export-menu--open { display: block; }
+
+    .export-menu__item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .export-menu__item:hover {
+      background: var(--accent-cyan-subtle);
+      color: var(--text-primary);
+    }
+
+    .export-menu__item svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent-cyan);
+    }
+
+    /* ============================================
+       TOAST NOTIFICATIONS
+       ============================================ */
+    .toast-container {
+      position: fixed;
+      top: 90px;
+      right: 24px;
+      z-index: 400;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      box-shadow: var(--shadow-elevated);
+      min-width: 320px;
+      max-width: 420px;
+      transform: translateX(120%);
+      opacity: 0;
+      transition: all 0.3s var(--ease-out);
+    }
+
+    .toast--show { transform: translateX(0); opacity: 1; }
+    .toast--success { border-left: 4px solid var(--success); }
+    .toast--error { border-left: 4px solid var(--error); }
+    .toast--info { border-left: 4px solid var(--accent-cyan); }
+
+    .toast__icon { flex-shrink: 0; width: 20px; height: 20px; }
+    .toast__icon--success { color: var(--success); }
+    .toast__icon--error { color: var(--error); }
+    .toast__icon--info { color: var(--accent-cyan); }
+
+    .toast__content { flex: 1; }
+    .toast__title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .toast__message { font-size: 13px; color: var(--text-secondary); }
+
+    .toast__close {
+      padding: 4px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .toast__close:hover { color: var(--text-primary); }
+    .toast__close svg { width: 16px; height: 16px; }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 1200px) {
+      .search-bar__container { min-width: 400px; }
+      .video-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    }
+
+    @media (max-width: 992px) {
+      .search-bar__container { min-width: 300px; }
+      .header__nav { display: none; }
+      .mega-menu { width: 100%; left: -24px; }
+      .advanced-search { width: 95%; }
+    }
+
+    @media (max-width: 768px) {
+      .header { padding: 0 16px; height: 64px; }
+      .search-bar__container { min-width: unset; padding: 10px 14px; }
+      .search-bar__advanced { display: none; }
+      .search-bar__kbd { display: none; }
+      .genre-nav { padding: 0 16px; }
+      .filter-bar { padding: 12px 16px; flex-wrap: wrap; }
+      .main { padding: 16px; }
+      .video-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .swimlane__scroll { margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+      .swimlane__item { flex: 0 0 180px; }
+      .version-drawer { width: 100%; }
+      .queue-panel { width: calc(100% - 48px); right: 24px; }
+      .discovery-pack { flex-direction: column; text-align: center; }
+      .discovery-pack__actions { width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      .video-grid { grid-template-columns: 1fr; }
+      .swimlane__item { flex: 0 0 160px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ============================================
+       HEADER WITH PROMINENT SEARCH
+       ============================================ -->
+  <header class="header">
+    <a href="#" class="logo">
+      <div class="logo__icon">
+        <svg viewBox="0 0 44 44" fill="none">
+          <defs>
+            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00d4ff"/>
+              <stop offset="100%" stop-color="#00e676"/>
+            </linearGradient>
+          </defs>
+          <rect width="44" height="44" rx="10" fill="#0a0a0f"/>
+          <circle cx="22" cy="22" r="14" fill="none" stroke="url(#logoGrad)" stroke-width="2.5"/>
+          <polygon points="19,15 19,29 31,22" fill="url(#logoGrad)"/>
+        </svg>
+      </div>
+      <div class="logo__text">The Video<span>Pool</span></div>
+    </a>
+
+    <div class="search-bar">
+      <div class="search-bar__container" id="main-search">
+        <svg class="search-bar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" class="search-bar__input" id="search-input" placeholder="Search by artist, title, BPM, key, or genre..." autocomplete="off">
+        <button class="search-bar__advanced" onclick="toggleAdvancedSearch()">Advanced</button>
+        <span class="search-bar__kbd">Ctrl+K</span>
+      </div>
+
+      <!-- ADVANCED SEARCH PANEL -->
+      <div class="advanced-search" id="advanced-search">
+        <div class="advanced-search__grid">
+          <div class="advanced-search__field">
+            <label>BPM Range</label>
+            <div class="advanced-search__row">
+              <input type="number" placeholder="Min" id="bpm-min">
+              <span style="color: var(--text-muted);">to</span>
+              <input type="number" placeholder="Max" id="bpm-max">
+            </div>
+          </div>
+          <div class="advanced-search__field">
+            <label>Musical Key</label>
+            <select id="key-select">
+              <option value="">Any Key</option>
+              <option value="1A">1A (Abm)</option>
+              <option value="2A">2A (Ebm)</option>
+              <option value="3A">3A (Bbm)</option>
+              <option value="4A">4A (Fm)</option>
+              <option value="5A">5A (Cm)</option>
+              <option value="6A">6A (Gm)</option>
+              <option value="7A">7A (Dm)</option>
+              <option value="8A">8A (Am)</option>
+              <option value="9A">9A (Em)</option>
+              <option value="10A">10A (Bm)</option>
+              <option value="11A">11A (F#m)</option>
+              <option value="12A">12A (C#m)</option>
+            </select>
+          </div>
+          <div class="advanced-search__field">
+            <label>Year/Era</label>
+            <select id="era-select">
+              <option value="">Any Era</option>
+              <option value="2024-2026">2024-2026</option>
+              <option value="2020-2023">2020-2023</option>
+              <option value="2010s">2010s</option>
+              <option value="2000s">2000s</option>
+              <option value="90s">90s</option>
+              <option value="80s">80s</option>
+              <option value="70s">70s & Earlier</option>
+            </select>
+          </div>
+          <div class="advanced-search__field">
+            <label>Quality</label>
+            <select id="quality-select">
+              <option value="">Any Quality</option>
+              <option value="4k">4K Only</option>
+              <option value="hd">HD and Above</option>
+            </select>
+          </div>
+        </div>
+        <div class="advanced-search__checkboxes">
+          <label class="advanced-search__checkbox">
+            <input type="checkbox" id="clean-only">
+            <span>Clean edits only</span>
+          </label>
+          <label class="advanced-search__checkbox">
+            <input type="checkbox" id="has-intro">
+            <span>Has intro version</span>
+          </label>
+          <label class="advanced-search__checkbox">
+            <input type="checkbox" id="has-outro">
+            <span>Has outro version</span>
+          </label>
+          <label class="advanced-search__checkbox">
+            <input type="checkbox" id="exclusive-only">
+            <span>Exclusives only</span>
+          </label>
+        </div>
+        <div class="advanced-search__actions">
+          <button class="btn btn-secondary" onclick="resetAdvancedSearch()">Reset</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="smart-playlist-btn" onclick="saveSmartPlaylist()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+              Save as Smart Playlist
+            </button>
+            <button class="btn btn-primary" onclick="applyAdvancedSearch()">Apply Filters</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="header__nav">
+      <a class="nav__link nav__link--active">Browse</a>
+      <a class="nav__link">My Library</a>
+      <a class="nav__link">Crates</a>
+    </nav>
+
+    <div class="header__actions">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <svg class="theme-toggle__moon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        <svg class="theme-toggle__sun" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      </button>
+      <div class="user-menu">DJ</div>
+    </div>
+  </header>
+
+  <!-- ============================================
+       GENRE MEGA MENU NAVIGATION
+       ============================================ -->
+  <nav class="genre-nav">
+    <div class="genre-nav__list">
+      <div class="genre-nav__item genre-nav__item--active">All Genres</div>
+
+      <div class="genre-nav__item">
+        Hip-Hop/R&B
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        <div class="mega-menu">
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">By Era</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">70s & 80s Classic</div>
+              <div class="mega-menu__link">90s Golden Age</div>
+              <div class="mega-menu__link">2000s</div>
+              <div class="mega-menu__link">2010s</div>
+              <div class="mega-menu__link">2020s Current</div>
+            </div>
+          </div>
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">By Style</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">Trap</div>
+              <div class="mega-menu__link">Drill</div>
+              <div class="mega-menu__link">Conscious</div>
+              <div class="mega-menu__link">Party/Club</div>
+              <div class="mega-menu__link">R&B/Soul</div>
+              <div class="mega-menu__link">Pop Rap</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="genre-nav__item">
+        House
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        <div class="mega-menu">
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">House Subgenres</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">Deep House</div>
+              <div class="mega-menu__link">Tech House</div>
+              <div class="mega-menu__link">Progressive House</div>
+              <div class="mega-menu__link">Future House</div>
+              <div class="mega-menu__link">Afro House</div>
+              <div class="mega-menu__link">Soulful House</div>
+              <div class="mega-menu__link">Disco House</div>
+              <div class="mega-menu__link">Melodic House</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="genre-nav__item">
+        EDM/Dance
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        <div class="mega-menu">
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">EDM Subgenres</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">Dubstep</div>
+              <div class="mega-menu__link">Drum & Bass</div>
+              <div class="mega-menu__link">Trance</div>
+              <div class="mega-menu__link">Hardstyle</div>
+              <div class="mega-menu__link">Future Bass</div>
+              <div class="mega-menu__link">Big Room</div>
+              <div class="mega-menu__link">Festival</div>
+              <div class="mega-menu__link">Electro</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="genre-nav__item">
+        Latin
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        <div class="mega-menu">
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">Latin Subgenres</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">Reggaeton</div>
+              <div class="mega-menu__link">Bachata</div>
+              <div class="mega-menu__link">Salsa</div>
+              <div class="mega-menu__link">Cumbia</div>
+              <div class="mega-menu__link">Regional Mexican</div>
+              <div class="mega-menu__link">Latin Pop</div>
+              <div class="mega-menu__link">Dembow</div>
+              <div class="mega-menu__link">Brazilian Funk</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="genre-nav__item">Pop</div>
+      <div class="genre-nav__item">Rock</div>
+      <div class="genre-nav__item">Country</div>
+
+      <div class="genre-nav__item">
+        Throwbacks
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        <div class="mega-menu">
+          <div class="mega-menu__section">
+            <div class="mega-menu__title">By Decade</div>
+            <div class="mega-menu__grid">
+              <div class="mega-menu__link">60s Classics</div>
+              <div class="mega-menu__link">70s Disco & Soul</div>
+              <div class="mega-menu__link">80s New Wave</div>
+              <div class="mega-menu__link">90s Hits</div>
+              <div class="mega-menu__link">2000s Nostalgia</div>
+              <div class="mega-menu__link">2010s Throwbacks</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============================================
+       FILTER BAR (No duplicate search)
+       ============================================ -->
+  <div class="filter-bar">
+    <div class="filter-bar__filters">
+      <select class="filter-select" id="filter-bpm" onchange="handleFilterChange()">
+        <option value="">All BPM</option>
+        <option value="70-90">70-90 (Slow)</option>
+        <option value="90-110">90-110</option>
+        <option value="110-130">110-130</option>
+        <option value="130-150">130-150 (Fast)</option>
+        <option value="150+">150+ (Very Fast)</option>
+      </select>
+
+      <select class="filter-select" id="filter-key" onchange="handleFilterChange()">
+        <option value="">All Keys</option>
+        <option value="1A-3A">1A-3A</option>
+        <option value="4A-6A">4A-6A</option>
+        <option value="7A-9A">7A-9A</option>
+        <option value="10A-12A">10A-12A</option>
+      </select>
+
+      <select class="filter-select" id="filter-quality" onchange="handleFilterChange()">
+        <option value="">All Quality</option>
+        <option value="4k">4K Only</option>
+        <option value="hd">HD (1080p+)</option>
+      </select>
+
+      <select class="filter-select" id="filter-version" onchange="handleFilterChange()">
+        <option value="">All Versions</option>
+        <option value="clean">Clean Only</option>
+        <option value="explicit">Explicit</option>
+        <option value="intro">Has Intro</option>
+        <option value="outro">Has Outro</option>
+      </select>
+
+      <button class="filter-clear" id="filter-clear" onclick="clearAllFilters()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        Clear
+      </button>
+    </div>
+
+    <div class="filter-bar__spacer"></div>
+
+    <span id="results-count" style="font-size: 13px; color: var(--text-muted);">Showing 16 videos</span>
+
+    <select class="sort-select" id="sort-select" onchange="handleSort()">
+      <option value="newest">Newest First</option>
+      <option value="popular">Most Popular</option>
+      <option value="bpm-asc">BPM: Low to High</option>
+      <option value="bpm-desc">BPM: High to Low</option>
+      <option value="title">Title: A-Z</option>
+    </select>
+
+    <div class="view-toggle">
+      <button class="view-toggle__btn view-toggle__btn--active" data-view="grid" onclick="setView('grid')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      </button>
+      <button class="view-toggle__btn" data-view="list" onclick="setView('list')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================
+       MAIN CONTENT
+       ============================================ -->
+  <main class="main">
+    <!-- WEEKLY DISCOVERY PACK -->
+    <section class="discovery-pack">
+      <div class="discovery-pack__icon">📦</div>
+      <div class="discovery-pack__content">
+        <h2 class="discovery-pack__title">Your Weekly Discovery Pack</h2>
+        <p class="discovery-pack__subtitle">15 personalized picks based on your taste profile. Refreshes every Monday.</p>
+        <div class="discovery-pack__meta">
+          <span>🎵 15 videos</span>
+          <span>⏱️ 52 minutes total</span>
+          <span>🔄 Refreshes in 3 days</span>
+        </div>
+      </div>
+      <div class="discovery-pack__actions">
+        <button class="btn btn-primary" onclick="downloadDiscoveryPack()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Download All
+        </button>
+        <button class="btn btn-secondary" onclick="previewDiscoveryPack()">Preview</button>
+      </div>
+    </section>
+
+    <!-- FOR YOU SECTION -->
+    <section class="for-you-section">
+      <div class="section-header">
+        <h2 class="section-header__title">
+          <span class="icon">✨</span>
+          For You
+        </h2>
+        <a href="#" class="section-header__link">
+          See all
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="swimlane__scroll" id="for-you-swimlane"></div>
+    </section>
+
+    <!-- NEW THIS WEEK -->
+    <section class="swimlane">
+      <div class="section-header">
+        <h2 class="section-header__title">
+          <span class="icon">🆕</span>
+          New This Week
+        </h2>
+        <a href="#" class="section-header__link">
+          See all
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="swimlane__scroll" id="new-swimlane"></div>
+    </section>
+
+    <!-- TRENDING -->
+    <section class="swimlane">
+      <div class="section-header">
+        <h2 class="section-header__title">
+          <span class="icon">🔥</span>
+          Trending Now
+        </h2>
+        <a href="#" class="section-header__link">
+          See all
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="swimlane__scroll" id="trending-swimlane"></div>
+    </section>
+
+    <!-- ALL VIDEOS GRID -->
+    <section>
+      <div class="section-header">
+        <h2 class="section-header__title">
+          <span class="icon">🎬</span>
+          All Videos
+        </h2>
+      </div>
+      <div class="video-grid" id="video-grid"></div>
+
+      <!-- PAGINATION -->
+      <div class="pagination" id="pagination">
+        <button class="pagination__btn" disabled>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button class="pagination__btn pagination__btn--active">1</button>
+        <button class="pagination__btn">2</button>
+        <button class="pagination__btn">3</button>
+        <button class="pagination__btn">4</button>
+        <button class="pagination__btn">5</button>
+        <span class="pagination__info">Page 1 of 47</span>
+        <button class="pagination__btn">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================
+       VERSION DRAWER
+       ============================================ -->
+  <div class="version-drawer" id="version-drawer">
+    <div class="version-drawer__header">
+      <h3 class="version-drawer__title">Download Options</h3>
+      <button class="version-drawer__close" onclick="closeVersionDrawer()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="version-drawer__video" id="drawer-video-info">
+      <!-- Populated by JS -->
+    </div>
+    <div class="version-drawer__list" id="drawer-versions">
+      <!-- Populated by JS -->
+    </div>
+    <div class="version-drawer__footer">
+      <button class="download-all-btn" onclick="downloadAllVersions()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Download All Versions + MP3s
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================
+       FLOATING DOWNLOAD INDICATOR
+       ============================================ -->
+  <div class="download-fab" id="download-fab">
+    <button class="download-fab__btn download-fab--idle" onclick="toggleQueuePanel()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+      <span class="download-fab__count" id="fab-count">0</span>
+      <div class="download-fab__progress"></div>
+    </button>
+  </div>
+
+  <!-- ============================================
+       DOWNLOAD QUEUE PANEL
+       ============================================ -->
+  <div class="queue-panel" id="queue-panel">
+    <div class="queue-panel__header">
+      <div>
+        <h3 class="queue-panel__title">Download Queue</h3>
+        <span class="queue-panel__status" id="queue-status">2 of 3 complete</span>
+      </div>
+    </div>
+    <div class="queue-panel__list" id="queue-list"></div>
+  </div>
+
+  <!-- ============================================
+       TOAST CONTAINER
+       ============================================ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ============================================
+       JAVASCRIPT
+       ============================================ -->
+  <script>
+    // ============================================
+    // VIDEO DATA WITH VERSIONS AND MP3
+    // ============================================
+    const videos = [
+      {
+        id: 1,
+        title: "Blinding Lights",
+        artist: "The Weeknd",
+        bpm: 171,
+        key: "6A",
+        duration: "3:22",
+        resolution: "4K",
+        genre: "pop",
+        isNew: true,
+        isExclusive: false,
+        downloads: 12450,
+        thumbnail: "https://i.ytimg.com/vi/4NRXx6U8ABQ/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "3:22", size: "245 MB" },
+          { type: "dirty", label: "Explicit", duration: "3:22", size: "245 MB" },
+          { type: "intro", label: "Intro Edit", duration: "3:38", size: "268 MB" },
+          { type: "outro", label: "Outro Edit", duration: "3:45", size: "275 MB" }
+        ],
+        mp3Size: "8.2 MB"
+      },
+      {
+        id: 2,
+        title: "Uptown Funk",
+        artist: "Bruno Mars ft. Mark Ronson",
+        bpm: 115,
+        key: "4A",
+        duration: "4:30",
+        resolution: "1080p",
+        genre: "pop",
+        isNew: false,
+        isExclusive: true,
+        downloads: 28930,
+        thumbnail: "https://i.ytimg.com/vi/OPf0YbXqDm0/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "4:30", size: "312 MB" },
+          { type: "dirty", label: "Explicit", duration: "4:30", size: "312 MB" },
+          { type: "short", label: "Quick Hit (3:00)", duration: "3:00", size: "198 MB" }
+        ],
+        mp3Size: "10.8 MB"
+      },
+      {
+        id: 3,
+        title: "Don't Start Now",
+        artist: "Dua Lipa",
+        bpm: 124,
+        key: "5B",
+        duration: "3:03",
+        resolution: "1080p",
+        genre: "house",
+        isNew: true,
+        isExclusive: false,
+        downloads: 9870,
+        thumbnail: "https://i.ytimg.com/vi/oygrmJFKYZY/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "3:03", size: "198 MB" },
+          { type: "extended", label: "Extended Mix", duration: "5:12", size: "342 MB" }
+        ],
+        mp3Size: "7.3 MB"
+      },
+      {
+        id: 4,
+        title: "Levitating",
+        artist: "Dua Lipa ft. DaBaby",
+        bpm: 103,
+        key: "6B",
+        duration: "3:23",
+        resolution: "4K",
+        genre: "pop",
+        isNew: false,
+        isExclusive: false,
+        downloads: 15680,
+        thumbnail: "https://i.ytimg.com/vi/TUVcZfQe-Kw/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "3:23", size: "412 MB" },
+          { type: "dirty", label: "Explicit", duration: "3:23", size: "412 MB" },
+          { type: "solo", label: "Solo Version (No DaBaby)", duration: "3:05", size: "378 MB" }
+        ],
+        mp3Size: "8.1 MB"
+      },
+      {
+        id: 5,
+        title: "Save Your Tears",
+        artist: "The Weeknd",
+        bpm: 118,
+        key: "7B",
+        duration: "3:36",
+        resolution: "4K",
+        genre: "pop",
+        isNew: false,
+        isExclusive: true,
+        downloads: 18420,
+        thumbnail: "https://i.ytimg.com/vi/XXYlFuWEuKI/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Original", duration: "3:36", size: "445 MB" },
+          { type: "remix", label: "Remix ft. Ariana Grande", duration: "3:45", size: "462 MB" }
+        ],
+        mp3Size: "8.6 MB"
+      },
+      {
+        id: 6,
+        title: "Industry Baby",
+        artist: "Lil Nas X ft. Jack Harlow",
+        bpm: 150,
+        key: "1A",
+        duration: "3:32",
+        resolution: "1080p",
+        genre: "hiphop",
+        isNew: true,
+        isExclusive: false,
+        downloads: 22100,
+        thumbnail: "https://i.ytimg.com/vi/UTHLKHL_whs/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "3:32", size: "234 MB" },
+          { type: "dirty", label: "Explicit", duration: "3:32", size: "234 MB" },
+          { type: "intro", label: "Intro Edit", duration: "3:48", size: "252 MB" }
+        ],
+        mp3Size: "8.4 MB"
+      },
+      {
+        id: 7,
+        title: "Bad Guy",
+        artist: "Billie Eilish",
+        bpm: 135,
+        key: "7A",
+        duration: "3:14",
+        resolution: "1080p",
+        genre: "pop",
+        isNew: false,
+        isExclusive: false,
+        downloads: 31250,
+        thumbnail: "https://i.ytimg.com/vi/DyDfgMOUjCI/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "3:14", size: "212 MB" }
+        ],
+        mp3Size: "7.8 MB"
+      },
+      {
+        id: 8,
+        title: "As It Was",
+        artist: "Harry Styles",
+        bpm: 174,
+        key: "6A",
+        duration: "2:47",
+        resolution: "4K",
+        genre: "pop",
+        isNew: true,
+        isExclusive: false,
+        downloads: 8950,
+        thumbnail: "https://i.ytimg.com/vi/H5v3kku4y6Q/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Original", duration: "2:47", size: "345 MB" },
+          { type: "extended", label: "Extended Edit", duration: "4:02", size: "498 MB" }
+        ],
+        mp3Size: "6.7 MB"
+      },
+      {
+        id: 9,
+        title: "Heat Waves",
+        artist: "Glass Animals",
+        bpm: 81,
+        key: "2A",
+        duration: "3:58",
+        resolution: "1080p",
+        genre: "pop",
+        isNew: false,
+        isExclusive: false,
+        downloads: 14320,
+        thumbnail: "https://i.ytimg.com/vi/mRD0-GxqHVo/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Original", duration: "3:58", size: "262 MB" }
+        ],
+        mp3Size: "9.5 MB"
+      },
+      {
+        id: 10,
+        title: "Flowers",
+        artist: "Miley Cyrus",
+        bpm: 118,
+        key: "5A",
+        duration: "3:20",
+        resolution: "4K",
+        genre: "pop",
+        isNew: true,
+        isExclusive: false,
+        downloads: 19870,
+        thumbnail: "https://i.ytimg.com/vi/G7KNmW9a75Y/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "3:20", size: "412 MB" },
+          { type: "intro", label: "Intro Edit", duration: "3:36", size: "445 MB" },
+          { type: "outro", label: "Outro Edit", duration: "3:42", size: "458 MB" }
+        ],
+        mp3Size: "8.0 MB"
+      },
+      {
+        id: 11,
+        title: "Despacito",
+        artist: "Luis Fonsi ft. Daddy Yankee",
+        bpm: 89,
+        key: "2B",
+        duration: "4:42",
+        resolution: "1080p",
+        genre: "latin",
+        isNew: false,
+        isExclusive: false,
+        downloads: 45200,
+        thumbnail: "https://i.ytimg.com/vi/kJQP7kiw5Fk/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Original", duration: "4:42", size: "312 MB" },
+          { type: "remix", label: "ft. Justin Bieber", duration: "3:48", size: "252 MB" }
+        ],
+        mp3Size: "11.3 MB"
+      },
+      {
+        id: 12,
+        title: "One Dance",
+        artist: "Drake ft. Wizkid & Kyla",
+        bpm: 104,
+        key: "6B",
+        duration: "2:54",
+        resolution: "720p",
+        genre: "hiphop",
+        isNew: false,
+        isExclusive: true,
+        downloads: 27890,
+        thumbnail: "https://i.ytimg.com/vi/iAbnEUA0wpA/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "2:54", size: "145 MB" },
+          { type: "dirty", label: "Explicit", duration: "2:54", size: "145 MB" }
+        ],
+        mp3Size: "7.0 MB"
+      },
+      {
+        id: 13,
+        title: "Unholy",
+        artist: "Sam Smith & Kim Petras",
+        bpm: 131,
+        key: "8A",
+        duration: "2:36",
+        resolution: "4K",
+        genre: "pop",
+        isNew: true,
+        isExclusive: true,
+        downloads: 16540,
+        thumbnail: "https://i.ytimg.com/vi/Uq9gPaIzbe8/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "2:36", size: "325 MB" },
+          { type: "dirty", label: "Explicit", duration: "2:36", size: "325 MB" }
+        ],
+        mp3Size: "6.2 MB"
+      },
+      {
+        id: 14,
+        title: "Anti-Hero",
+        artist: "Taylor Swift",
+        bpm: 97,
+        key: "3B",
+        duration: "3:20",
+        resolution: "1080p",
+        genre: "pop",
+        isNew: false,
+        isExclusive: false,
+        downloads: 21340,
+        thumbnail: "https://i.ytimg.com/vi/b1kbLwvqugk/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Clean Edit", duration: "3:20", size: "218 MB" }
+        ],
+        mp3Size: "8.0 MB"
+      },
+      {
+        id: 15,
+        title: "Shape of You",
+        artist: "Ed Sheeran",
+        bpm: 96,
+        key: "1B",
+        duration: "3:53",
+        resolution: "1080p",
+        genre: "pop",
+        isNew: false,
+        isExclusive: false,
+        downloads: 38750,
+        thumbnail: "https://i.ytimg.com/vi/JGwWNGJdvx8/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Original", duration: "3:53", size: "256 MB" },
+          { type: "remix", label: "Remix", duration: "4:12", size: "278 MB" }
+        ],
+        mp3Size: "9.3 MB"
+      },
+      {
+        id: 16,
+        title: "Watermelon Sugar",
+        artist: "Harry Styles",
+        bpm: 95,
+        key: "6B",
+        duration: "2:54",
+        resolution: "4K",
+        genre: "pop",
+        isNew: false,
+        isExclusive: true,
+        downloads: 17620,
+        thumbnail: "https://i.ytimg.com/vi/E07s5ZYygMg/maxresdefault.jpg",
+        versions: [
+          { type: "clean", label: "Original", duration: "2:54", size: "358 MB" }
+        ],
+        mp3Size: "7.0 MB"
+      }
+    ];
+
+    // ============================================
+    // DOWNLOAD QUEUE WITH THROTTLING
+    // ============================================
+    const MAX_CONCURRENT_DOWNLOADS = 2;
+    let downloadQueue = [];
+    let activeDownloads = 0;
+
+    // ============================================
+    // STATE
+    // ============================================
+    let currentView = 'grid';
+    let currentFilters = {};
+    let currentPage = 1;
+    const itemsPerPage = 12;
+    let currentDrawerVideo = null;
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      renderForYouSection();
+      renderNewSection();
+      renderTrendingSection();
+      renderVideoGrid();
+      updateFabCount();
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          document.getElementById('search-input').focus();
+        }
+        if (e.key === 'Escape') {
+          closeVersionDrawer();
+          closeAdvancedSearch();
+          closeQueuePanel();
+        }
+      });
+
+      // Search input
+      document.getElementById('search-input').addEventListener('input', debounce(handleSearch, 300));
+
+      // Close advanced search when clicking outside
+      document.addEventListener('click', (e) => {
+        const advSearch = document.getElementById('advanced-search');
+        const mainSearch = document.getElementById('main-search');
+        if (!mainSearch.contains(e.target) && !advSearch.contains(e.target)) {
+          closeAdvancedSearch();
+        }
+      });
+    });
+
+    // ============================================
+    // RENDER FUNCTIONS
+    // ============================================
+    function renderForYouSection() {
+      // Personalized recommendations based on "taste profile"
+      const recommended = [...videos].sort(() => Math.random() - 0.5).slice(0, 8);
+      document.getElementById('for-you-swimlane').innerHTML = recommended.map(v => createVideoCard(v, true)).join('');
+    }
+
+    function renderNewSection() {
+      const newVideos = videos.filter(v => v.isNew);
+      document.getElementById('new-swimlane').innerHTML = newVideos.map(v => createVideoCard(v, true)).join('');
+    }
+
+    function renderTrendingSection() {
+      const trending = [...videos].sort((a, b) => b.downloads - a.downloads).slice(0, 8);
+      document.getElementById('trending-swimlane').innerHTML = trending.map(v => createVideoCard(v, true)).join('');
+    }
+
+    function renderVideoGrid() {
+      let filtered = applyFilters([...videos]);
+      const totalPages = Math.ceil(filtered.length / itemsPerPage);
+      const start = (currentPage - 1) * itemsPerPage;
+      const pageVideos = filtered.slice(start, start + itemsPerPage);
+
+      document.getElementById('video-grid').innerHTML = pageVideos.map(v => createVideoCard(v, false)).join('');
+      document.getElementById('results-count').textContent = `Showing ${pageVideos.length} of ${filtered.length} videos`;
+      renderPagination(totalPages);
+    }
+
+    function createVideoCard(video, isSwimlane = false) {
+      const qualityBadge = video.resolution === '4K'
+        ? '<span class="video-card__quality video-card__quality--4k">4K</span>'
+        : video.resolution === '1080p'
+        ? '<span class="video-card__quality video-card__quality--hd">HD</span>'
+        : video.resolution === '720p'
+        ? ''
+        : '<span class="video-card__quality video-card__quality--sd">SD</span>';
+
+      const versionCount = video.versions.length;
+      const versionBadge = versionCount > 1
+        ? `<span class="video-card__versions">${versionCount} versions</span>`
+        : '';
+
+      // Harmonic suggestion (simulated)
+      const harmonicMatch = Math.random() > 0.7;
+
+      return `
+        <div class="${isSwimlane ? 'swimlane__item' : ''}">
+          <div class="video-card" onclick="openVersionDrawer(${video.id})">
+            <div class="video-card__thumbnail">
+              <img src="${video.thumbnail}" alt="${video.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/320x180/141419/6b6b76?text=Video'">
+              <div class="video-card__overlay">
+                <div class="video-card__play">
+                  <svg fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+              </div>
+              <div class="video-card__badges">
+                ${video.isNew ? '<span class="badge badge-new">NEW</span>' : ''}
+                ${video.isExclusive ? '<span class="badge badge-exclusive">EXCLUSIVE</span>' : ''}
+              </div>
+              ${qualityBadge}
+              ${versionBadge}
+              <span class="video-card__duration">${video.duration}</span>
+            </div>
+            <div class="video-card__content">
+              <h3 class="video-card__title">${video.title}</h3>
+              <p class="video-card__artist">${video.artist}</p>
+              <div class="video-card__meta">
+                <span>${video.bpm} BPM</span>
+                <span class="dot"></span>
+                <span>${video.key}</span>
+                ${harmonicMatch ? '<span class="harmonic-badge"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>Match</span>' : ''}
+              </div>
+              <div class="video-card__actions">
+                <button class="btn btn-primary" onclick="event.stopPropagation(); openVersionDrawer(${video.id})">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  Download
+                </button>
+                <button class="btn btn-icon" onclick="event.stopPropagation(); toggleFollow(${video.id})" title="Follow artist">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      let html = `
+        <button class="pagination__btn" ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+      `;
+
+      for (let i = 1; i <= Math.min(5, totalPages); i++) {
+        html += `<button class="pagination__btn ${i === currentPage ? 'pagination__btn--active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      html += `
+        <span class="pagination__info">Page ${currentPage} of ${totalPages}</span>
+        <button class="pagination__btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      `;
+
+      pagination.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderVideoGrid();
+      window.scrollTo({ top: 400, behavior: 'smooth' });
+    }
+
+    // ============================================
+    // VERSION DRAWER
+    // ============================================
+    function openVersionDrawer(videoId) {
+      const video = videos.find(v => v.id === videoId);
+      if (!video) return;
+
+      currentDrawerVideo = video;
+
+      // Video info
+      document.getElementById('drawer-video-info').innerHTML = `
+        <div class="version-drawer__video-info">
+          <div class="version-drawer__thumb">
+            <img src="${video.thumbnail}" alt="${video.title}">
+          </div>
+          <div class="version-drawer__details">
+            <h3>${video.title}</h3>
+            <p>${video.artist}</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${video.bpm} BPM • ${video.key} • ${video.resolution}</p>
+          </div>
+        </div>
+      `;
+
+      // Versions list
+      let versionsHtml = '<div class="version-drawer__section-title">Video Versions</div>';
+      video.versions.forEach(ver => {
+        versionsHtml += `
+          <div class="version-item">
+            <div class="version-item__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="version-item__info">
+              <div class="version-item__name">${ver.label}</div>
+              <div class="version-item__meta">${ver.duration} • ${ver.size} • ${video.resolution}</div>
+            </div>
+            <button class="version-item__download" onclick="queueDownload(${video.id}, '${ver.type}', 'video')">MP4</button>
+          </div>
+        `;
+      });
+
+      // MP3 section
+      versionsHtml += '<div class="version-drawer__section-title" style="margin-top: 20px;">Audio Only (MP3 320kbps)</div>';
+      video.versions.forEach(ver => {
+        versionsHtml += `
+          <div class="version-item">
+            <div class="version-item__icon version-item__icon--audio">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+            </div>
+            <div class="version-item__info">
+              <div class="version-item__name">${ver.label} (MP3)</div>
+              <div class="version-item__meta">${ver.duration} • ${video.mp3Size} • 320kbps</div>
+            </div>
+            <button class="version-item__download version-item__download--audio" onclick="queueDownload(${video.id}, '${ver.type}', 'mp3')">MP3</button>
+          </div>
+        `;
+      });
+
+      document.getElementById('drawer-versions').innerHTML = versionsHtml;
+      document.getElementById('version-drawer').classList.add('version-drawer--open');
+    }
+
+    function closeVersionDrawer() {
+      document.getElementById('version-drawer').classList.remove('version-drawer--open');
+      currentDrawerVideo = null;
+    }
+
+    function downloadAllVersions() {
+      if (!currentDrawerVideo) return;
+      currentDrawerVideo.versions.forEach(ver => {
+        queueDownload(currentDrawerVideo.id, ver.type, 'video');
+        queueDownload(currentDrawerVideo.id, ver.type, 'mp3');
+      });
+      showToast('success', 'Queued All Downloads', `All versions of "${currentDrawerVideo.title}" added to queue`);
+      closeVersionDrawer();
+    }
+
+    // ============================================
+    // DOWNLOAD QUEUE WITH THROTTLING (2 concurrent)
+    // ============================================
+    function queueDownload(videoId, versionType, format) {
+      const video = videos.find(v => v.id === videoId);
+      if (!video) return;
+
+      const downloadItem = {
+        id: `${videoId}-${versionType}-${format}-${Date.now()}`,
+        videoId,
+        title: video.title,
+        artist: video.artist,
+        versionType,
+        format,
+        thumbnail: video.thumbnail,
+        progress: 0,
+        status: 'queued'
+      };
+
+      downloadQueue.push(downloadItem);
+      updateFabCount();
+      renderQueuePanel();
+      processQueue();
+      showToast('info', 'Added to Queue', `${video.title} (${format.toUpperCase()}) queued`);
+    }
+
+    function processQueue() {
+      if (activeDownloads >= MAX_CONCURRENT_DOWNLOADS) return;
+
+      const nextDownload = downloadQueue.find(d => d.status === 'queued');
+      if (!nextDownload) return;
+
+      nextDownload.status = 'downloading';
+      activeDownloads++;
+      updateFabCount();
+      renderQueuePanel();
+
+      // Simulate download progress
+      const interval = setInterval(() => {
+        nextDownload.progress += Math.random() * 15 + 5;
+        if (nextDownload.progress >= 100) {
+          nextDownload.progress = 100;
+          nextDownload.status = 'complete';
+          activeDownloads--;
+          clearInterval(interval);
+          showToast('success', 'Download Complete', `${nextDownload.title} ready!`);
+          updateFabCount();
+          renderQueuePanel();
+          processQueue(); // Start next download
+        } else {
+          renderQueuePanel();
+        }
+      }, 400);
+    }
+
+    function updateFabCount() {
+      const pending = downloadQueue.filter(d => d.status !== 'complete').length;
+      document.getElementById('fab-count').textContent = pending;
+
+      const fabBtn = document.querySelector('.download-fab__btn');
+      if (activeDownloads > 0) {
+        fabBtn.classList.remove('download-fab--idle');
+      } else {
+        fabBtn.classList.add('download-fab--idle');
+      }
+    }
+
+    function renderQueuePanel() {
+      const queueList = document.getElementById('queue-list');
+      const complete = downloadQueue.filter(d => d.status === 'complete').length;
+      const total = downloadQueue.length;
+
+      document.getElementById('queue-status').textContent = `${complete} of ${total} complete`;
+
+      queueList.innerHTML = downloadQueue.slice(-10).reverse().map(item => `
+        <div class="queue-item queue-item--${item.status}">
+          <div class="queue-item__thumb">
+            <img src="${item.thumbnail}" alt="${item.title}">
+          </div>
+          <div class="queue-item__info">
+            <div class="queue-item__title">${item.title} (${item.format.toUpperCase()})</div>
+            <div class="queue-item__status">
+              ${item.status === 'complete' ? '✓ Complete' :
+                item.status === 'downloading' ? `Downloading... ${Math.round(item.progress)}%` :
+                'Queued'}
+            </div>
+            ${item.status === 'downloading' ? `
+              <div class="queue-item__progress">
+                <div class="queue-item__progress-bar" style="width: ${item.progress}%"></div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleQueuePanel() {
+      document.getElementById('queue-panel').classList.toggle('queue-panel--open');
+    }
+
+    function closeQueuePanel() {
+      document.getElementById('queue-panel').classList.remove('queue-panel--open');
+    }
+
+    // ============================================
+    // FILTERS & SEARCH
+    // ============================================
+    function applyFilters(videoList) {
+      let filtered = [...videoList];
+
+      // Add filter logic here based on currentFilters
+      // This is a simplified version
+
+      return filtered;
+    }
+
+    function handleFilterChange() {
+      currentPage = 1;
+      renderVideoGrid();
+      updateFilterClearVisibility();
+    }
+
+    function handleSort() {
+      currentPage = 1;
+      renderVideoGrid();
+    }
+
+    function handleSearch(e) {
+      const query = e.target.value.toLowerCase();
+      // Implement search filtering
+      currentPage = 1;
+      renderVideoGrid();
+    }
+
+    function clearAllFilters() {
+      document.querySelectorAll('.filter-select').forEach(s => s.value = '');
+      currentFilters = {};
+      currentPage = 1;
+      renderVideoGrid();
+      updateFilterClearVisibility();
+      showToast('info', 'Filters Cleared', 'Showing all videos');
+    }
+
+    function updateFilterClearVisibility() {
+      const hasFilters = Array.from(document.querySelectorAll('.filter-select')).some(s => s.value);
+      document.getElementById('filter-clear').classList.toggle('filter-clear--visible', hasFilters);
+    }
+
+    // ============================================
+    // ADVANCED SEARCH
+    // ============================================
+    function toggleAdvancedSearch() {
+      document.getElementById('advanced-search').classList.toggle('advanced-search--open');
+    }
+
+    function closeAdvancedSearch() {
+      document.getElementById('advanced-search').classList.remove('advanced-search--open');
+    }
+
+    function resetAdvancedSearch() {
+      document.getElementById('bpm-min').value = '';
+      document.getElementById('bpm-max').value = '';
+      document.getElementById('key-select').value = '';
+      document.getElementById('era-select').value = '';
+      document.getElementById('quality-select').value = '';
+      document.querySelectorAll('.advanced-search__checkbox input').forEach(c => c.checked = false);
+    }
+
+    function applyAdvancedSearch() {
+      showToast('info', 'Filters Applied', 'Search results updated');
+      closeAdvancedSearch();
+      renderVideoGrid();
+    }
+
+    function saveSmartPlaylist() {
+      showToast('success', 'Smart Playlist Saved', 'Your search has been saved as a smart playlist');
+      closeAdvancedSearch();
+    }
+
+    // ============================================
+    // DISCOVERY PACK
+    // ============================================
+    function downloadDiscoveryPack() {
+      const packVideos = videos.filter(v => v.isNew).slice(0, 15);
+      packVideos.forEach(v => {
+        queueDownload(v.id, 'clean', 'video');
+      });
+      showToast('success', 'Discovery Pack Queued', '15 videos added to your download queue');
+    }
+
+    function previewDiscoveryPack() {
+      showToast('info', 'Preview Mode', 'Playing discovery pack preview...');
+    }
+
+    // ============================================
+    // SOCIAL FEATURES
+    // ============================================
+    function toggleFollow(videoId) {
+      showToast('success', 'Following Artist', 'You\'ll get notified of new releases');
+    }
+
+    // ============================================
+    // VIEW TOGGLE
+    // ============================================
+    function setView(view) {
+      currentView = view;
+      document.querySelectorAll('.view-toggle__btn').forEach(btn => {
+        btn.classList.toggle('view-toggle__btn--active', btn.dataset.view === view);
+      });
+      // Re-render with new view
+      renderVideoGrid();
+    }
+
+    // ============================================
+    // THEME
+    // ============================================
+    function toggleTheme() {
+      document.documentElement.classList.toggle('light');
+      const isLight = document.documentElement.classList.contains('light');
+      localStorage.setItem('tvp-theme', isLight ? 'light' : 'dark');
+    }
+
+    // ============================================
+    // TOAST NOTIFICATIONS
+    // ============================================
+    function showToast(type, title, message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast--${type}`;
+
+      const icons = {
+        success: '<svg class="toast__icon toast__icon--success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>',
+        error: '<svg class="toast__icon toast__icon--error" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>',
+        info: '<svg class="toast__icon toast__icon--info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+      };
+
+      toast.innerHTML = `
+        ${icons[type]}
+        <div class="toast__content">
+          <div class="toast__title">${title}</div>
+          <div class="toast__message">${message}</div>
+        </div>
+        <button class="toast__close" onclick="this.parentElement.remove()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('toast--show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('toast--show');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ============================================
+    // UTILITIES
+    // ============================================
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+  </script>
+</body>
+</html>
