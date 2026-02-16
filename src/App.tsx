@@ -2,7 +2,7 @@
 // THE VIDEO POOL - MAIN APP COMPONENT
 // ============================================
 
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUIStore } from '@/stores/uiStore';
@@ -10,24 +10,26 @@ import { useUIStore } from '@/stores/uiStore';
 // Layout - Using v5.5 layout with all panels and modals
 import Layout from '@/components/LayoutV2';
 
-// Pages
+// Pages - Critical path (loaded immediately)
 import LandingPage from '@/pages/LandingPage';
 import HomePage from '@/pages/HomePageV2';
-import LoginPage from '@/pages/LoginPage';
-import RegisterPage from '@/pages/RegisterPage';
-import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
-import ResetPasswordPage from '@/pages/ResetPasswordPage';
-import EmailVerificationPage from '@/pages/EmailVerificationPage';
-import VideoPage from '@/pages/VideoPage';
-import SearchPage from '@/pages/SearchPage';
-import LibraryPage from '@/pages/LibraryPage';
-import DownloadsPage from '@/pages/DownloadsPage';
-import MembershipPage from '@/pages/MembershipPage';
-import MembershipSuccessPage from '@/pages/MembershipSuccessPage';
-import SettingsPage from '@/pages/SettingsPage';
-import AdminPage from '@/pages/AdminPage';
-import InsightsPage from '@/pages/InsightsPage';
-import SharedSetPage from '@/pages/SharedSetPage';
+
+// Pages - Lazy loaded (code splitting for better performance)
+const LoginPage = lazy(() => import('@/pages/LoginPage'));
+const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
+const EmailVerificationPage = lazy(() => import('@/pages/EmailVerificationPage'));
+const VideoPage = lazy(() => import('@/pages/VideoPage'));
+const SearchPage = lazy(() => import('@/pages/SearchPage'));
+const LibraryPage = lazy(() => import('@/pages/LibraryPage'));
+const DownloadsPage = lazy(() => import('@/pages/DownloadsPage'));
+const MembershipPage = lazy(() => import('@/pages/MembershipPage'));
+const MembershipSuccessPage = lazy(() => import('@/pages/MembershipSuccessPage'));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+const AdminPage = lazy(() => import('@/pages/AdminPage'));
+const InsightsPage = lazy(() => import('@/pages/InsightsPage'));
+const SharedSetPage = lazy(() => import('@/pages/SharedSetPage'));
 
 // Loading spinner
 function LoadingScreen() {
@@ -115,86 +117,88 @@ export default function App() {
   }
 
   return (
-    <Routes>
-      {/* Public landing page - shown to non-authenticated visitors */}
-      <Route path="/welcome" element={<PublicLandingRoute />} />
+    <Suspense fallback={<LoadingScreen />}>
+      <Routes>
+        {/* Public landing page - shown to non-authenticated visitors */}
+        <Route path="/welcome" element={<PublicLandingRoute />} />
 
-      {/* Root redirects based on auth status */}
-      <Route path="/" element={<RootRedirect />} />
+        {/* Root redirects based on auth status */}
+        <Route path="/" element={<RootRedirect />} />
 
-      {/* Auth routes */}
-      <Route
-        path="/login"
-        element={
-          <AuthRoute>
-            <LoginPage />
-          </AuthRoute>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <AuthRoute>
-            <RegisterPage />
-          </AuthRoute>
-        }
-      />
-      <Route
-        path="/forgot-password"
-        element={
-          <AuthRoute>
-            <ForgotPasswordPage />
-          </AuthRoute>
-        }
-      />
-      <Route
-        path="/reset-password"
-        element={
-          <AuthRoute>
-            <ResetPasswordPage />
-          </AuthRoute>
-        }
-      />
-      <Route
-        path="/verify-email"
-        element={<EmailVerificationPage />}
-      />
+        {/* Auth routes */}
+        <Route
+          path="/login"
+          element={
+            <AuthRoute>
+              <LoginPage />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <AuthRoute>
+              <RegisterPage />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <AuthRoute>
+              <ForgotPasswordPage />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <AuthRoute>
+              <ResetPasswordPage />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/verify-email"
+          element={<EmailVerificationPage />}
+        />
 
-      {/* Public shared set page (no auth required) */}
-      <Route path="/set/:shareId" element={<SharedSetPage />} />
+        {/* Public shared set page (no auth required) */}
+        <Route path="/set/:shareId" element={<SharedSetPage />} />
 
-      {/* Main app routes (protected) */}
-      <Route
-        path="/home"
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<HomePage />} />
-      </Route>
+        {/* Main app routes (protected) */}
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<HomePage />} />
+        </Route>
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="video/:id" element={<VideoPage />} />
-        <Route path="search" element={<SearchPage />} />
-        <Route path="library" element={<LibraryPage />} />
-        <Route path="downloads" element={<DownloadsPage />} />
-        <Route path="membership" element={<MembershipPage />} />
-        <Route path="membership/success" element={<MembershipSuccessPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="admin" element={<AdminPage />} />
-        <Route path="insights" element={<InsightsPage />} />
-      </Route>
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="video/:id" element={<VideoPage />} />
+          <Route path="search" element={<SearchPage />} />
+          <Route path="library" element={<LibraryPage />} />
+          <Route path="downloads" element={<DownloadsPage />} />
+          <Route path="membership" element={<MembershipPage />} />
+          <Route path="membership/success" element={<MembershipSuccessPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="admin" element={<AdminPage />} />
+          <Route path="insights" element={<InsightsPage />} />
+        </Route>
 
-      {/* Catch all - redirect to welcome/landing page */}
-      <Route path="*" element={<Navigate to="/welcome" replace />} />
-    </Routes>
+        {/* Catch all - redirect to welcome/landing page */}
+        <Route path="*" element={<Navigate to="/welcome" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
