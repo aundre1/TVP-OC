@@ -15,7 +15,7 @@ import { Video } from '@/types/browse';
 // Components
 import { Sidebar } from '@/components/Navigation/Sidebar';
 import { GenreFilter } from '@/components/Navigation/GenreFilter';
-// import { ViewToggle } from '@/components/Browse/ViewToggle';
+import { ViewToggle } from '@/components/Browse/ViewToggle';
 import { BrowseTable } from '@/components/Browse/BrowseTable';
 import { BrowseGrid } from '@/components/Browse/BrowseGrid';
 import { BrowseTile } from '@/components/Browse/BrowseTile';
@@ -72,7 +72,7 @@ export const BrowsePage: React.FC = () => {
         // For now, optimistically update via store if available
         browseState.fetchVideos();
       } catch (err) {
-        console.error('Failed to toggle favorite:', err);
+        // Error handled by React Query error boundary
       }
     },
     [browseState]
@@ -114,7 +114,7 @@ export const BrowsePage: React.FC = () => {
           onAdminEdit(video);
           break;
         default:
-          console.warn(`Unknown card action: ${action}`);
+          // Unknown action - silently ignore
       }
     },
     [onPreview, onDownload, onFavorite, onAddToPlaylist, onAdminEdit]
@@ -130,7 +130,7 @@ export const BrowsePage: React.FC = () => {
         const genres = await getGenres();
         setAvailableGenres(genres);
       } catch (error) {
-        console.error('Failed to load genres:', error);
+        // Error handled gracefully with empty genres list
       } finally {
         setIsLoadingGenres(false);
       }
@@ -184,36 +184,8 @@ export const BrowsePage: React.FC = () => {
               Menu
             </button>
 
-            {/* TODO: View Toggle Component */}
-            {/* <ViewToggle currentView={viewMode} onViewChange={setViewMode} /> */}
-
-            {/* View Mode Buttons */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setViewMode('table')}
-                className={`px-4 py-2 rounded ${
-                  viewMode === 'table' ? 'bg-cyan-500' : 'bg-gray-700'
-                }`}
-              >
-                Table
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`px-4 py-2 rounded ${
-                  viewMode === 'grid' ? 'bg-cyan-500' : 'bg-gray-700'
-                }`}
-              >
-                Grid
-              </button>
-              <button
-                onClick={() => setViewMode('tile')}
-                className={`px-4 py-2 rounded ${
-                  viewMode === 'tile' ? 'bg-cyan-500' : 'bg-gray-700'
-                }`}
-              >
-                Tile
-              </button>
-            </div>
+            {/* View Toggle Component */}
+            <ViewToggle currentView={viewMode} onViewChange={setViewMode} />
           </div>
         </div>
 

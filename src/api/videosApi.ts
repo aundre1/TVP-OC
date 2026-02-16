@@ -45,7 +45,6 @@ export async function getVideos(filters: APIVideoFilters): Promise<APIVideoRespo
     const response = await get<APIVideoResponse>(url);
     return response;
   } catch (error) {
-    console.error('Failed to fetch videos:', error);
     throw error;
   }
 }
@@ -58,7 +57,6 @@ export async function getGenres(): Promise<string[]> {
     const response = await get<{ genres: string[] }>('/api/videos/genres');
     return response.genres || [];
   } catch (error) {
-    console.error('Failed to fetch genres:', error);
     return [];
   }
 }
@@ -71,7 +69,6 @@ export async function getVideoDetails(videoId: string): Promise<Video> {
     const response = await get<Video>(`/api/videos/${videoId}`);
     return response;
   } catch (error) {
-    console.error(`Failed to fetch video ${videoId}:`, error);
     throw error;
   }
 }
@@ -84,7 +81,6 @@ export async function toggleFavorite(videoId: string): Promise<{ isFavorited: bo
     const response = await post<{ isFavorited: boolean }>(`/api/videos/${videoId}/favorite`, {});
     return response;
   } catch (error) {
-    console.error(`Failed to toggle favorite for ${videoId}:`, error);
     throw error;
   }
 }
@@ -103,7 +99,6 @@ export async function addToPlaylist(
     );
     return response;
   } catch (error) {
-    console.error(`Failed to add video to playlist:`, error);
     throw error;
   }
 }
@@ -122,7 +117,6 @@ export async function removeFromPlaylist(
     );
     return response;
   } catch (error) {
-    console.error(`Failed to remove video from playlist:`, error);
     throw error;
   }
 }
@@ -141,7 +135,6 @@ export async function initiateDownload(
     );
     return response;
   } catch (error) {
-    console.error(`Failed to initiate download:`, error);
     throw error;
   }
 }
@@ -156,7 +149,6 @@ export async function getDownloadHistory(limit = 20): Promise<Video[]> {
     );
     return response.videos || [];
   } catch (error) {
-    console.error('Failed to fetch download history:', error);
     return [];
   }
 }
@@ -172,7 +164,6 @@ export async function updateVideo(
     const response = await put<Video>(`/api/videos/${videoId}`, data);
     return response;
   } catch (error) {
-    console.error(`Failed to update video ${videoId}:`, error);
     throw error;
   }
 }
@@ -190,7 +181,6 @@ export async function searchVideos(
     );
     return response.videos || [];
   } catch (error) {
-    console.error('Failed to search videos:', error);
     return [];
   }
 }

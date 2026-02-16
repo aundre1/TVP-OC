@@ -69,8 +69,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ video, onClose }) => {
         onClose();
       }, 1500);
     } catch (err) {
-      console.error('Save failed:', err);
-
       const errorMessage =
         err instanceof Error
           ? err.message

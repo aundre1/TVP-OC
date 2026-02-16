@@ -236,7 +236,6 @@ export default function SidebarNav() {
           plan="Pro"
           onClick={() => {
             // TODO: Open recent downloads modal
-            console.log('Open downloads');
           }}
         />
       </div>

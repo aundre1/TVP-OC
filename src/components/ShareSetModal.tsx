@@ -76,7 +76,7 @@ export default function ShareSetModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      // Failed to copy to clipboard - user will see the link is still visible
     }
   }, [shareUrl]);
 

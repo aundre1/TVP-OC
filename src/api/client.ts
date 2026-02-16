@@ -72,13 +72,12 @@ apiClient.interceptors.response.use(
       const errorData = error.response.data;
       if (errorData?.code === 'SUBSCRIPTION_REQUIRED') {
         // Could trigger upgrade modal here
-        console.warn('Subscription upgrade required');
       }
     }
 
     // Handle rate limiting
     if (error.response?.status === 429) {
-      console.warn('Rate limited. Please wait before retrying.');
+      // Rate limited - handled by retry logic or UI notification
     }
 
     return Promise.reject(error);

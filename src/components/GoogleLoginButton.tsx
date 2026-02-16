@@ -58,7 +58,6 @@ export default function GoogleLoginButton({ mode = 'login', className = '' }: Go
       }
     },
     onError: (error) => {
-      console.error('Google OAuth error:', error);
       toast.error('Google sign-in failed. Please try again.');
       setIsLoading(false);
     },

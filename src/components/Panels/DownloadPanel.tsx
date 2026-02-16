@@ -54,8 +54,6 @@ export const DownloadPanel: React.FC<DownloadPanelProps> = ({ video, onClose }) 
         onClose();
       }, 1500);
     } catch (err) {
-      console.error('Download failed:', err);
-
       // Provide user-friendly error messages
       const errorMessage =
         err instanceof Error

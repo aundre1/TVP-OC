@@ -35,7 +35,6 @@ export const LibraryPanel: React.FC<LibraryPanelProps> = ({ video }) => {
       const result = await toggleFavorite(video.id);
       setIsFavorited(result.isFavorited);
     } catch (err) {
-      console.error('Failed to toggle favorite:', err);
       setFavoriteError('Failed to update favorite status. Please try again.');
       // Revert optimistic update is not needed since we didn't change state yet
     } finally {
@@ -55,7 +54,6 @@ export const LibraryPanel: React.FC<LibraryPanelProps> = ({ video }) => {
       // Auto-clear success message after a few seconds
       setTimeout(() => setPlaylistMessage(null), 3000);
     } catch (err) {
-      console.error('Failed to add to playlist:', err);
       setPlaylistError(`Failed to add to "${playlistName}". Please try again.`);
 
       // Auto-clear error after a few seconds

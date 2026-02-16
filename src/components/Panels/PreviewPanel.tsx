@@ -84,7 +84,6 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ video }) => {
         setIsPlaying(true);
       }
     } catch (err) {
-      console.error('Playback failed:', err);
       setError('Playback failed. Preview may not be available.');
       setIsPlaying(false);
     }

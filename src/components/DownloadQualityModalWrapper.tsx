@@ -27,7 +27,6 @@ export default function DownloadQualityModalWrapper() {
 
     // In production, this would call the API
     // For now, we'll simulate the download
-    console.log(`Downloading ${track.title} - ${quality} - ${version}`);
 
     // TODO: Replace with actual API call
     // const response = await downloadVideo(track.id, quality, version);

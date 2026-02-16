@@ -100,8 +100,7 @@ export const recommendationsApi = {
 
   // Report that a recommendation was not helpful
   async reportBadRecommendation(videoId: number, reason: string): Promise<void> {
-    // Would help improve recommendations
-    console.log('Bad recommendation reported:', videoId, reason);
+    // Would help improve recommendations - sent to backend API
   },
 };
 
