@@ -4,6 +4,7 @@
 
 export { useAuth } from './useAuth';
 export * from './useVideos';
+export { useVideoBrowse } from './useVideoBrowse';
 export * from './useDownloads';
 export * from './useLibrary';
 export * from './useSubscription';

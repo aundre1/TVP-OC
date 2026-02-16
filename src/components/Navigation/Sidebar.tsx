@@ -2,6 +2,7 @@
  * Sidebar Component
  * Navigation drawer with menu items
  * Fixed on desktop, slide-out drawer on mobile
+ * Connected to browseStore for reactive state updates
  */
 
 import React from 'react';
@@ -14,6 +15,7 @@ import {
   DownloadCloud,
   X,
 } from 'lucide-react';
+import { useBrowseStore } from '@/stores/browseStore';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -28,6 +30,9 @@ interface NavItem {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const clearGenres = useBrowseStore((state) => state.clearGenres);
+  const resetFilters = useBrowseStore((state) => state.resetFilters);
+
   const navItems: NavItem[] = [
     { id: 'pool', label: 'The Pool', icon: <Music size={20} /> },
     { id: 'browse', label: 'Browse All', icon: <Compass size={20} /> },
@@ -38,8 +43,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   ];
 
   const handleNavClick = (itemId: string) => {
-    // TODO: Navigate to section or filter
-    console.log('Navigate to:', itemId);
+    // Handle navigation with browseStore updates
+    switch (itemId) {
+      case 'browse':
+        // Clear all filters for "Browse All"
+        resetFilters();
+        break;
+      case 'favorites':
+        // TODO: Implement favorites filter
+        break;
+      case 'playlists':
+        // TODO: Implement playlists filter
+        break;
+      case 'downloads':
+        // TODO: Implement downloads filter
+        break;
+      default:
+        // Other navigation items
+        break;
+    }
+
     // Close drawer on mobile
     if (window.innerWidth < 1024) {
       onClose();

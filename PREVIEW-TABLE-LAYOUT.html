@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TVP Table Layout Preview - WITH Genre Column</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #e5e5e5;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #00d4ff;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .highlight {
+      background: #1a2a1a;
+      border-left: 4px solid #4ade80;
+      padding: 15px;
+      margin-bottom: 30px;
+      border-radius: 4px;
+    }
+
+    .highlight strong {
+      color: #4ade80;
+    }
+
+    .table-wrapper {
+      background: #111;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #222;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 40px 50px 100px 1.5fr 120px 100px 70px 60px 70px 80px 120px;
+      gap: 12px;
+      padding: 16px;
+      background: #161616;
+      border-bottom: 1px solid #333;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+    }
+
+    .table-header > div {
+      display: flex;
+      align-items: center;
+    }
+
+    .table-header .center {
+      justify-content: center;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 40px 50px 100px 1.5fr 120px 100px 70px 60px 70px 80px 120px;
+      gap: 12px;
+      padding: 12px 16px;
+      font-size: 12px;
+      align-items: center;
+      border-bottom: 1px solid #1a1a1a;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .table-row:nth-child(even) {
+      background: #0d0d0d;
+    }
+
+    .table-row:nth-child(odd) {
+      background: #111;
+    }
+
+    .table-row:hover {
+      background: #1a1a1a !important;
+    }
+
+    .row-number {
+      text-align: center;
+      color: #666;
+      font-family: 'Monaco', monospace;
+      font-size: 11px;
+    }
+
+    .thumbnail {
+      width: 50px;
+      height: 28px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .artist {
+      color: #888;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .title {
+      color: #e5e5e5;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .table-row:hover .title {
+      color: #00d4ff;
+    }
+
+    .label, .genre {
+      color: #888;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .genre {
+      color: #999;
+      font-weight: 500;
+    }
+
+    .bpm, .key, .duration {
+      text-align: center;
+      font-family: 'Monaco', monospace;
+    }
+
+    .bpm {
+      color: #e5e5e5;
+    }
+
+    .key {
+      color: #00d4ff;
+      font-weight: 600;
+    }
+
+    .duration {
+      color: #888;
+    }
+
+    .quality-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .quality-4k {
+      background: #fbbf24;
+      color: #000;
+    }
+
+    .quality-1080p {
+      background: #00d4ff;
+      color: #000;
+    }
+
+    .quality-720p {
+      background: #a8a29e;
+      color: #000;
+    }
+
+    .actions {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .action-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      border: none;
+      background: transparent;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover {
+      background: #222;
+      color: #00d4ff;
+    }
+
+    .new-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      color: #000;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      margin-left: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .comparison {
+      margin-top: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .comparison-box {
+      background: #161616;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #222;
+    }
+
+    .comparison-box h3 {
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .comparison-box.before h3 {
+      color: #ef4444;
+    }
+
+    .comparison-box.after h3 {
+      color: #4ade80;
+    }
+
+    .comparison-box ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .comparison-box li {
+      padding: 8px 0;
+      color: #aaa;
+      border-bottom: 1px solid #222;
+    }
+
+    .comparison-box li:last-child {
+      border-bottom: none;
+    }
+
+    .comparison-box li strong {
+      color: #e5e5e5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 The Video Pool - NEW Table Layout</h1>
+    <p class="subtitle">Preview of updated UI matching Replit design (Feb 7, 2026)</p>
+
+    <div class="highlight">
+      <strong>✨ What's New:</strong> Genre column added between Label and BPM. Artist now in separate column. Spacing adjusted to match Replit design. All functionality preserved.
+    </div>
+
+    <div class="table-wrapper">
+      <!-- Header -->
+      <div class="table-header">
+        <div class="center">#</div>
+        <div></div>
+        <div>Artist</div>
+        <div>Title</div>
+        <div>Label</div>
+        <div class="new-badge">GENRE</div>
+        <div class="center">BPM</div>
+        <div class="center">Key</div>
+        <div class="center">Quality</div>
+        <div class="center">Duration</div>
+        <div></div>
+      </div>
+
+      <!-- Sample Rows -->
+      <div class="table-row">
+        <div class="row-number">1</div>
+        <div class="thumbnail">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 100%; height: 100%;"></div>
+        </div>
+        <div class="artist">Avicii</div>
+        <div class="title">Levels (Original Mix)</div>
+        <div class="label">Universal Music</div>
+        <div class="genre">Progressive House</div>
+        <div class="bpm">126</div>
+        <div class="key">C♯m</div>
+        <div style="text-align: center;">
+          <span class="quality-badge quality-1080p">1080p</span>
+        </div>
+        <div class="duration">3:45</div>
+        <div class="actions">
+          <button class="action-btn">♡</button>
+          <button class="action-btn">+</button>
+          <button class="action-btn">↓</button>
+        </div>
+      </div>
+
+      <div class="table-row">
+        <div class="row-number">2</div>
+        <div class="thumbnail">
+          <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); width: 100%; height: 100%;"></div>
+        </div>
+        <div class="artist">Martin Garrix</div>
+        <div class="title">Animals</div>
+        <div class="label">Spinnin' Records</div>
+        <div class="genre">Big Room House</div>
+        <div class="bpm">128</div>
+        <div class="key">F♯m</div>
+        <div style="text-align: center;">
+          <span class="quality-badge quality-4k">4K</span>
+        </div>
+        <div class="duration">5:02</div>
+        <div class="actions">
+          <button class="action-btn">♡</button>
+          <button class="action-btn">+</button>
+          <button class="action-btn">↓</button>
+        </div>
+      </div>
+
+      <div class="table-row">
+        <div class="row-number">3</div>
+        <div class="thumbnail">
+          <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); width: 100%; height: 100%;"></div>
+        </div>
+        <div class="artist">Daft Punk</div>
+        <div class="title">One More Time</div>
+        <div class="label">Virgin Records</div>
+        <div class="genre">French House</div>
+        <div class="bpm">123</div>
+        <div class="key">Am</div>
+        <div style="text-align: center;">
+          <span class="quality-badge quality-1080p">1080p</span>
+        </div>
+        <div class="duration">5:20</div>
+        <div class="actions">
+          <button class="action-btn">♡</button>
+          <button class="action-btn">+</button>
+          <button class="action-btn">↓</button>
+        </div>
+      </div>
+
+      <div class="table-row">
+        <div class="row-number">4</div>
+        <div class="thumbnail">
+          <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); width: 100%; height: 100%;"></div>
+        </div>
+        <div class="artist">Calvin Harris</div>
+        <div class="title">Summer</div>
+        <div class="label">Columbia Records</div>
+        <div class="genre">Dance Pop</div>
+        <div class="bpm">128</div>
+        <div class="key">Gm</div>
+        <div style="text-align: center;">
+          <span class="quality-badge quality-1080p">1080p</span>
+        </div>
+        <div class="duration">3:43</div>
+        <div class="actions">
+          <button class="action-btn">♡</button>
+          <button class="action-btn">+</button>
+          <button class="action-btn">↓</button>
+        </div>
+      </div>
+
+      <div class="table-row">
+        <div class="row-number">5</div>
+        <div class="thumbnail">
+          <div style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); width: 100%; height: 100%;"></div>
+        </div>
+        <div class="artist">Deadmau5</div>
+        <div class="title">Strobe</div>
+        <div class="label">Mau5trap</div>
+        <div class="genre">Progressive House</div>
+        <div class="bpm">128</div>
+        <div class="key">Dbm</div>
+        <div style="text-align: center;">
+          <span class="quality-badge quality-4k">4K</span>
+        </div>
+        <div class="duration">10:37</div>
+        <div class="actions">
+          <button class="action-btn">♡</button>
+          <button class="action-btn">+</button>
+          <button class="action-btn">↓</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="comparison">
+      <div class="comparison-box before">
+        <h3>❌ Before (Steve's Version)</h3>
+        <ul>
+          <li><strong>9 columns</strong> - Artist/Thumbnail combined</li>
+          <li><strong>No Genre column</strong> - Missing from display</li>
+          <li><strong>Grid:</strong> 30px 50px 80px 1.5fr 1.5fr 1fr 100px 80px 100px</li>
+          <li><strong>Spacing:</strong> Cramped, metadata squished</li>
+        </ul>
+      </div>
+
+      <div class="comparison-box after">
+        <h3>✅ After (Replit Match)</h3>
+        <ul>
+          <li><strong>11 columns</strong> - Artist separate, cleaner</li>
+          <li><strong>Genre column added</strong> - Shows track.genre</li>
+          <li><strong>Grid:</strong> 40px 50px 100px 1.5fr 120px 100px 70px 60px 70px 80px 120px</li>
+          <li><strong>Spacing:</strong> Proper horizontal spread, matches Replit</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -5,15 +5,36 @@
  */
 
 import React from 'react';
-import { Play, Download, Heart, Plus } from 'lucide-react';
+import { Play, Download, Heart, Plus, AlertCircle } from 'lucide-react';
 import { BrowseTileProps } from '@/types/browse';
+import { useVideoBrowse } from '@/hooks/useVideoBrowse';
 
 export const BrowseTile: React.FC<BrowseTileProps> = ({
-  videos,
-  isLoading,
   onTileClick,
   onTileAction,
 }) => {
+  // Use shared hook for data fetching
+  const { videos, isLoading, isError, error, refetch } = useVideoBrowse();
+  // Error state
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <p className="text-gray-400 text-lg mb-2">Failed to load videos</p>
+          <p className="text-gray-500 text-sm mb-4">{error?.message || 'An error occurred'}</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-md transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -25,6 +46,7 @@ export const BrowseTile: React.FC<BrowseTileProps> = ({
     );
   }
 
+  // Empty state
   if (videos.length === 0) {
     return (
       <div className="flex items-center justify-center h-96">

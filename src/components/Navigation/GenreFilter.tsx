@@ -2,30 +2,40 @@
  * Genre Filter Component
  * Multi-select genre filter with OR logic
  * Shows: Pop | Dance | House | ... | All Genres (reset)
+ * Connected to browseStore for reactive state updates
  */
 
 import React from 'react';
-import { X, RotateCcw } from 'lucide-react';
-import { GenreFilterProps } from '@/types/browse';
+import { RotateCcw } from 'lucide-react';
+import { useBrowseStore } from '@/stores/browseStore';
+
+interface GenreFilterProps {
+  availableGenres: string[];
+  isLoading?: boolean;
+}
 
 export const GenreFilter: React.FC<GenreFilterProps> = ({
-  selectedGenres,
   availableGenres,
-  onGenreChange,
   isLoading = false,
 }) => {
+  const selectedGenres = useBrowseStore((state) => state.selectedGenres);
+  const addGenre = useBrowseStore((state) => state.addGenre);
+  const removeGenre = useBrowseStore((state) => state.removeGenre);
+  const clearGenres = useBrowseStore((state) => state.clearGenres);
+
   const handleGenreClick = (genre: string) => {
-    const updated = selectedGenres.includes(genre)
-      ? selectedGenres.filter((g) => g !== genre)
-      : [...selectedGenres, genre];
-    onGenreChange(updated);
+    if (selectedGenres.has(genre)) {
+      removeGenre(genre);
+    } else {
+      addGenre(genre);
+    }
   };
 
   const handleReset = () => {
-    onGenreChange([]);
+    clearGenres();
   };
 
-  const isAnySelected = selectedGenres.length > 0;
+  const isAnySelected = selectedGenres.size > 0;
 
   return (
     <div className="space-y-2">
@@ -52,7 +62,7 @@ export const GenreFilter: React.FC<GenreFilterProps> = ({
           <div className="text-gray-500 text-sm">No genres available</div>
         ) : (
           availableGenres.map((genre) => {
-            const isSelected = selectedGenres.includes(genre);
+            const isSelected = selectedGenres.has(genre);
             return (
               <button
                 key={genre}
@@ -73,7 +83,7 @@ export const GenreFilter: React.FC<GenreFilterProps> = ({
       {/* Selected Count */}
       {isAnySelected && (
         <div className="text-xs text-gray-400 pt-2 border-t border-gray-700">
-          {selectedGenres.length} genre{selectedGenres.length !== 1 ? 's' : ''} selected
+          {selectedGenres.size} genre{selectedGenres.size !== 1 ? 's' : ''} selected
         </div>
       )}
     </div>

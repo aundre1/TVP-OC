@@ -5,7 +5,7 @@
  */
 
 import { APIVideoFilters, APIVideoResponse, Video } from '@/types/browse';
-import { get, post } from './client';
+import { get, post, put } from './client';
 
 /**
  * Get videos with filtering, sorting, and pagination
@@ -158,6 +158,22 @@ export async function getDownloadHistory(limit = 20): Promise<Video[]> {
   } catch (error) {
     console.error('Failed to fetch download history:', error);
     return [];
+  }
+}
+
+/**
+ * Update video metadata (admin only)
+ */
+export async function updateVideo(
+  videoId: string,
+  data: Record<string, string>
+): Promise<Video> {
+  try {
+    const response = await put<Video>(`/api/videos/${videoId}`, data);
+    return response;
+  } catch (error) {
+    console.error(`Failed to update video ${videoId}:`, error);
+    throw error;
   }
 }
 

@@ -92,11 +92,6 @@ export interface GenreFilterProps {
 }
 
 export interface BrowseTableProps {
-  videos: Video[];
-  isLoading: boolean;
-  sortBy: SortField;
-  sortOrder: SortOrder;
-  onSort: (field: SortField) => void;
   onRowClick: (video: Video) => void;
   onPreview: (video: Video) => void;
   onDownload: (video: Video) => void;
@@ -104,16 +99,12 @@ export interface BrowseTableProps {
 }
 
 export interface BrowseGridProps {
-  videos: Video[];
-  isLoading: boolean;
   columns?: number;
   onCardClick: (video: Video) => void;
   onCardAction?: (action: string, video: Video) => void;
 }
 
 export interface BrowseTileProps {
-  videos: Video[];
-  isLoading: boolean;
   onTileClick: (video: Video) => void;
   onTileAction?: (action: string, video: Video) => void;
 }

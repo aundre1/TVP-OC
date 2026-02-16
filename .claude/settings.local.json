@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:www.djcity.com)"
+      "WebFetch(domain:www.djcity.com)",
+      "Bash(~/.ssh/config << 'EOF'\nHost github.com\n  AddKeysToAgent yes\n  UseKeychain yes\n  IdentityFile ~/.ssh/id_ed25519\nEOF)",
+      "Bash(chmod:*)"
     ]
   }
 }
