@@ -4,7 +4,7 @@
  */
 
 export type ViewMode = 'table' | 'grid' | 'tile';
-export type SortField = 'date' | 'popularity' | 'trending' | 'artist' | 'title';
+export type SortField = 'date' | 'popularity' | 'trending' | 'artist' | 'title' | 'genre' | 'released';
 export type SortOrder = 'asc' | 'desc';
 export type PanelType = 'preview' | 'details' | 'download' | 'library' | 'admin' | null;
 

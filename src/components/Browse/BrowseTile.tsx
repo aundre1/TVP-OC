@@ -5,9 +5,10 @@
  */
 
 import React from 'react';
-import { Play, Download, Heart, Plus, AlertCircle } from 'lucide-react';
+import { Play, Download, Heart, Plus, AlertCircle, ChevronDown } from 'lucide-react';
 import { BrowseTileProps } from '@/types/browse';
 import { useVideoBrowse } from '@/hooks/useVideoBrowse';
+import { useBrowseStore } from '@/stores/browseStore';
 
 export const BrowseTile: React.FC<BrowseTileProps> = ({
   onTileClick,
@@ -15,6 +16,12 @@ export const BrowseTile: React.FC<BrowseTileProps> = ({
 }) => {
   // Use shared hook for data fetching
   const { videos, isLoading, isError, error, refetch } = useVideoBrowse();
+  const { hasMore, setPage, page } = useBrowseStore();
+
+  // Pagination: limit rendered items for performance (max 500 tiles before needing load more)
+  const MAX_VISIBLE = Math.min(500, videos.length);
+  const visibleVideos = videos.slice(0, MAX_VISIBLE);
+  const showLoadMore = visibleVideos.length > 0 && hasMore && visibleVideos.length >= MAX_VISIBLE;
   // Error state
   if (isError) {
     return (
@@ -59,9 +66,9 @@ export const BrowseTile: React.FC<BrowseTileProps> = ({
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
       <div className="space-y-4 max-w-4xl">
-        {videos.map((video) => (
+        {visibleVideos.map((video) => (
           <div
             key={video.id}
             onClick={() => onTileClick(video)}
@@ -158,6 +165,27 @@ export const BrowseTile: React.FC<BrowseTileProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Load More Button */}
+      {showLoadMore && (
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-600 text-white rounded-lg transition-colors font-medium"
+          >
+            <span>Load More Videos</span>
+            <ChevronDown size={18} className={isLoading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+      )}
+
+      {/* Pagination Info */}
+      {videos.length > 0 && (
+        <div className="text-center text-xs text-gray-400 pt-2">
+          Showing {visibleVideos.length} of {videos.length} videos
+        </div>
+      )}
     </div>
   );
 };
