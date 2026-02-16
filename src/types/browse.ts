@@ -99,7 +99,6 @@ export interface BrowseTableProps {
 }
 
 export interface BrowseGridProps {
-  columns?: number;
   onCardClick: (video: Video) => void;
   onCardAction?: (action: string, video: Video) => void;
 }

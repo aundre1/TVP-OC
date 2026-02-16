@@ -11,7 +11,6 @@ import { useVideoBrowse } from '@/hooks/useVideoBrowse';
 import { useBrowseStore } from '@/stores/browseStore';
 
 export const BrowseGrid: React.FC<BrowseGridProps> = ({
-  columns = 4,
   onCardClick,
   onCardAction,
 }) => {
@@ -23,12 +22,6 @@ export const BrowseGrid: React.FC<BrowseGridProps> = ({
   const MAX_VISIBLE = Math.min(200, videos.length);
   const visibleVideos = videos.slice(0, MAX_VISIBLE);
   const showLoadMore = visibleVideos.length > 0 && hasMore && visibleVideos.length >= MAX_VISIBLE;
-  const colsClass = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-2',
-    3: 'grid-cols-3',
-    4: 'grid-cols-4',
-  }[columns] || 'grid-cols-4';
 
   // Error state
   if (isError) {
@@ -75,7 +68,7 @@ export const BrowseGrid: React.FC<BrowseGridProps> = ({
 
   return (
     <div className="p-6 space-y-6">
-      <div className={`grid ${colsClass} gap-6 auto-rows-max`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 auto-rows-max">
         {visibleVideos.map((video) => (
           <div
             key={video.id}

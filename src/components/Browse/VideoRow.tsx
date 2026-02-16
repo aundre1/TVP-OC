@@ -30,6 +30,11 @@ const VideoRowComponent: React.FC<VideoRowProps> = ({
     onFavorite(video);
   };
 
+  const handlePlaylistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onFavorite(video); // Opens LibraryPanel with video selected for playlist management
+  };
+
   return (
     <tr
       onClick={() => onClick(video)}
@@ -122,11 +127,8 @@ const VideoRowComponent: React.FC<VideoRowProps> = ({
         </button>
 
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            // TODO: Show add to playlist menu
-          }}
-          className="p-1.5 hover:bg-gray-700 rounded transition-colors text-gray-400"
+          onClick={handlePlaylistClick}
+          className="p-1.5 hover:bg-gray-700 rounded transition-colors text-gray-400 hover:text-cyan-400"
           title="Add to playlist"
         >
           <Plus size={16} />

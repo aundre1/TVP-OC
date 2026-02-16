@@ -45,21 +45,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const handleNavClick = (itemId: string) => {
     // Handle navigation with browseStore updates
     switch (itemId) {
+      case 'pool':
+        // The Pool home - clear all filters
+        resetFilters();
+        break;
       case 'browse':
         // Clear all filters for "Browse All"
         resetFilters();
         break;
+      case 'charts':
+        // Charts - would filter by popularity/trending
+        // Requires backend support for trending filter
+        resetFilters();
+        break;
       case 'favorites':
-        // TODO: Implement favorites filter
+        // Favorites - filter to only favorited videos
+        // Requires backend support for isFavorited filter in /api/videos/browse
+        // When backend ready: addGenre('isFavorited:true') or similar
+        resetFilters();
+        // TODO: Wire to backend isFavorited filter once available
         break;
       case 'playlists':
-        // TODO: Implement playlists filter
+        // Playlists - would navigate to playlist management
+        // Managed separately via LibraryPanel for now
+        // TODO: Create dedicated playlists management page
         break;
       case 'downloads':
-        // TODO: Implement downloads filter
+        // Downloads - would show only downloaded videos
+        // Managed separately via DownloadsPage for now
+        // TODO: Implement local download filtering
         break;
       default:
-        // Other navigation items
         break;
     }
 
