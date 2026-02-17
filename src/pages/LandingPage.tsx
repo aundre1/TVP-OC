@@ -913,6 +913,13 @@ function LandingFooter() {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-tvp-bg-primary">
+      {/* Demo/Preview Banner */}
+      <div className="bg-gradient-to-r from-tvp-accent-cyan to-tvp-accent-purple py-2 text-center">
+        <p className="text-white text-sm font-medium">
+          🎬 PREVIEW MODE - Frontend Demo (Backend API Coming Soon)
+        </p>
+      </div>
+
       <LandingNavbar />
       <main>
         <HeroSection />

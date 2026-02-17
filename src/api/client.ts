@@ -11,7 +11,7 @@ const API_BASE_URL = '/api';
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 3000, // Short timeout for demo mode - fail fast if API unavailable
   withCredentials: true, // Include cookies for session auth
   headers: {
     'Content-Type': 'application/json',
