@@ -18,6 +18,8 @@ jobs:
 
     - name: Build
       run: npm run build
+      env:
+        VITE_API_URL: https://api-staging.thevideopool.com
 
     - name: Deploy to Vercel
       uses: amondnet/vercel-action@v25
@@ -26,5 +28,3 @@ jobs:
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
         vercel-args: '--prod'
-      env:
-        VITE_API_URL: https://api-staging.thevideopool.com
