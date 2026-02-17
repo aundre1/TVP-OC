@@ -25,14 +25,27 @@ const queryClient = new QueryClient({
   },
 });
 
+// Conditionally wrap with GoogleOAuthProvider only if valid client ID exists
+const hasValidGoogleClientId =
+  OAUTH_CONFIG.google.clientId &&
+  OAUTH_CONFIG.google.clientId !== 'your-client-id-here';
+
+const AppContent = (
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </QueryClientProvider>
+);
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={OAUTH_CONFIG.google.clientId}>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </QueryClientProvider>
-    </GoogleOAuthProvider>
+    {hasValidGoogleClientId ? (
+      <GoogleOAuthProvider clientId={OAUTH_CONFIG.google.clientId}>
+        {AppContent}
+      </GoogleOAuthProvider>
+    ) : (
+      AppContent
+    )}
   </React.StrictMode>
 );
