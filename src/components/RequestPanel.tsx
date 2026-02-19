@@ -3,8 +3,8 @@
 // Song/Feature request form that sends to info@thevideopool.com
 // ============================================
 
-import { useState } from 'react';
-import { X, Check, Send, Music, Lightbulb } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { X, Check, Send, Music, Lightbulb, Shield } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAppStore } from '@/stores/appStore';
 
@@ -21,7 +21,10 @@ export default function RequestPanel() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Honeypot field (hidden from real users, bots fill it in)
+  const [website, setWebsite] = useState('');
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!requestType || !email || !details) {
@@ -29,15 +32,49 @@ export default function RequestPanel() {
       return;
     }
 
+    // Honeypot check — if filled, it's a bot
+    if (website) {
+      // Fake success so the bot thinks it worked
+      setIsSubmitted(true);
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Get reCAPTCHA v3 token (if script is loaded)
+      let recaptchaToken = '';
+      const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+      if (siteKey && window.grecaptcha?.execute) {
+        try {
+          recaptchaToken = await window.grecaptcha.execute(siteKey, { action: 'submit_request' });
+        } catch {
+          // reCAPTCHA not available — proceed without it
+        }
+      }
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    showToast('success', 'Request submitted successfully!');
-  };
+      // TODO: Send to API with recaptchaToken for server-side verification
+      // The backend should verify the token with Google and reject scores < 0.5
+      const _payload = {
+        type: requestType,
+        email,
+        songTitle: requestType === 'song' ? songTitle : undefined,
+        artistName: requestType === 'song' ? artistName : undefined,
+        details,
+        recaptchaToken,
+      };
+
+      // Simulate API call (replace with actual endpoint when backend is connected)
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      setIsSubmitted(true);
+      showToast('success', 'Request submitted successfully!');
+    } catch {
+      showToast('error', 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [requestType, email, songTitle, artistName, details, website, showToast]);
 
   const handleClose = () => {
     closeRequestPanel();
@@ -230,6 +267,26 @@ export default function RequestPanel() {
                     'transition-colors'
                   )}
                 />
+              </div>
+
+              {/* Honeypot field — invisible to humans, traps bots */}
+              <div className="absolute -left-[9999px]" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input
+                  type="text"
+                  id="website"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                />
+              </div>
+
+              {/* reCAPTCHA notice */}
+              <div className="flex items-center gap-1.5 text-[11px] text-tvp-text-muted">
+                <Shield className="w-3 h-3" />
+                <span>Protected by reCAPTCHA</span>
               </div>
 
               {/* Submit Button */}

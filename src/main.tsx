@@ -38,14 +38,16 @@ const AppContent = (
   </QueryClientProvider>
 );
 
+const WrappedApp = hasValidGoogleClientId ? (
+  <GoogleOAuthProvider clientId={OAUTH_CONFIG.google.clientId}>
+    {AppContent}
+  </GoogleOAuthProvider>
+) : (
+  AppContent
+);
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    {hasValidGoogleClientId ? (
-      <GoogleOAuthProvider clientId={OAUTH_CONFIG.google.clientId}>
-        {AppContent}
-      </GoogleOAuthProvider>
-    ) : (
-      AppContent
-    )}
+    {WrappedApp}
   </React.StrictMode>
 );

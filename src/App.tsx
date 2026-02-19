@@ -31,6 +31,7 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const AdminPage = lazy(() => import('@/pages/AdminPage'));
 const InsightsPage = lazy(() => import('@/pages/InsightsPage'));
 const SharedSetPage = lazy(() => import('@/pages/SharedSetPage'));
+const OG500Page = lazy(() => import('@/pages/OG500Page'));
 
 // Loading spinner
 function LoadingScreen() {
@@ -166,6 +167,7 @@ export default function App() {
           />
 
           {/* Public shared set page (no auth required) */}
+          <Route path="/og500" element={<OG500Page />} />
           <Route path="/set/:shareId" element={<SharedSetPage />} />
 
           {/* Main app routes (protected) */}
