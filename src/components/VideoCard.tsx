@@ -26,9 +26,9 @@ export default function VideoCard({ video, showStats = true, size = 'md', isFavo
   const [showMenu, setShowMenu] = useState(false);
 
   const sizeClasses = {
-    sm: 'w-40',
-    md: 'w-48',
-    lg: 'w-56',
+    sm: 'w-36',
+    md: 'w-44',
+    lg: 'w-52',
   };
 
   const formatDuration = (seconds: number) => {

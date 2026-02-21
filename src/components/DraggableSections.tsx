@@ -65,25 +65,25 @@ function SortableSection({ section, isCollapsed, onToggleCollapse }: SortableSec
       ref={setNodeRef}
       style={style}
       className={clsx(
-        'section mb-10 pt-8 border-t border-white/5',
+        'mb-6 pt-6 border-t border-tvp-border-subtle',
         'first:border-t-0 first:pt-0',
         isDragging && 'opacity-70 bg-tvp-bg-elevated rounded-xl shadow-elevated'
       )}
     >
       {/* Section Header */}
       <div
-        className="flex items-center gap-3 py-3 cursor-pointer select-none"
+        className="flex items-center gap-2 py-2 cursor-pointer select-none group/header"
         onClick={onToggleCollapse}
       >
-        {/* Drag Handle - Always visible at 50% for discoverability */}
+        {/* Drag Handle */}
         <button
           type="button"
           className={clsx(
-            'w-8 h-8 flex items-center justify-center rounded',
+            'w-7 h-7 flex items-center justify-center rounded',
             'text-tvp-text-muted cursor-grab active:cursor-grabbing',
-            'opacity-60 hover:opacity-100 transition-all duration-fast',
+            'opacity-40 hover:opacity-100 transition-all',
             'hover:text-tvp-accent-cyan hover:bg-tvp-accent-cyan/10',
-            'touch-none' // Prevent browser touch actions
+            'touch-none'
           )}
           style={{ touchAction: 'none' }}
           onClick={(e) => {
@@ -96,39 +96,41 @@ function SortableSection({ section, isCollapsed, onToggleCollapse }: SortableSec
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="w-5 h-5" />
+          <GripVertical className="w-4 h-4" />
         </button>
 
         {/* Title */}
-        <h2 className="section-title flex-1">{section.title}</h2>
+        <h2 className="text-lg font-semibold text-tvp-text-primary flex-1">{section.title}</h2>
 
         {/* See All Link */}
         {section.seeAllLink && (
           <button
             onClick={(e) => e.stopPropagation()}
-            className="text-tvp-text-secondary text-sm font-medium hover:text-tvp-accent-cyan hover:underline transition-colors"
+            className="text-tvp-text-muted text-xs font-medium hover:text-tvp-accent-cyan transition-colors"
           >
             See all
           </button>
         )}
 
         {/* Collapse Toggle */}
-        <div
+        <button
           className={clsx(
-            'w-7 h-7 flex items-center justify-center text-tvp-text-muted',
-            'transition-transform duration-fast',
+            'w-7 h-7 flex items-center justify-center rounded-md',
+            'text-tvp-text-muted hover:text-tvp-text-primary hover:bg-tvp-bg-tertiary',
+            'transition-all',
             isCollapsed && '-rotate-90'
           )}
+          title={isCollapsed ? 'Expand section' : 'Collapse section'}
         >
-          <ChevronDown className="w-5 h-5" />
-        </div>
+          <ChevronDown className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Section Content */}
       <div
         className={clsx(
-          'transition-all duration-slow overflow-hidden',
-          isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'
+          'transition-all duration-300 overflow-hidden',
+          isCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-[2000px] opacity-100 mt-2'
         )}
       >
         {section.content}

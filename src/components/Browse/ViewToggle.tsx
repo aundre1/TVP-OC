@@ -1,6 +1,7 @@
 /**
  * View Toggle Component
  * Switch between table, grid, and tile views
+ * Used across all discovery pages (Browse, Search, Library, etc.)
  */
 
 import React from 'react';
@@ -10,30 +11,31 @@ import { ViewMode } from '@/types/browse';
 interface ViewToggleProps {
   currentView: ViewMode;
   onViewChange: (mode: ViewMode) => void;
+  compact?: boolean;
 }
 
-export const ViewToggle: React.FC<ViewToggleProps> = ({ currentView, onViewChange }) => {
+export const ViewToggle: React.FC<ViewToggleProps> = ({ currentView, onViewChange, compact = false }) => {
   const views: Array<{ mode: ViewMode; label: string; icon: React.ReactNode }> = [
-    { mode: 'table', label: 'Table', icon: <LayoutList size={20} /> },
-    { mode: 'grid', label: 'Grid', icon: <LayoutGrid size={20} /> },
-    { mode: 'tile', label: 'Tile', icon: <Layers size={20} /> },
+    { mode: 'table', label: 'Table', icon: <LayoutList size={compact ? 16 : 18} /> },
+    { mode: 'grid', label: 'Grid', icon: <LayoutGrid size={compact ? 16 : 18} /> },
+    { mode: 'tile', label: 'List', icon: <Layers size={compact ? 16 : 18} /> },
   ];
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1 bg-tvp-bg-tertiary rounded-lg p-1">
       {views.map(({ mode, label, icon }) => (
         <button
           key={mode}
           onClick={() => onViewChange(mode)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all text-xs font-medium ${
             currentView === mode
-              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ? 'bg-tvp-accent-cyan text-tvp-bg-primary shadow-sm'
+              : 'text-tvp-text-muted hover:text-tvp-text-primary hover:bg-tvp-bg-elevated'
           }`}
           title={`Switch to ${label} view`}
         >
           {icon}
-          <span className="text-sm font-medium">{label}</span>
+          {!compact && <span>{label}</span>}
         </button>
       ))}
     </div>

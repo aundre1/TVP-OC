@@ -131,15 +131,15 @@ export const BrowseTable: React.FC<BrowseTableProps> = ({
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="sticky top-0 bg-gray-900 border-b border-gray-700 z-10">
+      <div className="sticky top-0 bg-tvp-bg-primary border-b border-tvp-border-subtle z-10">
         <table className="w-full" style={{ width: `${totalWidth}px` }}>
           <thead>
-            <tr className="text-gray-400 text-xs font-semibold uppercase">
+            <tr className="text-tvp-text-muted text-[10px] font-semibold uppercase">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   style={{ width: `${col.width}px` }}
-                  className="px-4 py-3 text-left"
+                  className="px-2 py-2 text-left"
                 >
                   {col.label && col.sortable ? (
                     <button
@@ -170,7 +170,7 @@ export const BrowseTable: React.FC<BrowseTableProps> = ({
           defaultHeight={window.innerHeight - 300}
           rowComponent={RowComponent}
           rowCount={videos.length}
-          rowHeight={48}
+          rowHeight={42}
           rowProps={{
             videos,
             onRowClick,
@@ -183,7 +183,7 @@ export const BrowseTable: React.FC<BrowseTableProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="px-4 py-3 border-t border-gray-700 text-xs text-gray-400 bg-gray-900">
+      <div className="px-4 py-2 border-t border-tvp-border-subtle text-[10px] text-tvp-text-muted bg-tvp-bg-primary">
         Showing {videos.length} video{videos.length !== 1 ? 's' : ''}
       </div>
     </div>

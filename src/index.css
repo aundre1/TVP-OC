@@ -13,48 +13,48 @@
    ============================================ */
 :root {
   --bg-primary: #0a0a0f;
-  --bg-secondary: #111116;
-  --bg-tertiary: #1a1a22;
-  --bg-elevated: #222230;
-  --text-primary: #f5f5f7;
-  --text-secondary: #a1a1aa;
-  --text-muted: #6b6b76;
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.1);
+  --bg-secondary: #141420;
+  --bg-tertiary: #1a1a2e;
+  --bg-elevated: #222238;
+  --text-primary: #e8e8ed;
+  --text-secondary: #8888a0;
+  --text-muted: #5c5c72;
+  --border-subtle: #1e1e32;
+  --border-default: #2a2a3e;
   --accent-cyan: #00d4ff;
   --accent-cyan-hover: #33ddff;
-  --accent-cyan-glow: rgba(0, 212, 255, 0.3);
-  --accent-cyan-subtle: rgba(0, 212, 255, 0.1);
+  --accent-cyan-glow: rgba(0, 212, 255, 0.25);
+  --accent-cyan-subtle: rgba(0, 212, 255, 0.08);
   --accent-gold: #ffd700;
   --accent-coral: #ff6b4a;
   --accent-purple: #a855f7;
-  --success: #00e676;
-  --warning: #ffab00;
-  --error: #ff4757;
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.6);
   --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
   --duration-fast: 150ms;
   --duration-normal: 200ms;
   --duration-slow: 300ms;
 }
 
-/* Light Theme - Softer with dark blue tint (next-themes compatible) */
+/* Light Theme - Warm gray, not harsh white (next-themes compatible) */
 .light,
 [data-theme="light"],
 html.light {
-  --bg-primary: #e8eef4;
-  --bg-secondary: #f0f4f8;
-  --bg-tertiary: #dce4ec;
-  --bg-elevated: #f5f8fb;
-  --bg-content: #f8fafc;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --border-subtle: rgba(15, 23, 42, 0.08);
-  --border-default: rgba(15, 23, 42, 0.12);
+  --bg-primary: #f0f0f5;
+  --bg-secondary: #f5f5f7;
+  --bg-tertiary: #e8e8ed;
+  --bg-elevated: #fafafa;
+  --bg-content: #f8f8fb;
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a62;
+  --text-muted: #6b6b82;
+  --border-subtle: rgba(26, 26, 46, 0.08);
+  --border-default: rgba(26, 26, 46, 0.14);
   --accent-cyan: #0284c7;
-  --shadow-card: 0 4px 20px rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 4px 20px rgba(26, 26, 46, 0.08);
 }
 
 html.light body,
@@ -74,6 +74,8 @@ html.light body,
 
 html {
   scroll-behavior: smooth;
+  background: #0a0a0f;
+  color-scheme: dark;
 }
 
 body {
@@ -82,6 +84,7 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
@@ -94,16 +97,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-elevated);
+  background: var(--border-default);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-cyan);
+  background: var(--text-muted);
 }
 
 /* ============================================
@@ -130,12 +133,12 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; }
    LAYOUT COMPONENTS (Replit Design System)
    ============================================ */
 .header {
-  height: 72px;
+  height: 64px;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 20px;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -236,7 +239,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; }
   }
 
   .glass {
-    background: rgba(17, 17, 22, 0.8);
+    background: rgba(10, 10, 15, 0.85);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border-subtle);
   }
@@ -297,9 +300,9 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; }
    SECTION STYLES (v5.5 Polish)
    ============================================ */
 .section {
-  margin-bottom: 40px;
-  padding-top: 32px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .section:first-child {
@@ -546,12 +549,12 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; }
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  background: rgba(17, 17, 22, 0.95);
+  background: rgba(20, 20, 32, 0.95);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border-default);
   border-radius: 999px;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
@@ -598,7 +601,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; }
   align-items: center;
   gap: 12px;
   padding: 16px 24px;
-  background: rgba(17, 17, 22, 0.95);
+  background: rgba(20, 20, 32, 0.95);
   backdrop-filter: blur(12px);
   border: 1px solid var(--accent-cyan);
   border-radius: 12px;
@@ -757,10 +760,10 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; }
 
 /* Glass morphism for navbar */
 .glass-nav {
-  background: rgba(10, 10, 15, 0.8);
+  background: rgba(10, 10, 15, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 /* Smooth scroll behavior for landing page */
@@ -771,7 +774,7 @@ html {
 /* Landing page section dividers */
 .section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, var(--border-subtle), transparent);
 }
 
 /* ============================================

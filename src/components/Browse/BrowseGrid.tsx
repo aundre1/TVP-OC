@@ -67,35 +67,36 @@ export const BrowseGrid: React.FC<BrowseGridProps> = ({
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 auto-rows-max">
+    <div className="p-4 space-y-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 auto-rows-max">
         {visibleVideos.map((video) => (
           <div
             key={video.id}
             onClick={() => onCardClick(video)}
             className="group cursor-pointer"
           >
-            {/* Card Container */}
-            <div className="relative rounded-lg overflow-hidden bg-gray-800 hover:shadow-xl hover:shadow-cyan-500/20 transition-all duration-300">
+            {/* Card Container - Target: ~180x240px max */}
+            <div className="relative rounded-lg overflow-hidden bg-tvp-bg-secondary border border-tvp-border-subtle hover:border-tvp-border-default hover:shadow-card transition-all duration-200" style={{ maxWidth: '180px' }}>
               {/* Image Container */}
-              <div className="relative aspect-square overflow-hidden bg-gray-900">
+              <div className="relative aspect-video overflow-hidden bg-tvp-bg-tertiary">
                 <img
                   src={video.coverArt}
                   alt={video.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
                 />
 
                 {/* Overlay on Hover */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onCardAction?.('preview', video);
                     }}
-                    className="p-3 bg-cyan-500 hover:bg-cyan-600 rounded-full text-white transition-colors"
+                    className="p-2 bg-tvp-accent-cyan hover:bg-tvp-accent-cyan-hover rounded-full text-tvp-bg-primary transition-colors"
                     title="Preview"
                   >
-                    <Play size={20} fill="currentColor" />
+                    <Play size={16} fill="currentColor" />
                   </button>
 
                   <button
@@ -103,67 +104,71 @@ export const BrowseGrid: React.FC<BrowseGridProps> = ({
                       e.stopPropagation();
                       onCardAction?.('download', video);
                     }}
-                    className="p-3 bg-gray-700 hover:bg-gray-600 rounded-full text-gray-300 transition-colors"
+                    className="p-2 bg-tvp-bg-elevated hover:bg-tvp-bg-tertiary rounded-full text-tvp-text-secondary transition-colors"
                     title="Download"
                   >
-                    <Download size={20} />
+                    <Download size={16} />
                   </button>
                 </div>
               </div>
 
               {/* Info Section */}
-              <div className="p-3 space-y-2">
-                {/* Artist */}
-                <p className="text-xs text-gray-400 truncate">{video.artist}</p>
-
-                {/* Title */}
-                <h3 className="text-sm font-semibold text-white truncate group-hover:text-cyan-400 transition-colors">
+              <div className="p-2 space-y-1">
+                {/* Title - 1 line truncate */}
+                <h3 className="text-xs font-medium text-tvp-text-primary truncate group-hover:text-tvp-accent-cyan transition-colors">
                   {video.title}
                 </h3>
 
-                {/* Genre & Quality */}
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="bg-gray-700 px-2 py-1 rounded text-gray-300">
-                    {video.genre}
-                  </span>
-                  {video.quality && (
-                    <span className="bg-cyan-900 px-2 py-1 rounded text-cyan-300">
-                      {video.quality}
-                    </span>
+                {/* Artist - 1 line muted */}
+                <p className="text-[10px] text-tvp-text-muted truncate">{video.artist}</p>
+
+                {/* Genre + BPM - smallest text */}
+                <div className="flex items-center gap-1.5 text-[10px] text-tvp-text-muted">
+                  <span>{video.genre}</span>
+                  {video.metadata?.bpm && (
+                    <>
+                      <span className="text-tvp-border-default">&middot;</span>
+                      <span>{video.metadata.bpm} BPM</span>
+                    </>
                   )}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center gap-2 pt-2 border-t border-gray-700">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCardAction?.('favorite', video);
-                    }}
-                    className={`p-1.5 rounded transition-colors flex-1 text-center ${
-                      video.isFavorited
-                        ? 'bg-pink-500 text-white'
-                        : 'bg-gray-700 hover:bg-pink-500 text-gray-300 hover:text-white'
-                    }`}
-                    title="Favorite"
-                  >
-                    <Heart
-                      size={14}
-                      fill={video.isFavorited ? 'currentColor' : 'none'}
-                      className="mx-auto"
-                    />
-                  </button>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCardAction?.('playlist', video);
-                    }}
-                    className="p-1.5 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors flex-1 text-center"
-                    title="Add to playlist"
-                  >
-                    <Plus size={14} className="mx-auto" />
-                  </button>
+                {/* Action Row */}
+                <div className="flex items-center justify-between pt-1 border-t border-tvp-border-subtle">
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCardAction?.('download', video);
+                      }}
+                      className="p-1 hover:text-tvp-accent-cyan rounded transition-colors text-tvp-text-muted"
+                      title="Download"
+                    >
+                      <Download size={12} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCardAction?.('favorite', video);
+                      }}
+                      className={`p-1 rounded transition-colors ${
+                        video.isFavorited
+                          ? 'text-pink-500'
+                          : 'hover:text-pink-500 text-tvp-text-muted'
+                      }`}
+                      title="Favorite"
+                    >
+                      <Heart
+                        size={12}
+                        fill={video.isFavorited ? 'currentColor' : 'none'}
+                      />
+                    </button>
+                  </div>
+                  {video.quality && (
+                    <span className="text-[9px] font-bold text-tvp-accent-cyan">
+                      {video.quality}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

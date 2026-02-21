@@ -4,10 +4,12 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, Play, Download, Heart } from 'lucide-react';
 import { useSearchVideos } from '@/hooks/useVideos';
+import { useViewStore } from '@/stores/viewStore';
+import { ViewToggle } from '@/components/Browse/ViewToggle';
 import VideoCard from '@/components/VideoCard';
-import type { SearchFilters } from '@/types';
+import type { SearchFilters, Video } from '@/types';
 
 const GENRES = ['Hip-Hop', 'EDM', 'Pop', 'R&B', 'Latin', 'Rock', 'Country', 'Dance'];
 const BPM_RANGES = [
@@ -32,6 +34,8 @@ const SORT_OPTIONS = [
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
+  const viewMode = useViewStore((state) => state.viewMode);
+  const setViewMode = useViewStore((state) => state.setViewMode);
 
   const [filters, setFilters] = useState<SearchFilters>({
     query: searchParams.get('q') || '',
@@ -215,8 +219,8 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Results Count */}
-      <div className="flex items-center justify-between mb-6">
+      {/* Results Count + View Toggle */}
+      <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-tvp-text-muted">
           {filters.query && (
             <>
@@ -225,11 +229,12 @@ export default function SearchPage() {
           )}
           {totalResults.toLocaleString()} videos found
         </p>
+        <ViewToggle currentView={viewMode} onViewChange={setViewMode} compact />
       </div>
 
-      {/* Results Grid */}
+      {/* Results */}
       {isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
           {[...Array(12)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="aspect-video bg-tvp-bg-tertiary rounded-lg" />
@@ -248,19 +253,118 @@ export default function SearchPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {allVideos.map((video) => (
-              <VideoCard key={video.id} video={video} size="md" />
-            ))}
-          </div>
+          {/* Grid View */}
+          {viewMode === 'grid' && (
+            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
+              {allVideos.map((video) => (
+                <VideoCard key={video.id} video={video} size="sm" />
+              ))}
+            </div>
+          )}
+
+          {/* Table View */}
+          {viewMode === 'table' && (
+            <div className="rounded-xl overflow-hidden border border-tvp-border-subtle">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-tvp-bg-secondary text-tvp-text-muted text-[10px] font-semibold uppercase">
+                    <th className="px-2 py-2 text-left w-10"></th>
+                    <th className="px-2 py-2 text-left">Title</th>
+                    <th className="px-2 py-2 text-left">Artist</th>
+                    <th className="px-2 py-2 text-left hidden md:table-cell">Genre</th>
+                    <th className="px-2 py-2 text-left hidden lg:table-cell">Quality</th>
+                    <th className="px-2 py-2 text-left hidden lg:table-cell">BPM</th>
+                    <th className="px-2 py-2 text-right w-20">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allVideos.map((video, idx) => (
+                    <tr
+                      key={video.id}
+                      className={`border-t border-tvp-border-subtle hover:bg-tvp-bg-tertiary transition-colors cursor-pointer ${
+                        idx % 2 === 0 ? 'bg-tvp-bg-primary' : 'bg-tvp-bg-secondary'
+                      }`}
+                    >
+                      <td className="px-2 py-1.5">
+                        <button className="p-1 hover:text-tvp-accent-cyan text-tvp-text-muted rounded transition-colors">
+                          <Play size={14} fill="currentColor" />
+                        </button>
+                      </td>
+                      <td className="px-2 py-1.5 text-xs text-tvp-text-primary font-medium truncate max-w-[200px]">{video.title}</td>
+                      <td className="px-2 py-1.5 text-xs text-tvp-text-secondary truncate max-w-[150px]">{video.artist}</td>
+                      <td className="px-2 py-1.5 hidden md:table-cell">
+                        <span className="px-1.5 py-0.5 bg-tvp-bg-tertiary text-[10px] rounded text-tvp-text-secondary">{video.genre}</span>
+                      </td>
+                      <td className="px-2 py-1.5 hidden lg:table-cell">
+                        <span className="text-[10px] font-bold text-tvp-accent-cyan">{video.quality}</span>
+                      </td>
+                      <td className="px-2 py-1.5 hidden lg:table-cell text-xs text-tvp-text-muted font-mono">{video.bpm || '-'}</td>
+                      <td className="px-2 py-1.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button className="p-1 hover:text-tvp-accent-cyan text-tvp-text-muted rounded transition-colors" title="Download">
+                            <Download size={14} />
+                          </button>
+                          <button className="p-1 hover:text-pink-500 text-tvp-text-muted rounded transition-colors" title="Favorite">
+                            <Heart size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* List/Tile View */}
+          {viewMode === 'tile' && (
+            <div className="space-y-1">
+              {allVideos.map((video) => (
+                <div
+                  key={video.id}
+                  className="flex gap-3 p-2 bg-tvp-bg-secondary rounded-lg hover:bg-tvp-bg-tertiary transition-colors cursor-pointer group border border-tvp-border-subtle"
+                  style={{ height: '72px' }}
+                >
+                  <div className="relative w-[60px] h-[45px] flex-shrink-0 rounded-sm overflow-hidden bg-tvp-bg-tertiary my-auto">
+                    <img
+                      src={video.thumbnailUrl || '/placeholder-video.jpg'}
+                      alt={video.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 flex items-center">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-tvp-text-primary truncate group-hover:text-tvp-accent-cyan transition-colors">
+                        {video.artist} &mdash; {video.title}
+                      </h3>
+                      <div className="flex items-center gap-2 text-[10px] text-tvp-text-muted">
+                        <span>{video.genre}</span>
+                        {video.bpm && <><span className="text-tvp-border-default">&middot;</span><span>{video.bpm} BPM</span></>}
+                        {video.quality && <><span className="text-tvp-border-default">&middot;</span><span className="text-tvp-accent-cyan font-bold">{video.quality}</span></>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button className="p-1.5 hover:text-tvp-accent-cyan text-tvp-text-muted rounded transition-colors" title="Download">
+                      <Download size={14} />
+                    </button>
+                    <button className="p-1.5 hover:text-pink-500 text-tvp-text-muted rounded transition-colors" title="Favorite">
+                      <Heart size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Load More */}
           {hasNextPage && (
-            <div className="mt-8 text-center">
+            <div className="mt-6 text-center">
               <button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="px-8 py-3 bg-tvp-bg-secondary border border-tvp-border-subtle hover:border-tvp-accent-cyan text-tvp-text-primary rounded-xl transition-colors disabled:opacity-50"
+                className="px-8 py-2.5 bg-tvp-bg-secondary border border-tvp-border-subtle hover:border-tvp-accent-cyan text-tvp-text-primary text-sm rounded-xl transition-colors disabled:opacity-50"
               >
                 {isFetchingNextPage ? 'Loading...' : 'Load More'}
               </button>

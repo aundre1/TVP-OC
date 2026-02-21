@@ -161,13 +161,13 @@ export const BrowsePage: React.FC = () => {
   // ─── Render ────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
+    <div className="flex h-screen bg-tvp-bg-primary text-tvp-text-primary">
       {/* Sidebar Component */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="flex-1 overflow-hidden flex flex-col">
         {/* Header Section */}
-        <div className="border-b border-gray-700 bg-gray-800 p-4 space-y-4">
+        <div className="border-b border-tvp-border-subtle bg-tvp-bg-secondary p-4 space-y-3">
           {/* Genre Filter Component */}
           <GenreFilter
             availableGenres={availableGenres}
@@ -179,7 +179,7 @@ export const BrowsePage: React.FC = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="md:hidden p-2 hover:bg-gray-700 rounded"
+              className="md:hidden p-2 hover:bg-tvp-bg-tertiary rounded text-tvp-text-secondary"
             >
               Menu
             </button>

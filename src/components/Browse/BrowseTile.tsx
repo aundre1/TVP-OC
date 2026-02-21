@@ -66,16 +66,17 @@ export const BrowseTile: React.FC<BrowseTileProps> = ({
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="space-y-4 max-w-4xl">
+    <div className="p-4 space-y-4">
+      <div className="space-y-1">
         {visibleVideos.map((video) => (
           <div
             key={video.id}
             onClick={() => onTileClick(video)}
-            className="flex gap-4 p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group"
+            className="flex gap-3 p-2 bg-tvp-bg-secondary rounded-lg hover:bg-tvp-bg-tertiary transition-colors cursor-pointer group border border-tvp-border-subtle"
+            style={{ height: '80px' }}
           >
             {/* Album Art */}
-            <div className="relative w-24 h-24 flex-shrink-0 rounded overflow-hidden bg-gray-900">
+            <div className="relative w-[60px] h-[45px] flex-shrink-0 rounded-sm overflow-hidden bg-tvp-bg-tertiary my-auto">
               <img
                 src={video.coverArt}
                 alt={video.title}
@@ -97,23 +98,22 @@ export const BrowseTile: React.FC<BrowseTileProps> = ({
             </div>
 
             {/* Info Section */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between">
-              {/* Text Content */}
-              <div>
-                <p className="text-xs text-gray-400">{video.artist}</p>
-                <h3 className="text-base font-semibold text-white truncate group-hover:text-cyan-400 transition-colors">
-                  {video.title}
+            <div className="flex-1 min-w-0 flex items-center gap-4">
+              {/* Artist - Title */}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-medium text-tvp-text-primary truncate group-hover:text-tvp-accent-cyan transition-colors">
+                  {video.artist} &mdash; {video.title}
                 </h3>
-                <p className="text-xs text-gray-500 line-clamp-2">{video.label}</p>
+                <p className="text-xs text-tvp-text-muted truncate">{video.label}</p>
               </div>
 
               {/* Tags */}
-              <div className="flex flex-wrap gap-2 pt-2">
-                <span className="px-2 py-1 bg-gray-700 text-xs rounded text-gray-300">
+              <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+                <span className="px-2 py-0.5 bg-tvp-bg-tertiary text-[10px] rounded text-tvp-text-secondary">
                   {video.genre}
                 </span>
                 {video.quality && (
-                  <span className="px-2 py-1 bg-cyan-900 text-xs rounded text-cyan-300">
+                  <span className="px-2 py-0.5 bg-cyan-900/50 text-[10px] rounded text-cyan-400">
                     {video.quality}
                   </span>
                 )}
@@ -121,16 +121,16 @@ export const BrowseTile: React.FC<BrowseTileProps> = ({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col gap-2 justify-center flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onTileAction?.('download', video);
                 }}
-                className="p-2 bg-gray-700 hover:bg-cyan-500 rounded transition-colors text-gray-300 hover:text-white"
+                className="p-1.5 hover:bg-tvp-accent-cyan hover:text-tvp-bg-primary rounded transition-colors text-tvp-text-muted"
                 title="Download"
               >
-                <Download size={16} />
+                <Download size={14} />
               </button>
 
               <button
@@ -138,15 +138,15 @@ export const BrowseTile: React.FC<BrowseTileProps> = ({
                   e.stopPropagation();
                   onTileAction?.('favorite', video);
                 }}
-                className={`p-2 rounded transition-colors ${
+                className={`p-1.5 rounded transition-colors ${
                   video.isFavorited
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-gray-700 hover:bg-pink-500 text-gray-300 hover:text-white'
+                    ? 'text-pink-500'
+                    : 'hover:text-pink-500 text-tvp-text-muted'
                 }`}
                 title="Favorite"
               >
                 <Heart
-                  size={16}
+                  size={14}
                   fill={video.isFavorited ? 'currentColor' : 'none'}
                 />
               </button>
@@ -156,10 +156,10 @@ export const BrowseTile: React.FC<BrowseTileProps> = ({
                   e.stopPropagation();
                   onTileAction?.('playlist', video);
                 }}
-                className="p-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors text-gray-300"
+                className="p-1.5 hover:text-tvp-accent-cyan rounded transition-colors text-tvp-text-muted"
                 title="Add to playlist"
               >
-                <Plus size={16} />
+                <Plus size={14} />
               </button>
             </div>
           </div>

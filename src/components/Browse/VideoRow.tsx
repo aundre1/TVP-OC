@@ -38,65 +38,66 @@ const VideoRowComponent: React.FC<VideoRowProps> = ({
   return (
     <tr
       onClick={() => onClick(video)}
-      className={`border-b border-gray-700 hover:bg-gray-800 transition-colors cursor-pointer ${
-        isSelected ? 'bg-gray-700' : 'hover:bg-gray-800'
+      className={`border-b border-tvp-border-subtle hover:bg-tvp-bg-tertiary transition-colors cursor-pointer ${
+        isSelected ? 'bg-tvp-bg-tertiary' : ''
       }`}
     >
       {/* Play Button */}
-      <td className="px-4 py-3 w-12">
+      <td className="px-2 py-1.5 w-10">
         <button
           onClick={handlePlayClick}
-          className="p-2 hover:bg-cyan-500 hover:text-white rounded transition-colors text-gray-400"
+          className="p-1 hover:bg-tvp-accent-cyan hover:text-tvp-bg-primary rounded transition-colors text-tvp-text-muted"
           title="Preview"
         >
-          <Play size={16} fill="currentColor" />
+          <Play size={14} fill="currentColor" />
         </button>
       </td>
 
       {/* Album Art Thumbnail */}
-      <td className="px-4 py-3 w-16">
+      <td className="px-2 py-1.5 w-14">
         <img
           src={video.coverArt}
           alt={video.title}
-          className="w-12 h-12 rounded object-cover"
+          className="w-[45px] h-[34px] rounded-sm object-cover"
+          loading="lazy"
         />
       </td>
 
       {/* Artist */}
-      <td className="px-4 py-3 text-sm text-gray-300 font-medium">{video.artist}</td>
+      <td className="px-2 py-1.5 text-xs text-tvp-text-secondary font-medium">{video.artist}</td>
 
       {/* Title */}
-      <td className="px-4 py-3 text-sm text-gray-200 font-semibold">{video.title}</td>
+      <td className="px-2 py-1.5 text-xs text-tvp-text-primary font-semibold">{video.title}</td>
 
       {/* Label */}
-      <td className="px-4 py-3 text-sm text-gray-400">{video.label}</td>
+      <td className="px-2 py-1.5 text-xs text-tvp-text-muted">{video.label}</td>
 
       {/* Genre */}
-      <td className="px-4 py-3">
-        <span className="px-2 py-1 bg-gray-700 text-xs rounded text-gray-300">
+      <td className="px-2 py-1.5">
+        <span className="px-1.5 py-0.5 bg-tvp-bg-tertiary text-[10px] rounded text-tvp-text-secondary">
           {video.genre}
         </span>
       </td>
 
       {/* Bracket/Quality Tier */}
-      <td className="px-4 py-3 text-sm text-gray-400">{video.bracket || '-'}</td>
+      <td className="px-2 py-1.5 text-xs text-tvp-text-muted">{video.bracket || '-'}</td>
 
       {/* Quality */}
-      <td className="px-4 py-3 text-sm">
+      <td className="px-2 py-1.5 text-xs">
         {video.quality ? (
-          <span className="px-2 py-1 bg-cyan-900 text-cyan-300 rounded text-xs">
+          <span className="px-1.5 py-0.5 bg-cyan-900/40 text-tvp-accent-cyan rounded text-[10px] font-bold">
             {video.quality}
           </span>
         ) : (
-          <span className="text-gray-500">-</span>
+          <span className="text-tvp-text-muted">-</span>
         )}
       </td>
 
       {/* Version */}
-      <td className="px-4 py-3 text-sm text-gray-400">{video.version || '-'}</td>
+      <td className="px-2 py-1.5 text-xs text-tvp-text-muted">{video.version || '-'}</td>
 
       {/* Release Date */}
-      <td className="px-4 py-3 text-sm text-gray-400">
+      <td className="px-2 py-1.5 text-xs text-tvp-text-muted">
         {new Date(video.releaseDate).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
@@ -105,33 +106,33 @@ const VideoRowComponent: React.FC<VideoRowProps> = ({
       </td>
 
       {/* Actions */}
-      <td className="px-4 py-3 flex items-center gap-2">
+      <td className="px-2 py-1.5 flex items-center gap-1">
         <button
           onClick={handleDownloadClick}
-          className="p-1.5 hover:bg-cyan-500 hover:text-white rounded transition-colors text-gray-400"
+          className="p-1 hover:text-tvp-accent-cyan rounded transition-colors text-tvp-text-muted"
           title="Download"
         >
-          <Download size={16} />
+          <Download size={14} />
         </button>
 
         <button
           onClick={handleFavoriteClick}
-          className={`p-1.5 rounded transition-colors ${
+          className={`p-1 rounded transition-colors ${
             video.isFavorited
-              ? 'bg-pink-500 text-white'
-              : 'hover:bg-pink-500 hover:text-white text-gray-400'
+              ? 'text-pink-500'
+              : 'hover:text-pink-500 text-tvp-text-muted'
           }`}
           title="Favorite"
         >
-          <Heart size={16} fill={video.isFavorited ? 'currentColor' : 'none'} />
+          <Heart size={14} fill={video.isFavorited ? 'currentColor' : 'none'} />
         </button>
 
         <button
           onClick={handlePlaylistClick}
-          className="p-1.5 hover:bg-gray-700 rounded transition-colors text-gray-400 hover:text-cyan-400"
+          className="p-1 hover:text-tvp-accent-cyan rounded transition-colors text-tvp-text-muted"
           title="Add to playlist"
         >
-          <Plus size={16} />
+          <Plus size={14} />
         </button>
       </td>
     </tr>

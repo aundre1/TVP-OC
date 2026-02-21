@@ -58,7 +58,7 @@ export default function VideoSection({
 
   return (
     <section
-      className={`relative py-6 transition-all duration-300 ${sectionBgClass} ${isDragging ? 'opacity-50 scale-[0.98]' : ''}`}
+      className={`relative py-4 transition-all duration-300 ${sectionBgClass} ${isDragging ? 'opacity-50 scale-[0.98]' : ''}`}
       draggable={isDraggable}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={() => setIsDragging(false)}
