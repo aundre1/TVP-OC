@@ -355,5 +355,26 @@ export async function registerRoutes(
     }
   });
 
+  // Health check endpoint (required for Railway deployment)
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Test database connection
+      const result = await storage.getAllVideos({ });
+      res.status(200).json({
+        status: "ok",
+        database: "connected",
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || "development"
+      });
+    } catch (error: any) {
+      res.status(503).json({
+        status: "error",
+        database: "disconnected",
+        error: error?.message || "Database connection failed",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   return httpServer;
 }
