@@ -1,0 +1,107 @@
+================================================================================
+THE VIDEO POOL BACKEND - QUICK PUSH GUIDE
+================================================================================
+
+WHAT'S CHANGING:
+- CORS middleware in server/index.ts (9 lines)
+- Health check endpoint in server/routes.ts (21 lines)
+
+WHY:
+- CORS: Allow browser-based requests from frontend
+- Health check: Required for Railway deployment monitoring
+
+RISK LEVEL: VERY LOW (additions only, no breaking changes)
+
+================================================================================
+COPY-PASTE THESE COMMANDS (In Order)
+================================================================================
+
+1. Change to backend directory:
+cd /Users/dremacmini/Desktop/OC/video-pool/tvp-export
+
+2. Verify what changed:
+git status
+
+3. Stage the changes:
+git add server/index.ts server/routes.ts
+
+4. Create commit:
+git commit -m "Backend: Add CORS middleware and health check endpoint
+
+- Add cors middleware for browser-based requests
+- Add /api/health endpoint for deployment monitoring and database checks
+- Environment-based CORS origin configuration (CORS_ORIGIN env var)
+- Health checks support Railway and containerized deployments
+
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
+
+5. Push to GitHub:
+git push origin main
+
+================================================================================
+AFTER PUSHING
+================================================================================
+
+Timeline:
+- < 5 sec: GitHub Actions triggers
+- 2-3 min: Build completes
+- 5-10 min: Railway deploys (if enabled)
+- 10-15 min: Health endpoint live
+
+Monitor:
+1. GitHub Actions: https://github.com/aundre1/TVP-OC/actions
+   (Look for green checkmark on latest commit)
+
+2. Railway Dashboard: https://railway.app/
+   (Look for "Running" status)
+
+3. Test Health Endpoint:
+   curl https://your-domain.com/api/health
+   (Should return status: "ok" with 200 OK)
+
+================================================================================
+IF SOMETHING FAILS
+================================================================================
+
+Build Failed in GitHub Actions?
+- Check error in Actions log
+- Fix locally
+- Commit and push again
+
+Push Rejected?
+- git pull origin main
+- git push origin main
+
+Need to Rollback?
+- git revert <commit-hash>
+- git push origin main
+- Rollback time: < 5 minutes
+
+================================================================================
+ENVIRONMENT VARIABLES (Set in production)
+================================================================================
+
+CORS_ORIGIN=https://video-pool.com
+NODE_ENV=production
+
+================================================================================
+STATUS CHECK - AFTER 10-15 MINUTES
+================================================================================
+
+SUCCESS LOOKS LIKE:
+✓ GitHub Actions shows green checkmark
+✓ Railway shows "Running" or "Active"
+✓ Health endpoint returns 200 OK with status "ok"
+✓ No CORS errors when frontend makes requests
+✓ No errors in Railway logs
+
+================================================================================
+FILES FOR MORE DETAILS
+================================================================================
+
+Full checklist: /Users/dremacmini/Desktop/OC/video-pool/PUSH_CHECKLIST.md
+Detailed summary: /Users/dremacmini/Desktop/OC/video-pool/BACKEND_PUSH_READY.md
+
+================================================================================
+YOU'RE READY - RUN: git push origin main
+================================================================================

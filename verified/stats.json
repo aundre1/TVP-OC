@@ -1,0 +1,12 @@
+{
+  "total": 11735,
+  "valid": 3795,
+  "invalid_syntax": 0,
+  "invalid_domain": 11,
+  "invalid_smtp": 663,
+  "disposable": 0,
+  "russian": 463,
+  "catch_all": 0,
+  "unknown": 6803,
+  "duplicates": 0
+}

@@ -1,0 +1,21 @@
+{
+  "NODE_ENV": "production",
+  "PORT": "3000",
+  "API_URL": "https://api-tvp.railway.app",
+  "DATABASE_URL": "postgres://[USER]:[PASSWORD]@[HOST]:[PORT]/the_video_pool",
+  "CORS_ORIGIN": "https://thevideopool.com,https://tvp-oc.vercel.app,http://localhost:5173",
+  "JWT_SECRET": "[GENERATE: openssl rand -hex 32]",
+  "JWT_EXPIRY": "24h",
+  "REFRESH_TOKEN_SECRET": "[GENERATE: openssl rand -hex 32 (different)]",
+  "REFRESH_TOKEN_EXPIRY": "30d",
+  "SESSION_SECRET": "[GENERATE: openssl rand -hex 32 (different)]",
+  "FROM_EMAIL": "noreply@thevideopool.com",
+  "FROM_NAME": "The Video Pool",
+  "LOG_LEVEL": "info",
+  "SECURE_COOKIES": "true",
+  "AUTO_MIGRATE": "true",
+  "ENABLE_RATE_LIMIT": "true",
+  "RATE_LIMIT_WINDOW_MS": "900000",
+  "RATE_LIMIT_MAX_REQUESTS": "100",
+  "ENABLE_CSRF_PROTECTION": "true"
+}
