@@ -95,17 +95,39 @@ app.use(errorHandler);
 // START SERVER
 // ===========================================
 
-app.listen(PORT, () => {
+// Graceful error handling before startup
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught Exception:', err.message);
+  console.error(err.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Rejection:', reason);
+  process.exit(1);
+});
+
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`
 ╔═══════════════════════════════════════════════╗
 ║   🎬 THE VIDEO POOL - Backend API Server      ║
 ╠═══════════════════════════════════════════════╣
-║   Status:      Running                        ║
+║   Status:      Running ✓                      ║
 ║   Port:        ${PORT}                            ║
 ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(28)}║
 ║   API Base:    http://localhost:${PORT}/api       ║
+║   Listening:   0.0.0.0:${PORT}                  ║
 ╚═══════════════════════════════════════════════╝
   `);
+  console.log('[STARTUP] ✓ Backend ready to accept requests');
+});
+
+server.on('error', (err) => {
+  console.error('[SERVER ERROR] Unable to start server:', err.message);
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+  }
+  process.exit(1);
 });
 
 export default app;
