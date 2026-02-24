@@ -16,9 +16,6 @@ jobs:
     - name: Deploy to Railway
       run: |
         npm install -g @railway/cli
-        railway login --token ${{ secrets.RAILWAY_TOKEN }}
-        railway variables set VITE_API_URL=https://api-staging.thevideopool.com
-        railway variables set NODE_ENV=production
         railway up
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
