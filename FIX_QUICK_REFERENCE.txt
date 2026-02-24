@@ -1,0 +1,126 @@
+================================================================================
+VIDEO POOL DEPLOYMENT FIX - QUICK REFERENCE CARD
+================================================================================
+
+PROBLEM: Backend returning 502 Bad Gateway (missing DATABASE_URL)
+SOLUTION: Set PostgreSQL connection string from Supabase to Railway
+TIME: 5 minutes
+STATUS: Ready to fix immediately
+
+================================================================================
+THE QUICK PATH (3 Steps)
+================================================================================
+
+STEP 1: GET CONNECTION STRING (2 min)
+  1. Go to: https://app.supabase.com/dashboard
+  2. Select: Project jvgsmiqsqtqgfagghoiv
+  3. Click: Settings → Database → Connection string
+  4. Copy: Full PostgreSQL URI (includes password)
+
+STEP 2: SET ON RAILWAY (2 min)
+  1. Go to: https://railway.app/dashboard
+  2. Select: Project diplomatic-simplicity → Service backend
+  3. Click: Variables tab
+  4. Add: DATABASE_URL = [paste connection string]
+  5. Wait: ~60 seconds for redeploy (green checkmark)
+
+STEP 3: VERIFY (1 min)
+  1. Run: bash /Users/dremacmini/Desktop/OC/the-video-pool/verify-deployment.sh
+  2. Check: All three checks should pass (✅)
+  3. Success: Backend responds, frontend works
+
+================================================================================
+WHAT YOU SHOULD SEE
+================================================================================
+
+SUPABASE DASHBOARD:
+  - Project: jvgsmiqsqtqgfagghoiv
+  - Settings menu shows "Database"
+  - Connection string looks like:
+    postgresql://postgres:***@db.jvgsmiqsqtqgfagghoiv.supabase.co:5432/postgres
+
+RAILWAY DASHBOARD:
+  - Project: diplomatic-simplicity
+  - Service: backend
+  - New variable: DATABASE_URL
+  - Deployments tab shows green checkmark
+
+VERIFICATION:
+  $ bash verify-deployment.sh
+  ✅ Backend health check PASSED (HTTP 200)
+  ✅ Frontend is accessible
+  ✅ API is responding
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+STILL 502?                    → Wait 60-90 seconds (Railway redeploy takes time)
+Connection refused           → Check connection string (copy again from Supabase)
+Password auth failed         → Get fresh connection string (Supabase regenerates)
+Frontend loading forever     → Check browser console (Ctrl+Shift+J or Cmd+Option+J)
+
+================================================================================
+KEY URLS
+================================================================================
+
+Frontend:            https://tvp-redesign-2026.vercel.app
+Backend:             https://tvp-oc-production.up.railway.app
+Railway Dashboard:   https://railway.app/dashboard
+Supabase Dashboard:  https://app.supabase.com/dashboard
+GitHub Repo:         https://github.com/aundre1/video-pool
+
+================================================================================
+COMMANDS TO RUN AFTER FIX
+================================================================================
+
+# Quick health check
+curl https://tvp-oc-production.up.railway.app/health
+
+# Full verification
+bash /Users/dremacmini/Desktop/OC/the-video-pool/verify-deployment.sh
+
+# Test login endpoint
+curl -X POST https://tvp-oc-production.up.railway.app/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@videopool.com","password":"test"}'
+
+================================================================================
+FILES TO READ
+================================================================================
+
+Quick Start:          .continue-here.md
+Detailed Guide:       DEPLOYMENT_FIX_GUIDE.md
+Status Report:        DEPLOYMENT_STATUS.md
+Fill After Fix:       DEPLOYMENT_FIX_REPORT_TEMPLATE.md
+Verification Script:  verify-deployment.sh
+
+================================================================================
+TIMELINE
+================================================================================
+
+Feb 24 (NOW):  Set DATABASE_URL → verify ✅
+Feb 25:        Load test (30K videos)
+Feb 26:        Mobile QA
+Feb 27:        Final review
+Feb 28:        🚀 LAUNCH
+
+================================================================================
+SUCCESS CRITERIA
+================================================================================
+
+✅ Supabase connection string retrieved
+✅ DATABASE_URL set on Railway backend
+✅ Railway redeploy completed (green checkmark)
+✅ Health check returns HTTP 200
+✅ Frontend loads without 502 errors
+✅ Can register/login on frontend
+✅ No database errors in Railway logs
+
+Once all are checked, Video Pool is LIVE.
+
+================================================================================
+ESTIMATED TIME: 5 minutes
+CONFIDENCE: Very High
+CREATED: Feb 24, 2026
+================================================================================
