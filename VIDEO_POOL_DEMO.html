@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Video Pool - Live Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #131829;
+            --bg-tertiary: #1a1f3a;
+            --bg-elevated: #252d4d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b7d4;
+            --text-muted: #6b7290;
+            --accent-cyan: #00d4ff;
+            --accent-cyan-hover: #00e6ff;
+            --accent-gold: #ffd700;
+            --accent-coral: #ff6b6b;
+            --accent-purple: #a855f7;
+            --border-subtle: #2a2f4a;
+            --border-default: #3a3f5a;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ============ HEADER ============ */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-cyan);
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--bg-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            width: 300px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .search-box::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--accent-cyan-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-default);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent-cyan);
+        }
+
+        /* ============ GENRE NAV ============ */
+        .genre-nav {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-default) transparent;
+        }
+
+        .genre-nav::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .genre-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .genre-nav::-webkit-scrollbar-thumb {
+            background: var(--border-default);
+            border-radius: 2px;
+        }
+
+        .genre-item {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .genre-item:hover,
+        .genre-item.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(168, 85, 247, 0.1));
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* ============ MAIN LAYOUT ============ */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100vh - 180px);
+        }
+
+        /* ============ SIDEBAR ============ */
+        .sidebar {
+            width: 240px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-subtle);
+            padding: 1rem 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-item {
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-item:hover,
+        .sidebar-item.active {
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 3px solid var(--accent-cyan);
+            padding-left: calc(1.5rem - 3px);
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-icon {
+            font-size: 16px;
+            width: 20px;
+        }
+
+        /* ============ MAIN CONTENT ============ */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: var(--bg-primary);
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .toolbar-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .toolbar-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 0.25rem;
+        }
+
+        .view-toggle-btn {
+            padding: 0.5rem 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .view-toggle-btn.active {
+            background: var(--bg-tertiary);
+            color: var(--accent-cyan);
+        }
+
+        /* ============ SECTIONS ============ */
+        .section {
+            margin-bottom: 3rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .see-all {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .see-all:hover {
+            color: var(--accent-cyan-hover);
+            gap: 0.25rem;
+        }
+
+        /* ============ VIDEO GRID ============ */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .video-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .video-card:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .video-thumbnail.trending { background: linear-gradient(135deg, #ff6b6b, #ff9500); }
+        .video-thumbnail.latest { background: linear-gradient(135deg, #00d4ff, #0099cc); }
+        .video-thumbnail.foryou { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+        .video-thumbnail.throwback { background: linear-gradient(135deg, #ffd700, #ffed4e); }
+        .video-thumbnail.remix { background: linear-gradient(135deg, #ff85c0, #ff1493); }
+
+        .play-icon {
+            position: absolute;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .video-card:hover .play-icon {
+            opacity: 1;
+        }
+
+        .video-info {
+            padding: 1rem;
+        }
+
+        .video-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .video-artist {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .video-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .quality-badge {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 10px;
+        }
+
+        .quality-badge.hd { background: var(--accent-cyan); }
+        .quality-badge.sd { background: var(--accent-coral); }
+
+        /* ============ MODALS & PANELS ============ */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            animation: slideUp 0.3s ease-out;
+            display: none;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .modal-content {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            display: none;
+        }
+
+        .modal-overlay.active {
+            display: block;
+        }
+
+        /* ============ BOTTOM SHEET (Set Builder) ============ */
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-default);
+            border-radius: 12px 12px 0 0;
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 101;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+
+        .bottom-sheet-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bottom-sheet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .bottom-sheet-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .bottom-sheet-item:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent-cyan);
+        }
+
+        /* ============ FLOATING ACTION BUTTON ============ */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(0, 212, 255, 0.5);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* ============ TOAST ============ */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(120%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            z-index: 200;
+            transition: transform 0.3s ease;
+            font-size: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .toast.active {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-success {
+            border-left: 4px solid #10b981;
+        }
+
+        .toast-error {
+            border-left: 4px solid #ef4444;
+        }
+
+        /* ============ SCROLLBAR ============ */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-default);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-subtle);
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .toolbar-title {
+                font-size: 22px;
+            }
+        }
+
+        /* ============ DEMO SPECIFIC ============ */
+        .demo-controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 8px;
+            padding: 1rem;
+            width: 280px;
+            z-index: 99;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .demo-section {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 1rem;
+        }
+
+        .demo-section:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+
+        .demo-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .demo-btn {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .demo-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .demo-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            margin-right: 0.5rem;
+        }
+
+        .debug-info {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">▶</div>
+            THE VIDEO POOL
+        </div>
+        <div class="header-actions">
+            <input type="text" class="search-box" placeholder="Search 30,000+ DJ videos...">
+            <button class="btn btn-secondary">Settings</button>
+            <button class="btn" onclick="showModal('download')">Download</button>
+        </div>
+    </header>
+
+    <!-- GENRE NAVIGATION -->
+    <nav class="genre-nav">
+        <div class="genre-item active" onclick="switchGenre(this, 'all')">All</div>
+        <div class="genre-item" onclick="switchGenre(this, 'house')">House</div>
+        <div class="genre-item" onclick="switchGenre(this, 'techno')">Techno</div>
+        <div class="genre-item" onclick="switchGenre(this, 'trap')">Trap</div>
+        <div class="genre-item" onclick="switchGenre(this, 'dubstep')">Dubstep</div>
+        <div class="genre-item" onclick="switchGenre(this, 'dnb')">Drum & Bass</div>
+        <div class="genre-item" onclick="switchGenre(this, 'trance')">Trance</div>
+        <div class="genre-item" onclick="switchGenre(this, 'indie')">Indie</div>
+        <div class="genre-item" onclick="switchGenre(this, 'reggae')">Reggae</div>
+        <div class="genre-item" onclick="switchGenre(this, 'lofi')">Lo-Fi</div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-item active" onclick="switchView('home', this)">
+                <span class="sidebar-icon">🏠</span>
+                <span>Home</span>
+            </div>
+            <div class="sidebar-item" onclick="switchView('search', this)">
+                <span class="sidebar-icon">🔍</span>
+                <span>Search</span>
+            </div>
+            <div class="sidebar-item" onclick="switchView('library', this)">
+                <span class="sidebar-icon">📚</span>
+                <span>Library</span>
+            </div>
+            <div class="sidebar-item" onclick="switchView('downloads', this)">
+                <span class="sidebar-icon">⬇️</span>
+                <span>Downloads</span>
+            </div>
+            <div class="sidebar-item" onclick="switchView('sets', this)">
+                <span class="sidebar-icon">🎵</span>
+                <span>My Sets</span>
+            </div>
+            <div class="sidebar-item" onclick="switchView('membership', this)">
+                <span class="sidebar-icon">👑</span>
+                <span>Membership</span>
+            </div>
+            <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 1rem 0;">
+            <div class="sidebar-item" onclick="showModal('help')">
+                <span class="sidebar-icon">❓</span>
+                <span>Help</span>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- TOOLBAR -->
+            <div class="toolbar">
+                <h1 class="toolbar-title">Home</h1>
+                <div class="toolbar-controls">
+                    <div class="view-toggle">
+                        <button class="view-toggle-btn active" onclick="setViewMode(this, 'grid')">⊞ Grid</button>
+                        <button class="view-toggle-btn" onclick="setViewMode(this, 'list')">☰ List</button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="showModal('filter')">Filter</button>
+                </div>
+            </div>
+
+            <!-- SECTIONS -->
+            <div id="content">
+                <!-- Trending Now -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">🔥 Trending Now</h2>
+                        <a href="#" class="see-all">See All →</a>
+                    </div>
+                    <div class="video-grid" id="trending-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Latest Releases -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">✨ Latest Releases</h2>
+                        <a href="#" class="see-all">See All →</a>
+                    </div>
+                    <div class="video-grid" id="latest-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <!-- For You -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">💝 For You</h2>
+                        <a href="#" class="see-all">See All →</a>
+                    </div>
+                    <div class="video-grid" id="foryou-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Throwbacks -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">⏳ Throwbacks</h2>
+                        <a href="#" class="see-all">See All →</a>
+                    </div>
+                    <div class="video-grid" id="throwback-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Remixes & Edits -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">🎛️ Remixes & Edits</h2>
+                        <a href="#" class="see-all">See All →</a>
+                    </div>
+                    <div class="video-grid" id="remix-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- FLOATING ACTION BUTTON (Download) -->
+    <button class="fab" onclick="showModal('quick-download')" title="Quick Download">⬇️</button>
+
+    <!-- MODALS -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModals()"></div>
+
+    <!-- Download Modal -->
+    <div class="modal" id="modal-download">
+        <div class="modal-header">Download Video</div>
+        <div class="modal-content">
+            <p>Select quality and format:</p>
+            <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <button class="btn" style="width: 100%;" onclick="selectQuality('4K')">4K (Premium)</button>
+                <button class="btn" style="width: 100%;" onclick="selectQuality('1080p')">1080p HD</button>
+                <button class="btn btn-secondary" style="width: 100%;" onclick="selectQuality('720p')">720p Standard</button>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+            <button class="btn" onclick="downloadVideo()">Download</button>
+        </div>
+    </div>
+
+    <!-- Quick Download Modal -->
+    <div class="modal" id="modal-quick-download">
+        <div class="modal-header">Quick Download</div>
+        <div class="modal-content">
+            <p>Enter video ID or search:</p>
+            <input type="text" class="search-box" id="quick-download-input" placeholder="e.g., tvp-12345" style="width: 100%; margin-top: 1rem;">
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+            <button class="btn" onclick="quickDownload()">Download Now</button>
+        </div>
+    </div>
+
+    <!-- Filter Modal -->
+    <div class="modal" id="modal-filter">
+        <div class="modal-header">Filters</div>
+        <div class="modal-content">
+            <p><strong>Quality:</strong></p>
+            <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="checkbox" id="filter-4k"> <label for="filter-4k">4K</label>
+                <input type="checkbox" id="filter-1080p" checked> <label for="filter-1080p">1080p</label>
+                <input type="checkbox" id="filter-720p" checked> <label for="filter-720p">720p</label>
+            </div>
+            <p><strong>Year:</strong></p>
+            <div style="margin-top: 0.5rem;">
+                <input type="range" min="2000" max="2025" value="2020" style="width: 100%;">
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 0.5rem;">2020 - 2025</p>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModals()">Reset</button>
+            <button class="btn" onclick="applyFilters()">Apply</button>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet (Set Builder) -->
+    <div class="bottom-sheet" id="bottom-sheet">
+        <div class="bottom-sheet-header">
+            My Current Set (8 videos)
+            <button class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 12px;" onclick="closeBottomSheet()">✕</button>
+        </div>
+        <div class="bottom-sheet-list" id="set-list">
+            <!-- Generated by JS -->
+        </div>
+        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary" style="flex: 1;" onclick="downloadSet()">Download Set</button>
+            <button class="btn" style="flex: 1;" onclick="shareSet()">Share Set</button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div class="toast" id="toast-notification">
+        Video downloaded successfully!
+    </div>
+
+    <!-- DEMO CONTROLS (for testing) -->
+    <div class="demo-controls">
+        <div class="demo-section">
+            <span class="demo-label">🎮 Demo Controls</span>
+            <button class="demo-btn" onclick="showToast('✅ Download started!', 'success')">Show Success Toast</button>
+            <button class="demo-btn" onclick="showToast('❌ Error downloading video', 'error')">Show Error Toast</button>
+            <button class="demo-btn" onclick="toggleBottomSheet()">Toggle Set Builder</button>
+            <button class="demo-btn" onclick="showModal('download')">Show Download</button>
+        </div>
+        <div class="demo-section">
+            <span class="demo-label">📊 Live Status</span>
+            <div class="debug-info">
+                <span class="status-indicator"></span> <strong>Backend:</strong> Connected ✅<br>
+                <span class="status-indicator"></span> <strong>Database:</strong> Ready ✅<br>
+                <span class="status-indicator"></span> <strong>API:</strong> Responding ✅
+            </div>
+        </div>
+        <div class="demo-section">
+            <span class="demo-label">🔗 Real Links</span>
+            <a href="https://tvp-redesign-2026.vercel.app" target="_blank" style="display: block; color: var(--accent-cyan); text-decoration: none; font-size: 12px; margin-bottom: 0.5rem;">→ Live Frontend</a>
+            <a href="https://tvp-oc-production.up.railway.app/health" target="_blank" style="display: block; color: var(--accent-cyan); text-decoration: none; font-size: 12px;">→ Backend Health</a>
+        </div>
+    </div>
+
+    <script>
+        // Sample video data
+        const videoSamplesByCategory = {
+            'trending': [
+                { id: 1, title: 'Deep House Mix #47', artist: 'DJ Alex', quality: '4K', plays: '24.5K' },
+                { id: 2, title: 'Techno Energy', artist: 'DJ Morgan', quality: '1080p', plays: '18.2K' },
+                { id: 3, title: 'Summer Vibes', artist: 'DJ Chris', quality: '1080p', plays: '15.8K' },
+                { id: 4, title: 'Night Sessions', artist: 'DJ Sam', quality: '720p', plays: '12.3K' },
+                { id: 5, title: 'Progressive Flow', artist: 'DJ Jordan', quality: '4K', plays: '22.1K' },
+                { id: 6, title: 'Underground Sound', artist: 'DJ Riley', quality: '1080p', plays: '9.7K' },
+            ],
+            'latest': [
+                { id: 7, title: 'New Wave 2025', artist: 'DJ Taylor', quality: '4K', plays: '5.2K' },
+                { id: 8, title: 'Fresh Beats', artist: 'DJ Casey', quality: '1080p', plays: '3.8K' },
+                { id: 9, title: 'Modern Mix', artist: 'DJ Quinn', quality: '1080p', plays: '2.1K' },
+                { id: 10, title: 'Latest Drops', artist: 'DJ Jamie', quality: '720p', plays: '1.9K' },
+                { id: 11, title: 'Current Hits', artist: 'DJ Morgan', quality: '4K', plays: '4.5K' },
+                { id: 12, title: 'This Week', artist: 'DJ Alex', quality: '1080p', plays: '3.2K' },
+            ],
+            'foryou': [
+                { id: 13, title: 'Your Flavor', artist: 'DJ Phoenix', quality: '1080p', plays: '11.2K' },
+                { id: 14, title: 'Personal Pick', artist: 'DJ Storm', quality: '4K', plays: '8.9K' },
+                { id: 15, title: 'Based on History', artist: 'DJ River', quality: '1080p', plays: '7.3K' },
+                { id: 16, title: 'Tailored Mix', artist: 'DJ Ocean', quality: '720p', plays: '5.1K' },
+                { id: 17, title: 'You\'ll Love This', artist: 'DJ Sky', quality: '4K', plays: '13.4K' },
+                { id: 18, title: 'Hand-picked', artist: 'DJ Rain', quality: '1080p', plays: '6.8K' },
+            ],
+            'throwback': [
+                { id: 19, title: '90s Classics', artist: 'DJ Retro', quality: '720p', plays: '28.5K' },
+                { id: 20, title: 'Y2K Vibes', artist: 'DJ Nostalgic', quality: '480p', plays: '19.2K' },
+                { id: 21, title: 'Golden Era', artist: 'DJ Vintage', quality: '720p', plays: '16.7K' },
+                { id: 22, title: 'The Classics', artist: 'DJ Legacy', quality: '480p', plays: '21.3K' },
+                { id: 23, title: 'Timeless', artist: 'DJ Memory', quality: '720p', plays: '14.9K' },
+                { id: 24, title: 'Way Back', artist: 'DJ Echo', quality: '480p', plays: '18.6K' },
+            ],
+            'remix': [
+                { id: 25, title: 'Epic Remix', artist: 'DJ Creator', quality: '4K', plays: '33.2K' },
+                { id: 26, title: 'Modern Edit', artist: 'DJ Studio', quality: '1080p', plays: '26.8K' },
+                { id: 27, title: 'Bootleg Mix', artist: 'DJ Mashup', quality: '1080p', plays: '19.4K' },
+                { id: 28, title: 'Reworked', artist: 'DJ Remix', quality: '720p', plays: '15.7K' },
+                { id: 29, title: 'Unofficial Edit', artist: 'DJ Beat', quality: '4K', plays: '29.1K' },
+                { id: 30, title: 'Arranged', artist: 'DJ Producer', quality: '1080p', plays: '22.5K' },
+            ]
+        };
+
+        const categoryClasses = {
+            'trending': 'trending',
+            'latest': 'latest',
+            'foryou': 'foryou',
+            'throwback': 'throwback',
+            'remix': 'remix'
+        };
+
+        function createVideoCard(video, category) {
+            return `
+                <div class="video-card" onclick="playVideo(${video.id})">
+                    <div class="video-thumbnail ${categoryClasses[category]}">
+                        <span class="play-icon">▶</span>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-artist">${video.artist}</div>
+                        <div class="video-stats">
+                            <span>👁 ${video.plays}</span>
+                            <span class="quality-badge ${video.quality.includes('4K') || video.quality.includes('1080p') ? 'hd' : 'sd'}">${video.quality}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderVideos() {
+            Object.entries(videoSamplesByCategory).forEach(([category, videos]) => {
+                const containerId = `${category}-grid`;
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = videos.map(v => createVideoCard(v, category)).join('');
+                }
+            });
+        }
+
+        function showModal(modalId) {
+            closeModals();
+            document.getElementById('modal-overlay').classList.add('active');
+            document.getElementById(`modal-${modalId}`).classList.add('active');
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        function toggleBottomSheet() {
+            document.getElementById('bottom-sheet').classList.toggle('active');
+        }
+
+        function closeBottomSheet() {
+            document.getElementById('bottom-sheet').classList.remove('active');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast-notification');
+            toast.textContent = message;
+            toast.classList.remove('success', 'error');
+            toast.classList.add(type);
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 3000);
+        }
+
+        function switchGenre(el, genre) {
+            document.querySelectorAll('.genre-item').forEach(e => e.classList.remove('active'));
+            el.classList.add('active');
+            showToast(`Viewing ${genre.toUpperCase()} videos`);
+        }
+
+        function switchView(view, el) {
+            document.querySelectorAll('.sidebar-item').forEach(e => e.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function setViewMode(el, mode) {
+            document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            showToast(`Switched to ${mode} view`);
+        }
+
+        function selectQuality(quality) {
+            showToast(`Quality selected: ${quality}`);
+        }
+
+        function downloadVideo() {
+            closeModals();
+            showToast('✅ Download started! Check Downloads tab', 'success');
+        }
+
+        function quickDownload() {
+            const input = document.getElementById('quick-download-input').value;
+            if (input) {
+                closeModals();
+                showToast(`📥 Downloading video: ${input}`, 'success');
+            }
+        }
+
+        function applyFilters() {
+            closeModals();
+            showToast('Filters applied!');
+        }
+
+        function downloadSet() {
+            showToast('📦 Downloading entire set...', 'success');
+        }
+
+        function shareSet() {
+            showToast('🔗 Set link copied to clipboard!', 'success');
+        }
+
+        function playVideo(id) {
+            showToast(`▶ Playing video ${id}...`);
+        }
+
+        // Populate bottom sheet
+        function populateSetList() {
+            const setList = document.getElementById('set-list');
+            setList.innerHTML = `
+                <div class="bottom-sheet-item">
+                    <span>01. Deep House Mix #47</span>
+                    <span>3:45</span>
+                </div>
+                <div class="bottom-sheet-item">
+                    <span>02. Techno Energy</span>
+                    <span>4:12</span>
+                </div>
+                <div class="bottom-sheet-item">
+                    <span>03. Summer Vibes</span>
+                    <span>3:28</span>
+                </div>
+                <div class="bottom-sheet-item">
+                    <span>04. Night Sessions</span>
+                    <span>4:00</span>
+                </div>
+                <div class="bottom-sheet-item">
+                    <span>05. Progressive Flow</span>
+                    <span>3:55</span>
+                </div>
+                <div class="bottom-sheet-item">
+                    <span>06. Underground Sound</span>
+                    <span>3:32</span>
+                </div>
+                <div class="bottom-sheet-item">
+                    <span>07. New Wave 2025</span>
+                    <span>4:10</span>
+                </div>
+                <div class="bottom-sheet-item">
+                    <span>08. Fresh Beats</span>
+                    <span>3:48</span>
+                </div>
+            `;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModals();
+            if (e.key === 'd' && e.ctrlKey) showModal('download');
+            if (e.key === 'f' && e.ctrlKey) { e.preventDefault(); showModal('filter'); }
+            if (e.key === 'k' && e.ctrlKey) { e.preventDefault(); showModal('quick-download'); }
+        });
+
+        // Init
+        renderVideos();
+        populateSetList();
+
+        // Show initial message
+        window.addEventListener('load', () => {
+            showToast('✨ Welcome to The Video Pool Demo!');
+        });
+    </script>
+</body>
+</html>
