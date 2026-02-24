@@ -5,13 +5,13 @@
 - ✅ Backend: Deployed on Railway (https://tvp-oc-production.up.railway.app)
 - 🔄 Database: Supabase PostgreSQL (needs connection)
 
-## Supabase Credentials Provided
+## Supabase Credentials
 
-| Item | Value |
-|------|-------|
+| Item | Location |
+| --- | --- |
 | Project URL | https://jvgsmiqsqtqgfagghoiv.supabase.co |
-| Anon Key | sb_publishable_jnYgRKWDWFLeeVu_IeSusQ_7q4FSh5Q |
-| Secret Key | sb_secret_gdBFOoU-9ryIOSmTB6BSwA_a0c38v1z |
+| Anon Key | Supabase Dashboard → Settings |
+| Secret Key | Supabase Dashboard → Settings (keep private!) |
 | Project ID | jvgsmiqsqtqgfagghoiv |
 
 ## Step 1: Get Supabase PostgreSQL Connection String

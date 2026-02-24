@@ -56,9 +56,7 @@
 ### Phase 3: Database (🟡 READY TO CONNECT)
 - ✅ Supabase project created
 - ✅ Project ID: jvgsmiqsqtqgfagghoiv
-- ✅ Credentials provided:
-  - Anon Key: `sb_publishable_jnYgRKWDWFLeeVu_IeSusQ_7q4FSh5Q`
-  - Secret Key: `sb_secret_gdBFOoU-9ryIOSmTB6BSwA_a0c38v1z`
+- ✅ Credentials provided (see Supabase dashboard)
 - 🟡 PostgreSQL connection string: **NEED TO RETRIEVE FROM DASHBOARD**
 - ⏳ Schema migrations: **PENDING**
 
@@ -71,13 +69,7 @@
 **Action**: Get the connection string from Supabase dashboard and add as `DATABASE_URL` on Railway
 
 ### Generated Credentials (Ready to Use)
-The following have been generated and are ready to set on Railway:
-```
-JWT_SECRET = tleVmpgH1Y+PjbojIwTSeEEm5lhVcmnZNUku1Yr2a00=
-REFRESH_TOKEN_SECRET = ernqQhNZzcO2x7jz/jIKHsZP3Gp6vR/UY3L126mImfE=
-```
-
-These are documented in: `RAILWAY_ENV_VARS.md`
+JWT secrets have been generated and stored securely in Railway environment variables. See `RAILWAY_ENV_VARS.md` for configuration details.
 
 ---
 

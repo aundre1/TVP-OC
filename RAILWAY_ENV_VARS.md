@@ -1,24 +1,21 @@
 # Railway Environment Variables - Ready to Set
 
-## Generated Secrets (Keep Secure!)
+## Generated Secrets
 
-```
-JWT_SECRET = tleVmpgH1Y+PjbojIwTSeEEm5lhVcmnZNUku1Yr2a00=
-REFRESH_TOKEN_SECRET = ernqQhNZzcO2x7jz/jIKHsZP3Gp6vR/UY3L126mImfE=
-```
+JWT_SECRET and REFRESH_TOKEN_SECRET have been generated and secured. Check Railway environment variables for current values.
 
 ## All Required Environment Variables
 
-Copy and paste these into Railway dashboard → Backend Service → Variables tab:
+Set these in Railway dashboard → Backend Service → Variables tab:
 
 ```
 NODE_ENV=production
 PORT=5000
 API_URL=https://tvp-oc-production.up.railway.app
 FRONTEND_URL=https://tvp-redesign-2026.vercel.app
-JWT_SECRET=tleVmpgH1Y+PjbojIwTSeEEm5lhVcmnZNUku1Yr2a00=
+JWT_SECRET=[use generated value from secure storage]
 JWT_EXPIRY=24h
-REFRESH_TOKEN_SECRET=ernqQhNZzcO2x7jz/jIKHsZP3Gp6vR/UY3L126mImfE=
+REFRESH_TOKEN_SECRET=[use generated value from secure storage]
 REFRESH_TOKEN_EXPIRY=30d
 ```
 

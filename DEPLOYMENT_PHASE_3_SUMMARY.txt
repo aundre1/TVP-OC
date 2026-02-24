@@ -43,9 +43,9 @@ WHAT'S DONE
    - Credentials provided and documented
 
 ✅ Generated Credentials
-   - JWT_SECRET: tleVmpgH1Y+PjbojIwTSeEEm5lhVcmnZNUku1Yr2a00=
-   - REFRESH_TOKEN_SECRET: ernqQhNZzcO2x7jz/jIKHsZP3Gp6vR/UY3L126mImfE=
-   - Ready to be set on Railway
+   - JWT_SECRET: [generated and securely stored]
+   - REFRESH_TOKEN_SECRET: [generated and securely stored]
+   - Ready to be set on Railway (check Railway environment)
 
 ✅ Documentation
    - .continue-here.md: Session continuity guide
