@@ -4,8 +4,20 @@
 
 import sgMail from '@sendgrid/mail';
 
-// Initialize SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Initialize SendGrid (only if API key is configured)
+let sendgridEnabled = false;
+if (process.env.SENDGRID_API_KEY) {
+  try {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    sendgridEnabled = true;
+    console.log('[EMAIL] SendGrid initialized');
+  } catch (error) {
+    console.warn('[EMAIL] SendGrid initialization failed:', error.message);
+    console.warn('[EMAIL] Email service will be disabled - set valid SENDGRID_API_KEY to enable');
+  }
+} else {
+  console.warn('[EMAIL] SENDGRID_API_KEY not configured - email service disabled');
+}
 
 // Email configuration
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@thevideopool.com';
@@ -18,6 +30,12 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
  * @returns {Promise<boolean>} - Success status
  */
 const sendEmail = async ({ to, subject, text, html }) => {
+  // If SendGrid is not configured, log and skip
+  if (!sendgridEnabled) {
+    console.warn(`[EMAIL] SendGrid disabled - skipping email to ${to} (subject: "${subject}")`);
+    return false;
+  }
+
   try {
     const msg = {
       to,
