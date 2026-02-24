@@ -29,10 +29,30 @@ When starting a conversation, Claude should automatically:
 | All phases complete | Suggest `/gsd:complete-milestone` |
 
 ### Current Project Context
+
 - **Brand Color**: Cyan (#00d4ff)
-- **Co-worker**: Steve (handles backend API)
+- **Owner**: Aundre Oldacre (took over from Steve)
 - **Design Council**: UX decisions voted on by council (Spotify, YouTube, Apple Music, Serato, Beatport, Tidal, Billboard)
 - **Mobile Note**: Requires react-window for 30K+ video virtualization
+
+### Deployment Status (Updated Feb 24, 2026)
+
+**Current Phase**: 🟡 Database Configuration
+
+- ✅ Frontend: Live on Vercel (https://tvp-redesign-2026.vercel.app)
+- ✅ Backend: Live on Railway (https://tvp-oc-production.up.railway.app)
+- 🟡 Database: Supabase configured, **need PostgreSQL connection string**
+
+**Blocking Issue**: Backend requires DATABASE_URL environment variable
+
+**To Unblock**: Get PostgreSQL connection string from Supabase dashboard, add to Railway
+
+**Documentation Created**:
+
+- `.continue-here.md` - Session continuity and immediate next steps
+- `DEPLOYMENT_STATUS.md` - Full deployment report
+- `RAILWAY_ENV_VARS.md` - Generated JWT secrets and environment variables
+- `SUPABASE_RAILWAY_SETUP.md` - Step-by-step integration guide
 
 ### Coding Standards
 - Preserve version files (don't overwrite previous versions)
