@@ -1,1 +1,11 @@
 .vercel
+
+# 🔐 Secret Files - NEVER COMMIT
+.env.secrets.local
+.env.secrets
+.env.local
+.env.production.local
+*.secrets.json
+secrets/
+.railway.secrets
+railway.env
