@@ -150,8 +150,14 @@ export const authApi = {
     }
 
     try {
-      return await get<User>('/auth/me');
+      // Attempt to fetch current user
+      // If no token or unauthorized, this will fail gracefully and return null
+      const user = await get<User>('/auth/me');
+      return user;
     } catch (error) {
+      // Any error (401, timeout, network, etc.) returns null
+      // This allows the app to show landing page instead of hanging
+      // The error is expected on first load when there's no token
       return null;
     }
   },

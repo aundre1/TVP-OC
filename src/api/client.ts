@@ -57,12 +57,20 @@ apiClient.interceptors.response.use(
 
     // Handle 401 Unauthorized
     if (error.response?.status === 401) {
-      // Clear token and redirect to login
+      // Clear token
       setAuthToken(null);
 
-      // Don't redirect if already on auth pages
-      if (!window.location.pathname.includes('/login') &&
-          !window.location.pathname.includes('/register')) {
+      // Only redirect if:
+      // 1. Not already on auth pages
+      // 2. Not a /auth/me request (initial check shouldn't redirect)
+      // 3. Not already on welcome/landing page
+      const isAuthPage = window.location.pathname.includes('/login') ||
+                        window.location.pathname.includes('/register') ||
+                        window.location.pathname.includes('/welcome') ||
+                        window.location.pathname === '/';
+      const isAuthMeRequest = error.config?.url?.includes('/auth/me');
+
+      if (!isAuthPage && !isAuthMeRequest) {
         window.location.href = '/login';
       }
     }
