@@ -11,7 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://tvp-oc-production.
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 1000, // Ultra-short timeout for demo mode - fail fast if API unavailable
+  timeout: 10000, // 10 second timeout for production backend
   withCredentials: true, // Include cookies for session auth
   headers: {
     'Content-Type': 'application/json',
