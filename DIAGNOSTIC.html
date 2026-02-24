@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Pool - API Diagnostic</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Monaco', 'JetBrains Mono', monospace;
+            background: #0a0e27;
+            color: #ffffff;
+            padding: 2rem;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #00d4ff; margin-bottom: 2rem; font-size: 32px; }
+        .test-group { margin-bottom: 2rem; }
+        .test-item {
+            background: #131829;
+            border: 1px solid #2a2f4a;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .test-name {
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .status-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-icon.pending { background: #fbbf24; animation: pulse 1s infinite; }
+        .status-icon.success { background: #10b981; }
+        .status-icon.error { background: #ef4444; }
+        .test-result {
+            background: #1a1f3a;
+            border-left: 3px solid;
+            padding: 1rem;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 0.5rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .test-result.success { border-left-color: #10b981; color: #86efac; }
+        .test-result.error { border-left-color: #ef4444; color: #fca5a5; }
+        .alert { background: #7c2d12; border-left: 4px solid #dc2626; padding: 1rem; margin-bottom: 2rem; border-radius: 6px; }
+        .alert strong { color: #ff6b6b; }
+        code { background: #0a0e27; padding: 0.25rem 0.5rem; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Video Pool - Diagnostic Report</h1>
+
+        <div class="alert">
+            <strong>⚠️ CRITICAL:</strong> Backend is returning 502 error. This means Railway is either crashed, restarting, or not configured correctly.
+        </div>
+
+        <div class="test-group">
+            <div class="test-item">
+                <div class="test-name">
+                    <span class="status-icon error"></span>
+                    Backend Health
+                </div>
+                <div class="test-result error">
+❌ FAILED: 502 Bad Gateway
+Endpoint: https://tvp-oc-production.up.railway.app/health
+Error: Application failed to respond
+
+ROOT CAUSE: The backend process is not running or has crashed.
+
+NEXT STEPS:
+1. Go to: https://railway.app/dashboard
+2. Select project: "diplomatic-simplicity"
+3. Click "backend" service
+4. Check the logs for errors
+5. Click "Deploy" button to restart
+                </div>
+            </div>
+
+            <div class="test-item">
+                <div class="test-name">
+                    <span class="status-icon pending"></span>
+                    Frontend (Vercel)
+                </div>
+                <div class="test-result success">
+✅ Frontend is deployed and responsive
+URL: https://tvp-redesign-2026.vercel.app
+Status: Reachable (will show loading spinner until backend responds)
+                </div>
+            </div>
+
+            <div class="test-item">
+                <div class="test-name">
+                    <span class="status-icon error"></span>
+                    Frontend ↔ Backend Connection
+                </div>
+                <div class="test-result error">
+❌ BLOCKED: Cannot connect to backend
+The frontend is working fine, but when it tries to call:
+  https://tvp-oc-production.up.railway.app/api/auth/me
+It gets: 502 Bad Gateway
+
+This explains why users see "Application failed to respond" - the backend isn't responding.
+                </div>
+            </div>
+
+            <div class="test-item">
+                <div class="test-name">
+                    <span class="status-icon pending"></span>
+                    What to do NOW
+                </div>
+                <div class="test-result success">
+ACTION PLAN:
+
+STEP 1: Check Railway Backend
+- URL: https://railway.app/dashboard
+- Project: "diplomatic-simplicity"
+- Service: "backend"
+- Check: Logs for errors, restart if needed
+
+STEP 2: Verify Environment Variables on Railway
+- Click "backend" → "Variables" tab
+- Verify DATABASE_URL is set (required)
+- Verify other secrets are present
+
+STEP 3: If backend won't start
+- Check if PostgreSQL connection string is correct
+- Verify SendGrid API key (or it's marked as optional)
+- Restart the service
+
+STEP 4: Test Backend
+Once Railway shows "running":
+- Open: https://tvp-oc-production.up.railway.app/health
+- Should see: {"status":"healthy",...}
+
+STEP 5: Clear Vercel Cache
+- URL: https://vercel.com/dashboard
+- Click: tvp-redesign-2026 project
+- Settings → Deployments → Click latest → Redeploy
+- Choose "Fresh deployment"
+
+STEP 6: Test Full Flow
+- Open: https://tvp-redesign-2026.vercel.app
+- Hard refresh: Cmd+Shift+R (Mac)
+- Try login → should work now
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
