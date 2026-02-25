@@ -24,6 +24,11 @@ import favoriteRoutes from './routes/favorites.js';
 import playlistRoutes from './routes/playlists.js';
 import downloadRoutes from './routes/downloads.js';
 import setRoutes from './routes/sets.js';
+import couponsRoutes from './routes/coupons.js';
+import supportRoutes from './routes/support.js';
+import marketingRoutes from './routes/marketing.js';
+import contentQueueRoutes from './routes/content-queue.js';
+import { getDetailedHealth } from './services/healthService.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -99,6 +104,22 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Detailed health (admin)
+app.get('/api/health/detailed', async (req, res) => {
+  // Simple auth check — requires admin token
+  const { requireAuth, requireAdmin } = await import('./middleware/auth.js');
+  requireAuth(req, res, () => {
+    requireAdmin(req, res, async () => {
+      try {
+        const health = await getDetailedHealth();
+        res.json(health);
+      } catch (e) {
+        res.status(500).json({ status: 'error', error: e.message });
+      }
+    });
+  });
+});
+
 // ===========================================
 // API ROUTES
 // ===========================================
@@ -114,6 +135,10 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/playlists', playlistRoutes);
 app.use('/api/downloads', downloadRoutes);
 app.use('/api/sets', setRoutes);
+app.use('/api', couponsRoutes);
+app.use('/api', supportRoutes);
+app.use('/api', marketingRoutes);
+app.use('/api', contentQueueRoutes);
 
 // ===========================================
 // ERROR HANDLING

@@ -7,8 +7,7 @@ import Header from './Header';
 import DownloadFAB from './DownloadFAB';
 import PreviewModal from './PreviewModal';
 import SidePanel from './SidePanel';
-import KeyboardShortcuts from './KeyboardShortcuts';
-import QuickActions from './QuickActions';
+// (removed unused imports)
 
 export default function Layout() {
   return (
@@ -20,8 +19,7 @@ export default function Layout() {
       <DownloadFAB />
       <PreviewModal />
       <SidePanel />
-      <KeyboardShortcuts />
-      <QuickActions />
+      {/* removed unused components */}
     </div>
   );
 }

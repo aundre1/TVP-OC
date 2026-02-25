@@ -1,0 +1,5 @@
+-- Migration 004: Add phone and SMS opt-in fields to users
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sms_opt_in BOOLEAN DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sms_opt_in_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN DEFAULT false;

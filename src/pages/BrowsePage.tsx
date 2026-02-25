@@ -18,7 +18,7 @@ import { GenreFilter } from '@/components/Navigation/GenreFilter';
 import { ViewToggle } from '@/components/Browse/ViewToggle';
 import { BrowseTable } from '@/components/Browse/BrowseTable';
 import { BrowseGrid } from '@/components/Browse/BrowseGrid';
-import { BrowseTile } from '@/components/Browse/BrowseTile';
+// BrowseTile removed (tile view cut)
 import { PanelContainer } from '@/components/Panels/PanelContainer';
 
 export const BrowsePage: React.FC = () => {
@@ -207,12 +207,7 @@ export const BrowsePage: React.FC = () => {
             />
           )}
 
-          {viewMode === 'tile' && (
-            <BrowseTile
-              onTileClick={onVideoSelect}
-              onTileAction={handleCardAction}
-            />
-          )}
+          {/* tile view removed */}
         </div>
       </main>
 

@@ -11,7 +11,7 @@ export { default as HeaderV2 } from './HeaderV2';
 // Navigation
 export { default as GenreNav } from './GenreNav';
 export { default as Toolbar } from './Toolbar';
-export { default as LayoutPresetSelector } from './LayoutPresetSelector';
+// LayoutPresetSelector removed
 
 // Search
 export { default as SearchAutocomplete } from './SearchAutocomplete';
@@ -40,7 +40,7 @@ export { default as SidePanel } from './SidePanel';
 // Modals
 export { default as PreviewModal } from './PreviewModal';
 export { default as PreviewModalV2 } from './PreviewModalV2';
-export { default as ShortcutsPanel, ShortcutFeedback } from './ShortcutsPanel';
+// ShortcutsPanel removed
 export { default as TrialExpiredModal } from './TrialExpiredModal';
 export { default as DownloadLimitModal } from './DownloadLimitModal';
 export { default as ShareSetModal } from './ShareSetModal';
@@ -56,5 +56,4 @@ export { default as DownloadCounter } from './DownloadCounter';
 
 // Legacy / Utilities
 export { default as DownloadFAB } from './DownloadFAB';
-export { default as KeyboardShortcuts } from './KeyboardShortcuts';
-export { default as QuickActions } from './QuickActions';
+// KeyboardShortcuts and QuickActions removed

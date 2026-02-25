@@ -3,7 +3,7 @@
  * Comprehensive types for the table/grid/tile layout system
  */
 
-export type ViewMode = 'table' | 'grid' | 'tile';
+export type ViewMode = 'table' | 'grid';
 export type SortField = 'date' | 'popularity' | 'trending' | 'artist' | 'title' | 'genre' | 'released';
 export type SortOrder = 'asc' | 'desc';
 export type PanelType = 'preview' | 'details' | 'download' | 'library' | 'admin' | null;

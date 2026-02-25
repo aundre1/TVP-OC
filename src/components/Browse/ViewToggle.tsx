@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { LayoutGrid, LayoutList, Layers } from 'lucide-react';
+import { LayoutGrid, LayoutList } from 'lucide-react';
 import { ViewMode } from '@/types/browse';
 
 interface ViewToggleProps {
@@ -16,9 +16,8 @@ interface ViewToggleProps {
 
 export const ViewToggle: React.FC<ViewToggleProps> = ({ currentView, onViewChange, compact = false }) => {
   const views: Array<{ mode: ViewMode; label: string; icon: React.ReactNode }> = [
-    { mode: 'table', label: 'Table', icon: <LayoutList size={compact ? 16 : 18} /> },
+    { mode: 'table', label: 'List', icon: <LayoutList size={compact ? 16 : 18} /> },
     { mode: 'grid', label: 'Grid', icon: <LayoutGrid size={compact ? 16 : 18} /> },
-    { mode: 'tile', label: 'List', icon: <Layers size={compact ? 16 : 18} /> },
   ];
 
   return (

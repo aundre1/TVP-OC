@@ -1,6 +1,6 @@
 // ============================================
 // THE VIDEO POOL - MAIN LAYOUT v6.0 (Reskinned)
-// With sidebar, panels, modals, and keyboard shortcuts
+// With sidebar, panels, and modals
 // ============================================
 
 import { Outlet } from 'react-router-dom';
@@ -15,7 +15,6 @@ import Toolbar from './Toolbar';
 import SetBuilder from './SetBuilder';
 import RecentDownloadsPanel from './RecentDownloadsPanel';
 import RequestPanel from './RequestPanel';
-import ShortcutsPanel, { ShortcutFeedback } from './ShortcutsPanel';
 
 // Modals
 import PreviewModalV2 from './PreviewModalV2';
@@ -23,20 +22,13 @@ import ToastContainer from './Toast';
 import DownloadLimitModal from './DownloadLimitModal';
 import DownloadQualityModalWrapper from './DownloadQualityModalWrapper';
 import BatchDownloadModalWrapper from './BatchDownloadModalWrapper';
-import ScoringExplanationModal from './ScoringExplanationModal';
 import DuplicateWarningModal from './DuplicateWarningModal';
 
 // Trial components
 import FreeTrialBanner from './FreeTrialBanner';
 import TrialExpiredModal from './TrialExpiredModal';
 
-// Hooks
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-
 export default function Layout() {
-  // Initialize keyboard shortcuts
-  useKeyboardShortcuts();
-
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       {/* Header */}
@@ -67,7 +59,6 @@ export default function Layout() {
       <SetBuilder />
       <RecentDownloadsPanel />
       <RequestPanel />
-      <ShortcutsPanel />
 
       {/* Modals */}
       <PreviewModalV2 />
@@ -75,14 +66,10 @@ export default function Layout() {
       <DownloadLimitModal />
       <DownloadQualityModalWrapper />
       <BatchDownloadModalWrapper />
-      <ScoringExplanationModal />
       <DuplicateWarningModal />
 
       {/* Toast Notifications */}
       <ToastContainer />
-
-      {/* Keyboard Shortcut Feedback */}
-      <ShortcutFeedback />
     </div>
   );
 }

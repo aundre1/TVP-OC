@@ -427,7 +427,10 @@ If you didn't change your password, please contact support immediately to secure
 // EXPORTS
 // ===========================================
 
+export { sendEmail };
+
 export default {
+  sendEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,

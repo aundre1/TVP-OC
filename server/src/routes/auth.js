@@ -58,6 +58,13 @@ const registerValidation = [
     .trim()
     .isLength({ min: 1, max: 100 })
     .withMessage('Name must be between 1 and 100 characters'),
+  body('phone')
+    .matches(/^\+[1-9]\d{6,14}$/)
+    .withMessage('Valid phone number in E.164 format is required (e.g. +1XXXXXXXXXX)'),
+  body('smsOptIn')
+    .optional()
+    .isBoolean()
+    .withMessage('smsOptIn must be a boolean'),
 ];
 
 const loginValidation = [
@@ -128,7 +135,7 @@ router.post(
   asyncHandler(async (req, res) => {
     validate(req);
 
-    const { email, password, name } = req.body;
+    const { email, password, name, phone, smsOptIn } = req.body;
 
     // Check if user already exists
     const existingUser = await db.query(
@@ -147,9 +154,10 @@ router.post(
         await db.query(
           `UPDATE users
            SET password_hash = $1, name = $2, verification_code = $3,
-               verification_expires = $4, updated_at = NOW()
-           WHERE email = $5`,
-          [hashedPassword, name || null, verificationCode, verificationExpires, email]
+               verification_expires = $4, phone = $5, sms_opt_in = $6,
+               sms_opt_in_at = $7, updated_at = NOW()
+           WHERE email = $8`,
+          [hashedPassword, name || null, verificationCode, verificationExpires, phone, smsOptIn || false, smsOptIn ? new Date() : null, email]
         );
 
         await sendVerificationEmail(email, verificationCode, name);
@@ -170,10 +178,10 @@ router.post(
     const verificationExpires = new Date(Date.now() + 15 * 60 * 1000);
 
     const result = await db.query(
-      `INSERT INTO users (email, password_hash, name, verification_code, verification_expires)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO users (email, password_hash, name, verification_code, verification_expires, phone, sms_opt_in, sms_opt_in_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id, email, name, created_at`,
-      [email, hashedPassword, name || null, verificationCode, verificationExpires]
+      [email, hashedPassword, name || null, verificationCode, verificationExpires, phone, smsOptIn || false, smsOptIn ? new Date() : null]
     );
 
     // Send verification email

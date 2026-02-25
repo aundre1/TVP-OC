@@ -316,47 +316,7 @@ export default function SearchPage() {
             </div>
           )}
 
-          {/* List/Tile View */}
-          {viewMode === 'tile' && (
-            <div className="space-y-1">
-              {allVideos.map((video) => (
-                <div
-                  key={video.id}
-                  className="flex gap-3 p-2 bg-tvp-bg-secondary rounded-lg hover:bg-tvp-bg-tertiary transition-colors cursor-pointer group border border-tvp-border-subtle"
-                  style={{ height: '72px' }}
-                >
-                  <div className="relative w-[60px] h-[45px] flex-shrink-0 rounded-sm overflow-hidden bg-tvp-bg-tertiary my-auto">
-                    <img
-                      src={video.thumbnailUrl || '/placeholder-video.jpg'}
-                      alt={video.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0 flex items-center">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium text-tvp-text-primary truncate group-hover:text-tvp-accent-cyan transition-colors">
-                        {video.artist} &mdash; {video.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-[10px] text-tvp-text-muted">
-                        <span>{video.genre}</span>
-                        {video.bpm && <><span className="text-tvp-border-default">&middot;</span><span>{video.bpm} BPM</span></>}
-                        {video.quality && <><span className="text-tvp-border-default">&middot;</span><span className="text-tvp-accent-cyan font-bold">{video.quality}</span></>}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <button className="p-1.5 hover:text-tvp-accent-cyan text-tvp-text-muted rounded transition-colors" title="Download">
-                      <Download size={14} />
-                    </button>
-                    <button className="p-1.5 hover:text-pink-500 text-tvp-text-muted rounded transition-colors" title="Favorite">
-                      <Heart size={14} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* tile view removed */}
 
           {/* Load More */}
           {hasNextPage && (

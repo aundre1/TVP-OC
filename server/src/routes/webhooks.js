@@ -6,6 +6,7 @@
 import { Router } from 'express';
 import { query } from '../db/config.js';
 import Stripe from 'stripe';
+import { handleFailedPayment } from '../services/dunningService.js';
 
 const router = Router();
 
@@ -229,11 +230,14 @@ async function handlePaymentFailed(invoice) {
 
   const user = userResult.rows[0];
 
-  // Log failed payment
+  // Log failed payment and trigger dunning
   console.log(`Payment failed for user ${user.id} (${user.email})`);
 
-  // In production, send email notification about failed payment
-  // await emailService.sendPaymentFailedEmail(user.email);
+  try {
+    await handleFailedPayment(user.id, invoice.id);
+  } catch (e) {
+    console.error('[DUNNING] Error triggering dunning:', e.message);
+  }
 }
 
 export default router;

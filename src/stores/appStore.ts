@@ -126,9 +126,6 @@ interface AppState {
   // Keyboard Shortcut Feedback
   shortcutFeedback: ShortcutFeedback | null;
 
-  // Shortcuts Panel
-  isShortcutsPanelOpen: boolean;
-
   // Preview Modal
   previewTrackId: number | null;
   isPreviewModalOpen: boolean;
@@ -208,11 +205,6 @@ interface AppActions {
   showShortcutFeedback: (key: string, action: string) => void;
   hideShortcutFeedback: () => void;
 
-  // Shortcuts Panel
-  toggleShortcutsPanel: () => void;
-  openShortcutsPanel: () => void;
-  closeShortcutsPanel: () => void;
-
   // Preview Modal
   openPreviewModal: (trackId: number) => void;
   closePreviewModal: () => void;
@@ -283,7 +275,6 @@ export const useAppStore = create<AppStore>()(
       isRequestPanelOpen: false,
       toasts: [],
       shortcutFeedback: null,
-      isShortcutsPanelOpen: false,
       previewTrackId: null,
       isPreviewModalOpen: false,
       sectionOrder: DEFAULT_SECTION_ORDER,
@@ -486,13 +477,6 @@ export const useAppStore = create<AppStore>()(
 
       hideShortcutFeedback: () => set({ shortcutFeedback: null }),
 
-      // Shortcuts Panel Actions
-      toggleShortcutsPanel: () => set((state) => ({
-        isShortcutsPanelOpen: !state.isShortcutsPanelOpen,
-      })),
-      openShortcutsPanel: () => set({ isShortcutsPanelOpen: true }),
-      closeShortcutsPanel: () => set({ isShortcutsPanelOpen: false }),
-
       // Preview Modal Actions
       openPreviewModal: (trackId) => set({
         previewTrackId: trackId,
@@ -589,7 +573,6 @@ export const useAppStore = create<AppStore>()(
       closeAllModals: () => set({
         isRecentPanelOpen: false,
         isRequestPanelOpen: false,
-        isShortcutsPanelOpen: false,
         isPreviewModalOpen: false,
         previewTrackId: null,
         isDownloadLimitModalOpen: false,

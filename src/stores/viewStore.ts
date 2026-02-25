@@ -22,7 +22,7 @@ export const useViewStore = create<ViewState>()(
 
       loadViewPreference: () => {
         const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored && ['table', 'grid', 'tile'].includes(stored)) {
+        if (stored && ['table', 'grid'].includes(stored)) {
           set({ viewMode: stored as ViewMode });
         }
       },
