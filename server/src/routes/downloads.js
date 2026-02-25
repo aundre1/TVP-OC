@@ -4,13 +4,19 @@
 
 import express from 'express';
 import pool from '../db/pool.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/downloads/:userId - Get download history
-router.get('/:userId', async (req, res) => {
+// GET /api/downloads/:userId - Get download history (auth required, own history only)
+router.get('/:userId', requireAuth, async (req, res) => {
   try {
     const { userId } = req.params;
+
+    // Users can only view their own download history (admins can view any)
+    if (req.user.id !== parseInt(userId) && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
     const limit = req.query.limit ? parseInt(req.query.limit) : 50;
 
     const result = await pool.query(

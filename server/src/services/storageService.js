@@ -25,37 +25,35 @@ const URL_EXPIRY = 3600; // 1 hour
 // ===========================================
 
 /**
- * Extract S3 object key from a full Wasabi URL.
+ * Extract S3 bucket and object key from a full Wasabi URL.
  *
  * Input:  "https://s3.wasabisys.com/thevideopool-us/videos/Artist - Title.mp4"
- * Output: "videos/Artist - Title.mp4"
+ * Output: { bucket: "thevideopool-us", key: "videos/Artist - Title.mp4" }
  *
+ * Handles both thevideopool-us (bulk import) and tvp-videos (seed) buckets.
  * Also handles bare keys (no protocol prefix) passed directly.
  */
-function extractKey(url) {
-  if (!url) return null;
+function extractBucketAndKey(url) {
+  if (!url) return { bucket: BUCKET, key: null };
 
   // Already a bare key (no http/https)
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    return url.replace(/^\/+/, '') || null;
+    return { bucket: BUCKET, key: url.replace(/^\/+/, '') || null };
   }
 
   try {
     const parsed = new URL(url);
     // pathname is like "/thevideopool-us/videos/Artist%20-%20Title.mp4"
     // Decode percent-encoding so the S3 SDK receives the raw object key
-    // (the SDK will re-encode it correctly when building the signed URL)
     const decoded = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
-    const bucketPrefix = `${BUCKET}/`;
-
-    if (decoded.startsWith(bucketPrefix)) {
-      return decoded.slice(bucketPrefix.length) || null;
-    }
-
-    // Fallback: return decoded path (minus leading slash)
-    return decoded || null;
+    const slashIdx = decoded.indexOf('/');
+    if (slashIdx === -1) return { bucket: BUCKET, key: null };
+    return {
+      bucket: decoded.slice(0, slashIdx),        // e.g. "thevideopool-us" or "tvp-videos"
+      key:    decoded.slice(slashIdx + 1) || null // e.g. "videos/Artist - Title.mp4"
+    };
   } catch {
-    return null;
+    return { bucket: BUCKET, key: null };
   }
 }
 
@@ -72,11 +70,11 @@ function extractKey(url) {
  * @returns {Promise<string>} Presigned URL
  */
 export async function getPresignedDownloadUrl(fileUrl, expiresIn = URL_EXPIRY) {
-  const key = extractKey(fileUrl);
+  const { bucket, key } = extractBucketAndKey(fileUrl);
   if (!key) throw new Error(`Invalid file URL: ${fileUrl}`);
 
   const command = new GetObjectCommand({
-    Bucket: BUCKET,
+    Bucket: bucket,
     Key: key,
     ResponseContentDisposition: 'attachment', // forces browser download
   });
@@ -93,11 +91,11 @@ export async function getPresignedDownloadUrl(fileUrl, expiresIn = URL_EXPIRY) {
  * @returns {Promise<string>} Presigned URL
  */
 export async function getPresignedPreviewUrl(previewUrl, expiresIn = URL_EXPIRY) {
-  const key = extractKey(previewUrl);
+  const { bucket, key } = extractBucketAndKey(previewUrl);
   if (!key) throw new Error(`Invalid preview URL: ${previewUrl}`);
 
   const command = new GetObjectCommand({
-    Bucket: BUCKET,
+    Bucket: bucket,
     Key: key,
   });
 
