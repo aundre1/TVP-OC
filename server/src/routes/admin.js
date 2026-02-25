@@ -89,15 +89,15 @@ router.get('/users', asyncHandler(async (req, res) => {
   const params = [];
 
   if (search) {
-    whereClause = `WHERE username ILIKE $1 OR email ILIKE $1`;
+    whereClause = `WHERE name ILIKE $1 OR email ILIKE $1`;
     params.push(`%${search}%`);
   }
 
   const [usersResult, countResult] = await Promise.all([
     query(`
       SELECT
-        id, username, email, membership_type, status,
-        download_limit, downloads_used, email_verified,
+        id, name, email, membership_type, status,
+        downloads_today, total_downloads, email_verified,
         two_factor_enabled, role, created_at, last_login
       FROM users
       ${whereClause}
@@ -111,12 +111,12 @@ router.get('/users', asyncHandler(async (req, res) => {
   res.json({
     users: usersResult.rows.map(u => ({
       id: u.id,
-      username: u.username,
+      username: u.name,
       email: u.email,
       membershipType: u.membership_type,
       membershipStatus: u.status,
-      downloadLimit: u.download_limit,
-      downloadsUsed: u.downloads_used,
+      downloadLimit: null,
+      downloadsUsed: u.downloads_today ?? 0,
       emailVerified: u.email_verified,
       twoFactorEnabled: u.two_factor_enabled,
       role: u.role,
@@ -138,8 +138,8 @@ router.get('/users/:id', asyncHandler(async (req, res) => {
 
   const result = await query(`
     SELECT
-      id, username, email, membership_type, status,
-      download_limit, downloads_used, bonus_credits, email_verified,
+      id, name, email, membership_type, status,
+      downloads_today, total_downloads, email_verified,
       two_factor_enabled, role, created_at, last_login,
       stripe_customer_id, stripe_subscription_id
     FROM users WHERE id = $1
@@ -159,13 +159,12 @@ router.get('/users/:id', asyncHandler(async (req, res) => {
 
   res.json({
     id: user.id,
-    username: user.username,
+    username: user.name,
     email: user.email,
     membershipType: user.membership_type,
     membershipStatus: user.status,
-    downloadLimit: user.download_limit,
-    downloadsUsed: user.downloads_used,
-    bonusCredits: user.bonus_credits,
+    downloadLimit: null,
+    downloadsUsed: user.downloads_today ?? 0,
     emailVerified: user.email_verified,
     twoFactorEnabled: user.two_factor_enabled,
     role: user.role,
@@ -207,18 +206,10 @@ router.put('/users/:id', [
     updates.push(`membership_type = $${paramIndex++}`);
     params.push(membershipType);
 
-    // Update download limit based on membership
-    const limits = { free: 10, basic: 100, pro: null, lifetime: null };
-    updates.push(`download_limit = $${paramIndex++}`);
-    params.push(limits[membershipType]);
   }
   if (membershipStatus !== undefined) {
     updates.push(`status = $${paramIndex++}`);
     params.push(membershipStatus);
-  }
-  if (bonusCredits !== undefined) {
-    updates.push(`bonus_credits = $${paramIndex++}`);
-    params.push(bonusCredits);
   }
 
   if (updates.length === 0) {
@@ -232,7 +223,7 @@ router.put('/users/:id', [
     UPDATE users
     SET ${updates.join(', ')}
     WHERE id = $${paramIndex}
-    RETURNING id, username, email, membership_type, role
+    RETURNING id, name, email, membership_type, role
   `, params);
 
   if (result.rows.length === 0) {
