@@ -11,7 +11,9 @@
     "db:seed": "node src/db/seed.js",
     "db:migrate": "node src/db/migrate.js",
     "import-videos": "node src/scripts/import-videos.js",
+    "scan-wasabi": "node src/scripts/scan-wasabi.js",
     "export-check": "node src/scripts/export-check.js",
+    "wasabi-import": "node src/scripts/wasabi-import.js",
     "test": "jest"
   },
   "dependencies": {
