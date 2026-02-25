@@ -11,6 +11,7 @@ import RecentSection from '@/components/RecentSection';
 import AISearchHero from '@/components/AISearchHero';
 import { useAppStore } from '@/stores/appStore';
 import { get } from '@/api/client';
+import { extractTracks } from '@/api/adapters';
 import { Track } from '@/types';
 
 // Loading skeleton for video sections
@@ -71,25 +72,29 @@ export default function HomePage() {
     async function fetchSections() {
       setLoading(true);
       try {
-        const [trending, latest, forYou, throwbacks, remixes] = await Promise.allSettled([
-          get<Track[]>('/videos', { sortBy: 'popular', limit: 15 }),
-          get<Track[]>('/videos', { sortBy: 'newest', limit: 15 }),
-          get<Track[]>('/videos', { limit: 15 }),
-          get<Track[]>('/videos', { genre: 'throwbacks', limit: 15 }),
-          get<Track[]>('/videos', { genre: 'remixes', limit: 15 }),
+        const [trending, latest, forYou] = await Promise.allSettled([
+          get<unknown>('/videos', { sortBy: 'popular', limit: 20 }),
+          get<unknown>('/videos', { sortBy: 'newest', limit: 20 }),
+          get<unknown>('/videos', { limit: 20 }),
         ]);
 
         if (cancelled) return;
 
-        const extract = (r: PromiseSettledResult<Track[]>) =>
-          r.status === 'fulfilled' ? (Array.isArray(r.value) ? r.value : []) : [];
+        const extract = (r: PromiseSettledResult<unknown>) =>
+          r.status === 'fulfilled' ? extractTracks(r.value) : [];
+
+        const trendingTracks = extract(trending);
+        const latestTracks = extract(latest);
+        const forYouTracks = extract(forYou);
 
         setSectionData({
-          trending: extract(trending),
-          latest: extract(latest),
-          forYou: extract(forYou),
-          throwbacks: extract(throwbacks),
-          remixes: extract(remixes),
+          trending: trendingTracks,
+          latest: latestTracks,
+          forYou: forYouTracks,
+          // Derive throwbacks from latest (older release years)
+          throwbacks: latestTracks.filter(t => (t.addedDate ?? '') < '2020').slice(0, 15),
+          // Remixes = tracks that have multiple versions
+          remixes: trendingTracks.filter(t => t.versions && t.versions.length > 1).slice(0, 15),
         });
       } catch (err) {
         console.error('Failed to fetch home sections:', err);

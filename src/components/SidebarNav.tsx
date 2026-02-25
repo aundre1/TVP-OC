@@ -131,7 +131,7 @@ function DownloadsWidget({
 // Main Sidebar Navigation Component
 export default function SidebarNav() {
   const location = useLocation();
-  const { toggleSetBuilder, setBuilderTracks } = useAppStore();
+  const { toggleSetBuilder, setBuilderTracks, openRecentPanel } = useAppStore();
   const { data: favorites = [] } = useFavorites();
 
   // Determine active section based on current route/state
@@ -234,9 +234,7 @@ export default function SidebarNav() {
           downloadsRemaining={150}
           downloadsTotal={200}
           plan="Pro"
-          onClick={() => {
-            // TODO: Open recent downloads modal
-          }}
+          onClick={openRecentPanel}
         />
       </div>
     </aside>

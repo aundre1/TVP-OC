@@ -4,41 +4,44 @@
 // ============================================
 
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import {
   TrendingUp,
-  TrendingDown,
   Download,
   Music,
   BarChart3,
   Activity,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { clsx } from 'clsx';
+import apiClient from '@/api/client';
 
-// Mock data — replace with real API calls
-const metrics = {
-  totalDownloads: 114300,
-  favoriteGenre: 'Pop',
-  avgBpm: 118,
-  thisMonth: 3420,
-};
+interface AdminStats {
+  totalDownloads: number;
+  downloadsToday: number;
+  totalUsers: number;
+  activeSubscribers: number;
+}
 
-const topTracks = [
-  { title: 'Flowers', artist: 'Miley Cyrus', downloads: 16800, trend: 12 },
-  { title: 'Blinding Lights', artist: 'The Weeknd', downloads: 15420, trend: -3 },
-  { title: 'Levitating', artist: 'Dua Lipa', downloads: 12800, trend: 5 },
-  { title: 'As It Was', artist: 'Harry Styles', downloads: 11200, trend: 8 },
-  { title: 'Anti-Hero', artist: 'Taylor Swift', downloads: 10500, trend: -1 },
-];
+interface TopVideo {
+  id: number;
+  title: string;
+  artist: string;
+  genre: string;
+  download_count: number;
+}
 
-const genreBreakdown = [
-  { genre: 'Pop', percentage: 28.4 },
-  { genre: 'Hip-Hop', percentage: 24.6 },
-  { genre: 'EDM', percentage: 21.6 },
-  { genre: 'Latin', percentage: 13.1 },
-  { genre: 'R&B', percentage: 7.7 },
-  { genre: 'Other', percentage: 4.6 },
-];
+interface GenreEntry {
+  genre: string;
+  count: number;
+}
+
+interface InsightsData {
+  stats: AdminStats | null;
+  topVideos: TopVideo[];
+  genreBreakdown: GenreEntry[];
+}
 
 function MetricCard({ title, value, icon: Icon }: { title: string; value: string | number; icon: React.ElementType }) {
   return (
@@ -56,6 +59,48 @@ export default function InsightsPage() {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
+  const [data, setData] = useState<InsightsData>({ stats: null, topVideos: [], genreBreakdown: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let cancelled = false;
+    setLoading(true);
+
+    Promise.all([
+      apiClient.get('/admin/stats').then(r => r.data),
+      apiClient.get('/admin/analytics?days=30').then(r => r.data),
+    ])
+      .then(([statsData, analyticsData]) => {
+        if (cancelled) return;
+
+        // Derive genre breakdown from membership distribution as a proxy,
+        // or use topVideos genre counts if available
+        const genreMap: Record<string, number> = {};
+        (analyticsData.topVideos as TopVideo[]).forEach((v) => {
+          if (v.genre) genreMap[v.genre] = (genreMap[v.genre] ?? 0) + Number(v.download_count);
+        });
+        const genreBreakdown: GenreEntry[] = Object.entries(genreMap)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 6)
+          .map(([genre, count]) => ({ genre, count }));
+
+        setData({
+          stats: statsData,
+          topVideos: (analyticsData.topVideos as TopVideo[]).slice(0, 5),
+          genreBreakdown,
+        });
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err?.response?.data?.error || 'Failed to load insights');
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [isAdmin]);
+
   if (!isAdmin) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-16 text-center">
@@ -72,6 +117,28 @@ export default function InsightsPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-8 h-8 animate-spin text-tvp-accent-cyan" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-16 text-center">
+        <p className="text-tvp-status-error text-sm">{error}</p>
+      </div>
+    );
+  }
+
+  const { stats, topVideos, genreBreakdown } = data;
+  const maxGenreCount = genreBreakdown[0]?.count ?? 1;
+
+  // Derive top genre name from breakdown
+  const topGenre = genreBreakdown[0]?.genre ?? '—';
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       {/* Header */}
@@ -82,10 +149,10 @@ export default function InsightsPage() {
 
       {/* 4 Metric Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <MetricCard title="Total Downloads" value={metrics.totalDownloads} icon={Download} />
-        <MetricCard title="Favorite Genre" value={metrics.favoriteGenre} icon={Music} />
-        <MetricCard title="Avg BPM" value={metrics.avgBpm} icon={Activity} />
-        <MetricCard title="This Month" value={metrics.thisMonth} icon={BarChart3} />
+        <MetricCard title="Total Users" value={stats?.totalUsers ?? 0} icon={Download} />
+        <MetricCard title="Top Genre" value={topGenre} icon={Music} />
+        <MetricCard title="Active Subscribers" value={stats?.activeSubscribers ?? 0} icon={Activity} />
+        <MetricCard title="Downloads Today" value={stats?.downloadsToday ?? 0} icon={BarChart3} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -93,8 +160,10 @@ export default function InsightsPage() {
         <div className="p-6 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
           <h3 className="font-semibold text-tvp-text-primary mb-4">Top 5 Downloaded Tracks</h3>
           <div className="space-y-3">
-            {topTracks.map((track, idx) => (
-              <div key={track.title} className="flex items-center gap-3 p-3 bg-tvp-bg-tertiary rounded-lg">
+            {topVideos.length === 0 ? (
+              <p className="text-sm text-tvp-text-muted text-center py-4">No data yet</p>
+            ) : topVideos.map((track, idx) => (
+              <div key={track.id} className="flex items-center gap-3 p-3 bg-tvp-bg-tertiary rounded-lg">
                 <span className="w-6 h-6 bg-tvp-bg-elevated rounded-full flex items-center justify-center text-xs font-bold text-tvp-text-muted">
                   {idx + 1}
                 </span>
@@ -103,13 +172,9 @@ export default function InsightsPage() {
                   <p className="text-xs text-tvp-text-muted">{track.artist}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-sm text-tvp-text-primary">{track.downloads.toLocaleString()}</p>
-                  <p className={clsx(
-                    'text-xs flex items-center justify-end gap-1',
-                    track.trend >= 0 ? 'text-tvp-status-success' : 'text-tvp-status-error'
-                  )}>
-                    {track.trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {track.trend >= 0 ? '+' : ''}{track.trend}%
+                  <p className="text-sm text-tvp-text-primary">{Number(track.download_count).toLocaleString()}</p>
+                  <p className="text-xs flex items-center justify-end gap-1 text-tvp-status-success">
+                    <TrendingUp className="w-3 h-3" />
                   </p>
                 </div>
               </div>
@@ -120,22 +185,26 @@ export default function InsightsPage() {
         {/* Genre Breakdown */}
         <div className="p-6 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
           <h3 className="font-semibold text-tvp-text-primary mb-4">Genre Breakdown</h3>
-          <div className="space-y-4">
-            {genreBreakdown.map((g) => (
-              <div key={g.genre}>
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="text-tvp-text-secondary">{g.genre}</span>
-                  <span className="text-tvp-text-primary font-medium">{g.percentage}%</span>
+          {genreBreakdown.length === 0 ? (
+            <p className="text-sm text-tvp-text-muted text-center py-4">No data yet</p>
+          ) : (
+            <div className="space-y-4">
+              {genreBreakdown.map((g) => (
+                <div key={g.genre}>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="text-tvp-text-secondary">{g.genre}</span>
+                    <span className="text-tvp-text-primary font-medium">{g.count.toLocaleString()}</span>
+                  </div>
+                  <div className="h-2 bg-tvp-bg-tertiary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-tvp-accent-cyan rounded-full transition-all"
+                      style={{ width: `${(g.count / maxGenreCount) * 100}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 bg-tvp-bg-tertiary rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-tvp-accent-cyan rounded-full transition-all"
-                    style={{ width: `${(g.percentage / 30) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

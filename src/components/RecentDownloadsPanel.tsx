@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { X, Clock, Download, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAppStore } from '@/stores/appStore';
+import { useAuthStore } from '@/stores/authStore';
 import { getDownloadHistory, DownloadRecord } from '@/api/downloadsApi';
 
 export default function RecentDownloadsPanel() {
@@ -16,20 +17,21 @@ export default function RecentDownloadsPanel() {
     openPreviewModal,
   } = useAppStore();
 
+  const userId = useAuthStore((s) => s.user?.id);
+
   const [downloads, setDownloads] = useState<DownloadRecord[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isRecentPanelOpen) return;
+    if (!isRecentPanelOpen || !userId) return;
     let cancelled = false;
     setLoading(true);
-    // TODO: Replace '1' with actual userId from auth store
-    getDownloadHistory(1, 50)
+    getDownloadHistory(userId, 50)
       .then((data) => { if (!cancelled) setDownloads(data); })
       .catch((err) => console.error('Failed to fetch downloads:', err))
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [isRecentPanelOpen]);
+  }, [isRecentPanelOpen, userId]);
 
   if (!isRecentPanelOpen) return null;
 

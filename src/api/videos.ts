@@ -5,6 +5,7 @@
 import { get } from './client';
 import { DEV_CONFIG } from '@/config/dev';
 import { sampleTracks, trendingTracks, latestTracks, forYouTracks } from '@/data/tracks';
+import { extractTracks, extractPaginatedTracks } from './adapters';
 import type { Video, SearchFilters, SearchResult, Category, Track } from '@/types';
 
 interface HomeSectionsResponse {
@@ -248,7 +249,8 @@ export const videosApi = {
     if (DEV_CONFIG.useMockAuth) {
       return mockTrending.slice(0, limit);
     }
-    return get<Video[]>('/videos', { sortBy: 'popular', limit });
+    const data = await get<unknown>('/videos', { sortBy: 'popular', limit });
+    return extractTracks(data) as unknown as Video[];
   },
 
   // Get new releases
@@ -256,7 +258,8 @@ export const videosApi = {
     if (DEV_CONFIG.useMockAuth) {
       return mockNewReleases.slice(0, limit);
     }
-    return get<Video[]>('/videos', { sortBy: 'newest', limit });
+    const data = await get<unknown>('/videos', { sortBy: 'newest', limit });
+    return extractTracks(data) as unknown as Video[];
   },
 
   // Get videos by genre
@@ -264,7 +267,8 @@ export const videosApi = {
     if (DEV_CONFIG.useMockAuth) {
       return filterByGenre(genre).slice(0, limit);
     }
-    return get<Video[]>('/videos', { genre, limit });
+    const data = await get<unknown>('/videos', { genre, limit });
+    return extractTracks(data) as unknown as Video[];
   },
 };
 

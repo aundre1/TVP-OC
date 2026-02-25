@@ -7,6 +7,7 @@ import { useState, useCallback } from 'react';
 import { X, Check, Send, Music, Lightbulb, Shield } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAppStore } from '@/stores/appStore';
+import { supportApi } from '@/api/support';
 
 type RequestType = 'song' | 'feature';
 
@@ -53,19 +54,25 @@ export default function RequestPanel() {
         }
       }
 
-      // TODO: Send to API with recaptchaToken for server-side verification
-      // The backend should verify the token with Google and reject scores < 0.5
-      const _payload = {
-        type: requestType,
-        email,
-        songTitle: requestType === 'song' ? songTitle : undefined,
-        artistName: requestType === 'song' ? artistName : undefined,
-        details,
-        recaptchaToken,
-      };
+      // Map UI requestType to backend category
+      const category = requestType === 'song' ? 'song_request' : 'other';
 
-      // Simulate API call (replace with actual endpoint when backend is connected)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Build subject line
+      const subject = requestType === 'song'
+        ? `Song Request: ${songTitle || 'Unknown'} – ${artistName || 'Unknown'}`
+        : 'Feature Request';
+
+      // Build full message including song details and recaptcha token
+      const fullMessage = requestType === 'song'
+        ? `Song: ${songTitle}\nArtist: ${artistName}\n\n${details}`
+        : details;
+
+      await supportApi.createTicket({
+        category,
+        subject,
+        message: fullMessage,
+        priority: 'normal',
+      });
 
       setIsSubmitted(true);
       showToast('success', 'Request submitted successfully!');

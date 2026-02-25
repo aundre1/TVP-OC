@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <!-- Record body: purple/blue radial gradient -->
+    <radialGradient id="disc" cx="38%" cy="32%" r="70%">
+      <stop offset="0%"  stop-color="#9b5fe0"/>
+      <stop offset="30%" stop-color="#5b3a9e"/>
+      <stop offset="60%" stop-color="#2d1b6e"/>
+      <stop offset="85%" stop-color="#12093a"/>
+      <stop offset="100%" stop-color="#070322"/>
+    </radialGradient>
+    <!-- Center hub: cyan gradient -->
+    <radialGradient id="hub" cx="40%" cy="35%">
+      <stop offset="0%"  stop-color="#66e8ff"/>
+      <stop offset="50%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#0095c8"/>
+    </radialGradient>
+    <!-- Outer edge glow ring -->
+    <radialGradient id="edgeRing" cx="50%" cy="50%" r="50%">
+      <stop offset="82%" stop-color="transparent"/>
+      <stop offset="90%" stop-color="#00d4ff" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#00d4ff" stop-opacity="0.15"/>
+    </radialGradient>
+    <!-- Subtle glow filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowHub" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="32" height="32" rx="7" fill="#0a0a0f"/>
+
+  <!-- Record disc body -->
+  <circle cx="16" cy="16" r="13.5" fill="url(#disc)"/>
+
+  <!-- Outer cyan edge ring -->
+  <circle cx="16" cy="16" r="13.5" fill="none" stroke="#00d4ff" stroke-width="1.2" opacity="0.8"/>
+
+  <!-- Groove rings (subtle) -->
+  <circle cx="16" cy="16" r="11.5" fill="none" stroke="#6633cc" stroke-width="0.4" opacity="0.5"/>
+  <circle cx="16" cy="16" r="9.5"  fill="none" stroke="#5522bb" stroke-width="0.4" opacity="0.4"/>
+  <circle cx="16" cy="16" r="7.5"  fill="none" stroke="#4422aa" stroke-width="0.35" opacity="0.4"/>
+  <circle cx="16" cy="16" r="5.8"  fill="none" stroke="#3311aa" stroke-width="0.3" opacity="0.35"/>
+
+  <!-- Highlight sheen (top-left) -->
+  <ellipse cx="12.5" cy="10" rx="4" ry="2.5" fill="white" opacity="0.08" transform="rotate(-25 12.5 10)"/>
+
+  <!-- Center hub -->
+  <circle cx="16" cy="16" r="4" fill="url(#hub)" filter="url(#glowHub)"/>
+
+  <!-- Center hole -->
+  <circle cx="16" cy="16" r="1.4" fill="#0a0a0f"/>
+</svg>

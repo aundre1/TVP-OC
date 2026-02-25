@@ -5,6 +5,7 @@
 
 import { useAppStore } from '@/stores/appStore';
 import { getAllTracks } from '@/data/tracks';
+import { downloadsApi } from '@/api/downloads';
 import DownloadQualityModal from './DownloadQualityModal';
 
 export default function DownloadQualityModalWrapper() {
@@ -25,11 +26,19 @@ export default function DownloadQualityModalWrapper() {
   const handleDownload = async (quality: string, version: string) => {
     if (!track) return;
 
-    // In production, this would call the API
-    // For now, we'll simulate the download
-
-    // TODO: Replace with actual API call
-    // const response = await downloadVideo(track.id, quality, version);
+    try {
+      const response = await downloadsApi.downloadVideo(track.id, version || quality);
+      if (response.signedUrl) {
+        const link = document.createElement('a');
+        link.href = response.signedUrl;
+        link.download = `${track.artist} - ${track.title}.mp4`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (err) {
+      console.error('Download failed:', err);
+    }
 
     // Close modal - toast is shown by the modal itself
     closeDownloadQualityModal();
