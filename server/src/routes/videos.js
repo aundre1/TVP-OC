@@ -34,9 +34,12 @@ const handleValidationErrors = (req, res, next) => {
 
 /**
  * GET /api/videos
- * List videos with filtering, search, and pagination
+ * List videos with filtering, search, and pagination.
+ * Requires authentication — catalog access is a member benefit.
+ * Public discovery: use /api/videos/featured or /api/videos/recommended instead.
  */
 router.get('/',
+  requireAuth,
   [
     query('search').optional().trim().escape(),
     query('q').optional().trim().escape(), // alias for search

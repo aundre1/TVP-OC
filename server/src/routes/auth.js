@@ -165,12 +165,18 @@ router.post(
 
         return res.status(200).json({
           success: true,
-          message: 'Verification code sent. Please check your email.',
+          message: 'If this email is not already registered, a verification code has been sent.',
           requiresVerification: true,
         });
       }
 
-      throw Errors.conflict('Email already registered', 'EMAIL_EXISTS');
+      // Email is already registered and verified.
+      // Return generic response to prevent email enumeration (do NOT reveal the account exists).
+      return res.status(200).json({
+        success: true,
+        message: 'If this email is not already registered, a verification code has been sent.',
+        requiresVerification: true,
+      });
     }
 
     // Create new user
@@ -1162,16 +1168,17 @@ router.post(
       return res.json({ success: true, message: 'Phone already verified.' });
     }
 
-    // Generate 6-digit code
+    // Generate 6-digit code, store only the hash
     const code = generateVerificationCode();
+    const codeHash = hashResetToken(code); // SHA-256 hash; never store plaintext OTPs
     const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     await db.query(
       'UPDATE users SET phone_code = $1, phone_code_expires = $2 WHERE id = $3',
-      [code, expires, user.id]
+      [codeHash, expires, user.id]
     );
 
-    // Import and send SMS
+    // Import and send SMS (send the plaintext code to the user, not the hash)
     const { sendSMS } = await import('../services/smsService.js');
     const result = await sendSMS(
       user.phone,
@@ -1216,7 +1223,9 @@ router.post(
       return res.json({ success: true, message: 'Phone already verified.' });
     }
 
-    if (!user.phone_code || user.phone_code !== code) {
+    // Compare hash of submitted code against stored hash
+    const submittedHash = hashResetToken(code);
+    if (!user.phone_code || user.phone_code !== submittedHash) {
       throw Errors.unauthorized('Invalid verification code', 'INVALID_CODE');
     }
 
