@@ -140,28 +140,78 @@ async function* listPrefix(s3, prefix) {
 }
 
 // ===========================================
+// S3 HEADOBJECT — per-file metadata
+// ===========================================
+
+/**
+ * Fetch S3 custom metadata for a single key via HeadObject.
+ * AWS SDK always lowercases custom metadata keys (x-amz-meta-* prefix stripped).
+ * Returns mapped fields: { artist, title, genre, label, bpm, year, contentType, _rawMeta }
+ * Any missing field is null. On error returns { _error }.
+ */
+async function fetchObjectMetadata(s3, key) {
+  try {
+    const head = await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: key }));
+    const meta = head.Metadata || {};   // keys are always lowercase after SDK strips x-amz-meta-
+
+    return {
+      artist:      meta.artist   || null,
+      title:       meta.title    || null,
+      genre:       meta.genre    || null,
+      // Record label stored as "composer" in older Wasabi uploads
+      label:       meta.composer || null,
+      // BPM stored under several possible keys
+      bpm:         meta.bpms != null ? parseInt(meta.bpms, 10)
+                 : meta.bpm  != null ? parseInt(meta.bpm,  10)
+                 : null,
+      year:        meta.year  || meta.date || null,
+      contentType: head.ContentType || null,
+      _rawMeta:    meta,   // expose raw keys for dry-run reporting
+    };
+  } catch (err) {
+    return { _error: err.message };
+  }
+}
+
+/**
+ * Run HeadObject for an array of keys with bounded concurrency (META_CONCURRENCY).
+ * Returns an array of { key, meta } in the same order as input keys.
+ */
+async function fetchMetadataBatch(s3, keys) {
+  const results = new Array(keys.length);
+  let idx = 0;
+
+  async function worker() {
+    while (idx < keys.length) {
+      const i = idx++;
+      results[i] = { key: keys[i], meta: await fetchObjectMetadata(s3, keys[i]) };
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(META_CONCURRENCY, keys.length) }, worker);
+  await Promise.all(workers);
+  return results;
+}
+
+// ===========================================
 // FILENAME PARSER
 // ===========================================
 
 /**
  * Parse a filename stem (no folder, no extension) into structured metadata.
  *
- * Input example:  "2 Chainz  ft. Kanye West - Birthday Song (HD)"
+ * Input example:  "Jay-Z - Song Title (Dirty)"
  * Returns: { artist, title, versionType, quality }
+ *
+ * Splits on FIRST occurrence of " - " (space-dash-space) only.
+ * This correctly handles hyphenated artist names: Jay-Z, E-40, D-Nice.
  */
 function parseFilename(stem) {
-  // Step 1: Try splitting on " - " first, then fall back to "- " (no leading space)
-  let dashIdx = stem.indexOf(' - ');
-  let splitWidth = 3;
+  // Split on FIRST " - " (space-dash-space) only — handles Jay-Z, E-40, etc.
+  const sepIdx = stem.indexOf(' - ');
 
-  if (dashIdx === -1) {
-    // Try "- " with no leading space (e.g. "Artist- Title")
-    dashIdx = stem.indexOf('- ');
-    splitWidth = 2;
-  }
-
-  if (dashIdx === -1) {
-    // No " - " or "- " separator at all — treat whole thing as title, artist unknown
+  if (sepIdx === -1) {
+    // No " - " separator at all — treat whole thing as title, artist unknown
     return {
       artist:      'Unknown',
       title:       stem.trim(),
@@ -170,10 +220,10 @@ function parseFilename(stem) {
     };
   }
 
-  let artistRaw = stem.slice(0, dashIdx);
-  let rest      = stem.slice(dashIdx + splitWidth);  // everything after separator
+  let artistRaw = stem.slice(0, sepIdx);
+  let rest      = stem.slice(sepIdx + 3);  // everything after " - "
 
-  // Step 2: Normalize artist — strip track number prefix (e.g. "01. ", "1. "), collapse spaces
+  // Normalize artist — strip track number prefix (e.g. "01. ", "1. "), collapse spaces
   const artist = artistRaw
     .replace(/^\d+[.)]\s*/, '')   // strip leading "01. " or "1) "
     .replace(/\s{2,}/g, ' ')
@@ -218,6 +268,25 @@ function parseFilename(stem) {
   if (!title) title = rest.trim() || stem.trim();
 
   return { artist, title, versionType, quality };
+}
+
+/**
+ * Merge S3 HeadObject metadata with filename-parsed fields.
+ * S3 metadata wins when present; filename parsing is the fallback.
+ */
+function mergeMetadata(parsed, s3Meta) {
+  if (!s3Meta || s3Meta._error) return parsed;
+
+  return {
+    ...parsed,
+    artist:      (s3Meta.artist && s3Meta.artist.trim()) || parsed.artist,
+    title:       (s3Meta.title  && s3Meta.title.trim())  || parsed.title,
+    genre:       s3Meta.genre  || parsed.genre  || null,
+    label:       s3Meta.label  || null,
+    bpm:         (s3Meta.bpm != null && !isNaN(s3Meta.bpm)) ? s3Meta.bpm : null,
+    year:        s3Meta.year   || null,
+    // versionType and quality come from filename parsing only
+  };
 }
 
 // ===========================================
@@ -290,17 +359,19 @@ function createPool() {
 
 /**
  * Upsert a video record (ON CONFLICT on title+artist unique index from migration 011).
+ * Includes optional enriched fields from S3 metadata (genre, label, bpm, year).
  * Returns the video id.
  */
-async function upsertVideo(client, { title, artist, thumbnailUrl }) {
+async function upsertVideo(client, { title, artist, thumbnailUrl, genre, label, bpm, year }) {
   const result = await client.query(
     `INSERT INTO videos (title, artist, thumbnail_url, genre, is_active, download_count, created_at)
-     VALUES ($1, $2, $3, 'Unknown', true, 0, NOW())
+     VALUES ($1, $2, $3, $4, true, 0, NOW())
      ON CONFLICT (title, artist) DO UPDATE SET
        thumbnail_url = COALESCE(EXCLUDED.thumbnail_url, videos.thumbnail_url),
+       genre         = COALESCE(EXCLUDED.genre, videos.genre),
        updated_at    = NOW()
      RETURNING id`,
-    [title, artist, thumbnailUrl || null]
+    [title, artist, thumbnailUrl || null, genre || 'Unknown']
   );
   return result.rows[0].id;
 }
@@ -329,17 +400,32 @@ async function upsertVersion(client, { videoId, versionType, fileUrl, quality, p
 
 /**
  * Group parsed video files by normalized artist|title key.
- * Returns Map<groupKey, { artist, title, versions: [] }>
+ * Returns Map<groupKey, { artist, title, genre, label, bpm, year, versions: [] }>
  */
 function groupVideos(parsedFiles) {
   const groups = new Map();
 
   for (const file of parsedFiles) {
-    const { artist, title, versionType, quality, stem } = file;
+    const { artist, title, versionType, quality, stem, genre, label, bpm, year } = file;
     const groupKey = `${artist.toLowerCase()}|${title.toLowerCase()}`;
 
     if (!groups.has(groupKey)) {
-      groups.set(groupKey, { artist, title, versions: [] });
+      groups.set(groupKey, {
+        artist,
+        title,
+        genre: genre || null,
+        label: label || null,
+        bpm:   bpm   || null,
+        year:  year  || null,
+        versions: [],
+      });
+    } else {
+      // Merge enriched fields if this version has them and the group doesn't yet
+      const g = groups.get(groupKey);
+      if (!g.genre && genre) g.genre = genre;
+      if (!g.label && label) g.label = label;
+      if (!g.bpm   && bpm)   g.bpm   = bpm;
+      if (!g.year  && year)  g.year  = year;
     }
 
     groups.get(groupKey).versions.push({ versionType, quality, stem });
@@ -363,6 +449,7 @@ async function main() {
   console.log(`  Bucket  : ${BUCKET}`);
   console.log(`  Region  : ${REGION}`);
   console.log(`  Mode    : ${opts.dryRun ? 'DRY RUN (no DB writes)' : 'IMPORT'}`);
+  if (opts.withMetadata) console.log(`  Metadata: HeadObject ENABLED (--with-metadata)`);
   if (opts.limit) console.log(`  Limit   : first ${opts.limit.toLocaleString()} video files`);
   console.log('');
 
@@ -373,6 +460,7 @@ async function main() {
   console.log('  Listing videos/ in thevideopool-us...');
 
   const videoFiles = [];
+  const rawKeys    = [];   // parallel array of S3 keys (for HeadObject later)
   let scanCount = 0;
 
   for await (const key of listPrefix(s3, 'videos/')) {
@@ -387,9 +475,10 @@ async function main() {
     // Extract just the filename stem (no folder, no .mp4)
     const stem = path.basename(key, '.mp4');
 
-    // Parse
-    const { artist, title, versionType, quality } = parseFilename(stem);
-    videoFiles.push({ stem, artist, title, versionType, quality });
+    // Parse filename (always done — serves as fallback when metadata absent)
+    const parsed = parseFilename(stem);
+    videoFiles.push({ stem, key, ...parsed, genre: null, label: null, bpm: null, year: null });
+    rawKeys.push(key);
 
     if (opts.limit && videoFiles.length >= opts.limit) break;
 
@@ -401,13 +490,99 @@ async function main() {
   process.stdout.write(`\r  Found ${videoFiles.length.toLocaleString()} video files (scanned ${scanCount.toLocaleString()} objects)          \n`);
   console.log('');
 
-  // ─── Step 2: Group into unique video records ───────────────────────────────
+  // ─── Step 2: HeadObject metadata probe (--with-metadata) ─────────────────
+  if (opts.withMetadata && videoFiles.length > 0) {
+    const sampleCount = Math.min(META_SAMPLE_SIZE, videoFiles.length);
+    console.log(`  Fetching HeadObject metadata for ${sampleCount} sample files...`);
+
+    const sampleKeys    = rawKeys.slice(0, sampleCount);
+    const sampleResults = await fetchMetadataBatch(s3, sampleKeys);
+
+    // Count how many have useful metadata
+    let metaHits = 0;
+    for (const { meta } of sampleResults) {
+      if (meta && !meta._error && (meta.artist || meta.title || meta.genre || meta.label || meta.bpm)) {
+        metaHits++;
+      }
+    }
+
+    console.log(`  Metadata present: ${metaHits}/${sampleCount} sample files have useful S3 metadata`);
+    console.log('');
+
+    if (opts.dryRun) {
+      // Print the raw metadata report — this is the primary output of --dry-run --with-metadata
+      console.log('  ─── RAW S3 METADATA REPORT (sample files) ───');
+      console.log('');
+      for (const { key, meta } of sampleResults) {
+        const stem = path.basename(key, '.mp4');
+        console.log(`  FILE: ${stem}`);
+        if (meta._error) {
+          console.log(`    ERROR: ${meta._error}`);
+        } else if (!meta._rawMeta || Object.keys(meta._rawMeta).length === 0) {
+          console.log('    (no custom metadata)');
+        } else {
+          console.log(`    ContentType : ${meta.contentType || '(none)'}`);
+          console.log('    Raw metadata fields:');
+          for (const [k, v] of Object.entries(meta._rawMeta)) {
+            console.log(`      ${k.padEnd(20)} = ${v}`);
+          }
+          console.log('    Mapped:');
+          if (meta.artist) console.log(`      artist  -> ${meta.artist}`);
+          if (meta.title)  console.log(`      title   -> ${meta.title}`);
+          if (meta.genre)  console.log(`      genre   -> ${meta.genre}`);
+          if (meta.label)  console.log(`      label   -> ${meta.label}`);
+          if (meta.bpm)    console.log(`      bpm     -> ${meta.bpm}`);
+          if (meta.year)   console.log(`      year    -> ${meta.year}`);
+        }
+        console.log('');
+      }
+    }
+
+    // Apply sample metadata to videoFiles for display / import
+    for (let i = 0; i < sampleResults.length; i++) {
+      const merged = mergeMetadata(videoFiles[i], sampleResults[i].meta);
+      Object.assign(videoFiles[i], merged);
+    }
+
+    // On full import: if metadata is useful on >30% of samples, fetch all remaining files
+    const metadataUseful = metaHits > sampleCount * 0.3;
+
+    if (metadataUseful && !opts.dryRun) {
+      console.log(`  Metadata useful (${metaHits}/${sampleCount}) — fetching for remaining ${(videoFiles.length - sampleCount).toLocaleString()} files...`);
+
+      const remainingKeys  = rawKeys.slice(sampleCount);
+      const remaining      = videoFiles.slice(sampleCount);
+      const totalBatches   = Math.ceil(remainingKeys.length / META_CONCURRENCY);
+
+      for (let b = 0; b < totalBatches; b++) {
+        const bStart = b * META_CONCURRENCY;
+        const bKeys  = remainingKeys.slice(bStart, bStart + META_CONCURRENCY);
+        const bFiles = remaining.slice(bStart, bStart + META_CONCURRENCY);
+        const bMeta  = await fetchMetadataBatch(s3, bKeys);
+
+        for (let i = 0; i < bMeta.length; i++) {
+          Object.assign(bFiles[i], mergeMetadata(bFiles[i], bMeta[i].meta));
+        }
+
+        const done = sampleCount + bStart + bKeys.length;
+        process.stdout.write(`\r  Metadata fetched: ${done.toLocaleString()}/${videoFiles.length.toLocaleString()}  `);
+      }
+
+      console.log('');
+      console.log('');
+    } else if (!metadataUseful && !opts.dryRun) {
+      console.log(`  Only ${metaHits}/${sampleCount} files have metadata — relying on filename parsing for full run.`);
+      console.log('');
+    }
+  }
+
+  // ─── Step 3: Group into unique video records ───────────────────────────────
   console.log('  Grouping into unique videos...');
   const groups = groupVideos(videoFiles);
   console.log(`  Unique titles: ${groups.size.toLocaleString()} (${videoFiles.length.toLocaleString()} total versions)`);
   console.log('');
 
-  // ─── Step 3: DRY RUN ──────────────────────────────────────────────────────
+  // ─── Step 4: DRY RUN ──────────────────────────────────────────────────────
   if (opts.dryRun) {
     console.log('  ─── DRY RUN — First 20 parsed videos ───');
     console.log('');
@@ -418,10 +593,12 @@ async function main() {
       shown++;
 
       console.log(`  [${String(shown).padStart(2)}] ${group.artist} — ${group.title}`);
+      if (group.genre) console.log(`        genre   : ${group.genre}`);
+      if (group.label) console.log(`        label   : ${group.label}`);
+      if (group.bpm)   console.log(`        bpm     : ${group.bpm}`);
+      if (group.year)  console.log(`        year    : ${group.year}`);
       for (const v of group.versions) {
-        const vUrl   = videoUrl(v.stem);
-        const tUrl   = thumbUrl(v.stem.replace(/ - .+$/, ` - ${group.title}`));
-        const pUrl   = previewUrl(v.stem.replace(/ - .+$/, ` - ${group.title}`));
+        const vUrl = videoUrl(v.stem);
         console.log(`        version : ${v.versionType}  quality : ${v.quality}`);
         console.log(`        file    : ${vUrl}`);
       }
@@ -435,6 +612,10 @@ async function main() {
     console.log(`  Video files parsed   : ${videoFiles.length.toLocaleString()}`);
     console.log(`  Unique video records : ${groups.size.toLocaleString()}`);
     console.log(`  Elapsed              : ${elapsed}s`);
+    if (opts.withMetadata) {
+      const withMeta = videoFiles.filter(f => f.label || f.bpm || f.year || f.genre).length;
+      console.log(`  Files with S3 meta   : ${withMeta.toLocaleString()}`);
+    }
     console.log('═══════════════════════════════════════════════════════');
     console.log('');
     console.log('  Run without --dry-run to start importing.');
@@ -496,6 +677,10 @@ async function main() {
             title:        group.title,
             artist:       group.artist,
             thumbnailUrl: thumbnail,
+            genre:        group.genre,
+            label:        group.label,
+            bpm:          group.bpm,
+            year:         group.year,
           });
           videosUpserted++;
 
