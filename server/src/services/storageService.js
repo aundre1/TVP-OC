@@ -42,17 +42,18 @@ function extractKey(url) {
 
   try {
     const parsed = new URL(url);
-    // pathname is like "/thevideopool-us/videos/Artist - Title.mp4"
-    // Strip leading slash then strip bucket prefix
-    const withoutLeadingSlash = parsed.pathname.replace(/^\//, '');
+    // pathname is like "/thevideopool-us/videos/Artist%20-%20Title.mp4"
+    // Decode percent-encoding so the S3 SDK receives the raw object key
+    // (the SDK will re-encode it correctly when building the signed URL)
+    const decoded = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
     const bucketPrefix = `${BUCKET}/`;
 
-    if (withoutLeadingSlash.startsWith(bucketPrefix)) {
-      return withoutLeadingSlash.slice(bucketPrefix.length) || null;
+    if (decoded.startsWith(bucketPrefix)) {
+      return decoded.slice(bucketPrefix.length) || null;
     }
 
-    // Fallback: return path as-is (minus leading slash)
-    return withoutLeadingSlash || null;
+    // Fallback: return decoded path (minus leading slash)
+    return decoded || null;
   } catch {
     return null;
   }
