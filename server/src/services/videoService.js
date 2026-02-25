@@ -149,8 +149,8 @@ export async function getAllVideos(filters = {}, pagination = {}) {
       v.key,
       v.camelot_key,
       v.duration,
-      v.year,
-      v.label,
+      v.release_year AS year,
+      v.record_label AS label,
       v.thumbnail_url,
       v.is_new,
       v.is_hot,
@@ -182,7 +182,7 @@ export async function getAllVideos(filters = {}, pagination = {}) {
     conditions.push(`(
       v.title ILIKE $${paramIndex} OR
       v.artist ILIKE $${paramIndex} OR
-      v.label ILIKE $${paramIndex}
+      v.record_label ILIKE $${paramIndex}
     )`);
     params.push(`%${search}%`);
     paramIndex++;
@@ -741,8 +741,8 @@ function formatVideoResponse(row) {
     key: row.key,
     camelotKey: row.camelot_key,
     duration: row.duration,
-    year: row.year,
-    label: row.label,
+    year: row.release_year ?? row.year,
+    label: row.record_label ?? row.label,
     thumbnailUrl: row.thumbnail_url,
     isNew: row.is_new,
     isHot: row.is_hot,
