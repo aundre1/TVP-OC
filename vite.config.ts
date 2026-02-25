@@ -13,6 +13,7 @@ export default defineConfig({
     port: 3001,
     strictPort: true, // Fail if port is already in use
     host: true, // Expose to network (fixes some localhost issues)
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: 'http://localhost:5000',

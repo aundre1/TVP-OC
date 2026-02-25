@@ -48,7 +48,11 @@ interface VideoMetadata {
 
 // Genre options
 const GENRES = [
-  'Pop', 'Hip-Hop', 'R&B', 'EDM', 'Rock', 'Country', 'Latin', 'Reggae', 'Alternative', 'Jazz'
+  'Pop', 'Hip-Hop / Rap', 'R&B', 'Rock', 'Latin', 'Electronic / Dance', 'Afrobeats',
+  'Country', 'K-Pop', 'Indie / Alternative', 'Jazz', 'Metal', 'Punk', 'Classical',
+  'Reggae / Dancehall', 'Blues', 'Folk / Americana', 'House', 'Drill', 'Gospel / CCM',
+  'Techno', 'Trance', 'Funk', 'Soul', 'Ska', 'Lo-Fi / Chillhop', 'Ambient',
+  'Throwbacks', 'Remixes', 'World / Global Fusion',
 ];
 
 // Quality options
@@ -58,7 +62,7 @@ const QUALITIES = ['4K', '1080p', '720p', '480p'];
 const KEYS = ['C', 'Cm', 'C#', 'C#m', 'D', 'Dm', 'D#', 'D#m', 'E', 'Em', 'F', 'Fm', 'F#', 'F#m', 'G', 'Gm', 'G#', 'G#m', 'A', 'Am', 'A#', 'A#m', 'B', 'Bm'];
 
 // Version options
-const VERSION_OPTIONS = ['clean', 'explicit', 'extended', 'intro', 'outro', 'quickhit'];
+const VERSION_OPTIONS = ['clean', 'dirty', 'explicit', 'radio', 'extended', 'remix', 'instrumental', 'acapella', 'intro', 'outro', 'quickhit'];
 
 // Parse filename to extract metadata
 function parseFilename(filename: string): Partial<VideoMetadata> {

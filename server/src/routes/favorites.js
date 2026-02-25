@@ -4,8 +4,12 @@
 
 import express from 'express';
 import pool from '../db/pool.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// All favorites routes require authentication
+router.use(requireAuth);
 
 // GET /api/favorites/:userId - Get user favorites with video details
 router.get('/:userId', async (req, res) => {

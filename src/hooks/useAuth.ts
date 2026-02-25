@@ -2,7 +2,6 @@
 // THE VIDEO POOL - AUTH HOOK
 // ============================================
 
-import { useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 
 export function useAuth() {
@@ -20,10 +19,9 @@ export function useAuth() {
     clearError,
   } = useAuthStore();
 
-  // Fetch current user on mount
-  useEffect(() => {
-    fetchCurrentUser();
-  }, [fetchCurrentUser]);
+  // NOTE: fetchCurrentUser is called ONCE in App.tsx on mount.
+  // Do NOT call it here — multiple components use useAuth(),
+  // and each would trigger a separate API call + loading spinner.
 
   return {
     user,
@@ -35,6 +33,7 @@ export function useAuth() {
     verify2FA,
     register,
     logout,
+    fetchCurrentUser,
     clearError,
 
     // Computed helpers

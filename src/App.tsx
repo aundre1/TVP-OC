@@ -5,6 +5,7 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
@@ -107,7 +108,13 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const { isLoading } = useAuth();
+  const fetchCurrentUser = useAuthStore((s) => s.fetchCurrentUser);
   const { theme } = useUIStore();
+
+  // Fetch current user ONCE on app mount — this is the single source of auth init
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   // Apply theme class to document
   useEffect(() => {

@@ -23,6 +23,7 @@ import genreRoutes from './routes/genres.js';
 import favoriteRoutes from './routes/favorites.js';
 import playlistRoutes from './routes/playlists.js';
 import downloadRoutes from './routes/downloads.js';
+import setRoutes from './routes/sets.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -112,6 +113,7 @@ app.use('/api/genres', genreRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/playlists', playlistRoutes);
 app.use('/api/downloads', downloadRoutes);
+app.use('/api/sets', setRoutes);
 
 // ===========================================
 // ERROR HANDLING

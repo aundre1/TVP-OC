@@ -10,7 +10,7 @@ import { useAppStore } from '@/stores/appStore';
 export default function Toolbar() {
   const {
     viewMode,
-    toggleViewMode,
+    setViewMode,
     selectedTrackIds,
     clearSelection,
     toggleRecentPanel,
@@ -39,7 +39,7 @@ export default function Toolbar() {
         <span className="text-xs text-tvp-text-muted uppercase tracking-wider">View</span>
         <div className="flex bg-tvp-bg-tertiary rounded-lg p-1">
           <button
-            onClick={() => toggleViewMode()}
+            onClick={() => setViewMode('grid')}
             className={clsx(
               'flex items-center justify-center w-9 h-8 rounded-md',
               'transition-all duration-fast',
@@ -52,7 +52,7 @@ export default function Toolbar() {
             <LayoutGrid className="w-[18px] h-[18px]" />
           </button>
           <button
-            onClick={() => toggleViewMode()}
+            onClick={() => setViewMode('list')}
             className={clsx(
               'flex items-center justify-center w-9 h-8 rounded-md',
               'transition-all duration-fast',
@@ -60,7 +60,7 @@ export default function Toolbar() {
                 ? 'bg-tvp-accent-cyan text-black'
                 : 'text-tvp-text-muted hover:text-tvp-text-primary'
             )}
-            title="List view"
+            title="Tile view"
           >
             <List className="w-[18px] h-[18px]" />
           </button>
