@@ -245,9 +245,11 @@ router.post('/:id/download',
       if (!limitStatus.canDownload) {
         return res.status(403).json({
           error: 'Download limit reached',
-          remaining: limitStatus.remaining,
           limit: limitStatus.limit,
-          resetDate: limitStatus.resetDate
+          used: limitStatus.limit - limitStatus.remaining,
+          remaining: limitStatus.remaining,
+          resetDate: limitStatus.resetDate,
+          upgradeUrl: '/membership',
         });
       }
 

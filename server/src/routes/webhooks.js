@@ -96,7 +96,7 @@ async function handleCheckoutComplete(session) {
   if (session.mode === 'payment') {
     await query(`
       UPDATE users SET
-        membership_type = 'lifetime',
+        membership_type = 'elite',
         membership_status = 'active',
         download_limit = NULL,
         updated_at = NOW()
@@ -131,11 +131,11 @@ async function handleSubscriptionUpdate(subscription) {
   if (priceId === process.env.STRIPE_PRICE_MONTHLY || priceId === process.env.STRIPE_PRICE_ANNUAL) {
     // Check if it's Pro or Basic based on price amount
     const amount = subscription.items.data[0]?.price?.unit_amount;
-    if (amount >= 3999) { // $39.99+
+    if (amount >= 10000) { // $100+ (quarterly pro)
       membershipType = 'pro';
       downloadLimit = null; // Unlimited
     } else {
-      membershipType = 'basic';
+      membershipType = 'starter';
       downloadLimit = 100;
     }
   }

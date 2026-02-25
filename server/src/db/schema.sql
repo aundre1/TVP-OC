@@ -17,9 +17,9 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";  -- For fuzzy text search
 -- User membership levels
 CREATE TYPE membership_type AS ENUM (
   'free',
-  'basic',
+  'starter',
   'pro',
-  'lifetime'
+  'elite'
 );
 
 -- Video version types (different formats/edits)

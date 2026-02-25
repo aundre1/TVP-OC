@@ -13,7 +13,7 @@ const router = Router();
 // Segment queries
 const SEGMENT_CONDITIONS = {
   all: '1=1',
-  subscribers: "membership_type IN ('basic','pro','lifetime')",
+  subscribers: "membership_type IN ('starter','pro','elite')",
   free: "membership_type = 'free'",
   inactive: "last_login < NOW() - INTERVAL '30 days'",
 };

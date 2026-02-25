@@ -6,7 +6,7 @@ import { Router } from 'express';
 import { body, query as queryValidator, validationResult } from 'express-validator';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import { asyncHandler, Errors } from '../middleware/errorHandler.js';
-import { sendEmail } from '../services/emailService.js';
+import { sendEmail, sendSupportTicketNotification, sendSupportResponseEmail, sendSongRequestEmail } from '../services/emailService.js';
 import db from '../db/index.js';
 
 const router = Router();
@@ -45,20 +45,16 @@ router.post(
       [req.user.id, category, subject, message, priority || 'normal', assignee]
     );
 
-    // Send notification email to info@thevideopool.com
+    // Send notification emails
     try {
-      await sendEmail({
-        to: 'info@thevideopool.com',
-        subject: `[TVP Support] New ${category} ticket: ${subject}`,
-        text: `New support ticket from user ${req.user.email}\n\nCategory: ${category}\nPriority: ${priority || 'normal'}\nAssigned to: ${assignee}\n\n${message}`,
-        html: `<h3>New Support Ticket</h3>
-          <p><strong>From:</strong> ${req.user.email}</p>
-          <p><strong>Category:</strong> ${category}</p>
-          <p><strong>Priority:</strong> ${priority || 'normal'}</p>
-          <p><strong>Assigned to:</strong> ${assignee}</p>
-          <hr/>
-          <p>${message}</p>`,
-      });
+      const ticket = result.rows[0];
+      const user = { email: req.user.email, name: req.user.name, membership_type: req.user.membership_type };
+
+      if (category === 'song_request') {
+        await sendSongRequestEmail({ ...ticket, artist: req.body.artist, title: req.body.title }, user);
+      } else {
+        await sendSupportTicketNotification(ticket, user);
+      }
     } catch (e) {
       console.warn('[SUPPORT] Failed to send notification email:', e.message);
     }
@@ -153,6 +149,20 @@ router.patch(
     );
 
     if (result.rows.length === 0) throw Errors.notFound('Ticket');
+
+    // Send email to user when admin responds
+    if (admin_response) {
+      try {
+        const ticket = result.rows[0];
+        const userResult = await db.query('SELECT email FROM users WHERE id = $1', [ticket.user_id]);
+        if (userResult.rows.length > 0) {
+          await sendSupportResponseEmail(userResult.rows[0].email, ticket.subject, admin_response, ticket.id);
+        }
+      } catch (e) {
+        console.warn('[SUPPORT] Failed to send response email:', e.message);
+      }
+    }
+
     res.json({ success: true, ticket: result.rows[0] });
   })
 );

@@ -318,125 +318,132 @@ function ContentPreviewSection() {
 function PricingSection() {
   const plans = [
     {
-      name: 'Starter',
-      slug: 'starter',
-      price: 19.99,
-      firstMonthPrice: 9.99,
-      downloads: 50,
+      name: 'Free',
+      slug: 'free',
+      price: '$0',
+      interval: '',
+      perMonth: '',
+      downloads: '1',
       features: [
-        '50 downloads/month',
-        'HD quality (up to 1080p)',
-        'All genres access',
-        'Basic search & filters',
-        'Email support',
+        '1 download per month',
+        'Browse full catalog',
+        'Set Builder access',
+        'Up to 1080p quality',
       ],
       cta: 'Get Started',
       popular: false,
+      trialEligible: false,
+    },
+    {
+      name: 'Starter',
+      slug: 'starter',
+      price: '$35',
+      interval: '/month',
+      perMonth: '',
+      downloads: '200',
+      features: [
+        '200 downloads per month',
+        'Full HD & all versions',
+        'All genres access',
+        'Priority support',
+      ],
+      cta: 'Get Started',
+      popular: false,
+      trialEligible: false,
     },
     {
       name: 'Pro',
       slug: 'pro',
-      price: 34.99,
-      firstMonthPrice: 17.49,
-      downloads: 200,
+      price: '$100',
+      interval: '/quarter',
+      perMonth: '$33/mo',
+      downloads: '250',
       features: [
-        '200 downloads/month',
-        '4K quality available',
-        'All genres access',
-        'Advanced search & filters',
-        'Set Builder with BPM/Key matching',
-        'Priority support',
+        '250 downloads per month',
+        'All quality versions',
+        'Batch downloads',
         'Early access to new releases',
+        'Set Builder Pro',
       ],
-      cta: 'Go Pro',
+      cta: 'Start Free Trial',
       popular: true,
+      trialEligible: true,
     },
     {
       name: 'Elite',
       slug: 'elite',
-      price: 59.99,
-      firstMonthPrice: 29.99,
-      downloads: null,
+      price: '$360',
+      interval: '/year',
+      perMonth: '$30/mo',
+      downloads: '300',
       features: [
-        'Unlimited downloads',
-        '4K quality available',
-        'All genres access',
-        'Advanced search & filters',
-        'Set Builder Pro with AI recommendations',
-        'VIP support (24/7)',
-        'Early access + exclusives',
-        'Request priority',
-        'Custom edit requests',
+        '300 downloads per month',
+        'All quality versions',
+        'Bulk downloads',
+        'Early access + exclusive content',
+        '24/7 priority support',
+        'Song request priority',
       ],
-      cta: 'Go Elite',
+      cta: 'Start Free Trial',
       popular: false,
+      trialEligible: true,
     },
   ];
 
   return (
     <section id="pricing" className="py-24 bg-tvp-bg-secondary">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-tvp-accent-gold/10 border border-tvp-accent-gold/20 mb-6">
-            <Star className="w-4 h-4 text-tvp-accent-gold" />
-            <span className="text-sm font-medium text-tvp-accent-gold">
-              50% OFF First Month - All Plans
-            </span>
-          </div>
-
           <h2 className="text-3xl md:text-4xl font-bold text-tvp-text-primary mb-4">
             Choose Your Plan
           </h2>
           <p className="text-lg text-tvp-text-secondary max-w-2xl mx-auto">
-            No contracts. Cancel anytime. Start with half price on your first month.
+            Trusted by <span className="text-tvp-accent-cyan font-semibold">11,000+ DJs worldwide</span>.
+            No contracts. Cancel anytime.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map((plan) => (
             <div
               key={plan.slug}
               className={clsx(
-                'relative rounded-2xl p-8 transition-all duration-300',
+                'relative rounded-2xl p-6 transition-all duration-300',
                 plan.popular
-                  ? 'bg-gradient-to-b from-tvp-accent-cyan/10 to-tvp-bg-primary border-2 border-tvp-accent-cyan scale-105 shadow-xl shadow-tvp-accent-cyan/10'
+                  ? 'bg-gradient-to-b from-tvp-accent-cyan/10 to-tvp-bg-primary border-2 border-tvp-accent-cyan shadow-xl shadow-tvp-accent-cyan/10'
                   : 'bg-tvp-bg-primary border border-tvp-border-subtle hover:border-tvp-accent-cyan/30'
               )}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-tvp-accent-cyan text-black text-sm font-semibold rounded-full">
-                  Most Popular
+                  Popular
                 </div>
               )}
 
               <div className="mb-6">
-                <h3 className="text-2xl font-bold text-tvp-text-primary mb-2">
+                <h3 className="text-xl font-bold text-tvp-text-primary mb-1">
                   {plan.name}
                 </h3>
-                <div className="flex items-baseline gap-2">
+                <p className="text-sm text-tvp-text-muted mb-3">{plan.downloads} downloads/month</p>
+                <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-tvp-text-primary">
-                    ${plan.firstMonthPrice}
+                    {plan.price}
                   </span>
-                  <span className="text-tvp-text-muted line-through">
-                    ${plan.price}
-                  </span>
-                  <span className="text-tvp-text-muted">/first month</span>
+                  {plan.interval && (
+                    <span className="text-tvp-text-muted">{plan.interval}</span>
+                  )}
                 </div>
-                <p className="text-sm text-tvp-text-muted mt-1">
-                  Then ${plan.price}/month
-                </p>
+                {plan.perMonth && (
+                  <p className="text-sm text-tvp-text-muted mt-1">{plan.perMonth}</p>
+                )}
               </div>
 
-              <div className="mb-8">
-                <div className="text-lg font-semibold text-tvp-text-primary mb-4">
-                  {plan.downloads === null ? 'Unlimited' : plan.downloads} downloads/month
-                </div>
-
-                <ul className="space-y-3">
+              <div className="mb-6">
+                <ul className="space-y-2">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-tvp-accent-cyan flex-shrink-0 mt-0.5" />
-                      <span className="text-tvp-text-secondary">{feature}</span>
+                    <li key={i} className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-tvp-accent-cyan flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-tvp-text-secondary">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -453,6 +460,9 @@ function PricingSection() {
               >
                 {plan.cta}
               </Link>
+              {plan.trialEligible && (
+                <p className="text-center text-xs text-tvp-text-muted mt-2">7-day free trial</p>
+              )}
             </div>
           ))}
         </div>
@@ -583,8 +593,8 @@ function SocialProofSection() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           <div className="text-center p-6 rounded-xl bg-tvp-bg-primary border border-tvp-border-subtle">
             <Users className="w-8 h-8 text-tvp-accent-cyan mx-auto mb-3" />
-            <div className="text-3xl font-bold text-tvp-text-primary">5,000+</div>
-            <div className="text-sm text-tvp-text-muted">Active DJs</div>
+            <div className="text-3xl font-bold text-tvp-text-primary">11,000+</div>
+            <div className="text-sm text-tvp-text-muted">DJs Worldwide</div>
           </div>
           <div className="text-center p-6 rounded-xl bg-tvp-bg-primary border border-tvp-border-subtle">
             <Download className="w-8 h-8 text-tvp-accent-cyan mx-auto mb-3" />

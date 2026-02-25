@@ -174,7 +174,7 @@ router.post('/create-checkout', requireAuth, asyncHandler(async (req, res) => {
     customer: customerId,
     payment_method_types: ['card'],
     line_items: [{ price: priceId, quantity: 1 }],
-    mode: priceId.includes('lifetime') ? 'payment' : 'subscription',
+    mode: 'subscription',
     success_url: successUrl || `${process.env.FRONTEND_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/membership`,
     metadata: { userId: userId.toString() },
@@ -251,6 +251,75 @@ router.get('/billing-history', requireAuth, asyncHandler(async (req, res) => {
       description: inv.lines.data[0]?.description || 'Subscription',
       invoicePdf: inv.invoice_pdf,
     })),
+  });
+}));
+
+// ===========================================
+// POST /memberships/start-trial - Start 7-day free trial
+// ===========================================
+router.post('/start-trial', requireAuth, asyncHandler(async (req, res) => {
+  const { plan } = req.body;
+  const userId = req.user.id;
+
+  if (!['pro', 'elite'].includes(plan)) {
+    throw Errors.badRequest('Free trial is only available for Pro and Elite plans');
+  }
+
+  // Check if user already had a trial
+  const existing = await query(
+    'SELECT trial_ends_at FROM users WHERE id = $1',
+    [userId]
+  );
+
+  if (existing.rows[0]?.trial_ends_at) {
+    throw Errors.badRequest('You have already used your free trial');
+  }
+
+  // Set trial
+  const trialEnds = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await query(
+    `UPDATE users SET
+      trial_ends_at = $1,
+      trial_plan = $2,
+      membership_type = $2,
+      membership_status = 'trial'
+     WHERE id = $3`,
+    [trialEnds, plan, userId]
+  );
+
+  res.json({
+    success: true,
+    trialPlan: plan,
+    trialEndsAt: trialEnds.toISOString(),
+    message: `Your 7-day ${plan} trial has started!`,
+  });
+}));
+
+// ===========================================
+// GET /memberships/trial-status - Check trial status
+// ===========================================
+router.get('/trial-status', requireAuth, asyncHandler(async (req, res) => {
+  const result = await query(
+    'SELECT trial_ends_at, trial_plan, membership_type FROM users WHERE id = $1',
+    [req.user.id]
+  );
+
+  const user = result.rows[0];
+  if (!user?.trial_ends_at) {
+    return res.json({ onTrial: false });
+  }
+
+  const now = new Date();
+  const trialEnds = new Date(user.trial_ends_at);
+  const daysRemaining = Math.max(0, Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24)));
+  const expired = now >= trialEnds;
+
+  res.json({
+    onTrial: !expired,
+    trialPlan: user.trial_plan,
+    trialEndsAt: user.trial_ends_at,
+    daysRemaining,
+    expired,
   });
 }));
 

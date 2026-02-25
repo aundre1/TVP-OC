@@ -152,7 +152,7 @@ export const requireMembership = (req, res, next) => {
     });
   }
 
-  const validMemberships = ['monthly', 'annual', 'lifetime'];
+  const validMemberships = ['starter', 'pro', 'elite'];
 
   if (!validMemberships.includes(req.user.membershipType)) {
     return res.status(403).json({

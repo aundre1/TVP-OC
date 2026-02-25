@@ -1,102 +1,119 @@
 import { useState } from 'react';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, Sparkles, Crown } from 'lucide-react';
 
 interface PricingPlan {
   id: string;
   name: string;
-  priceId: string;
-  originalPrice: number;
-  ogPrice: number;
+  price: string;
+  priceNote?: string;
+  perMonth?: string;
   interval: string;
-  intervalCount: number;
-  perMonth: number;
-  ogPerMonth: number;
-  savings: number;
-  savingsPercent: number;
+  downloads: string;
+  quality: string;
+  features: string[];
+  cta: string;
   popular?: boolean;
   badge?: string;
+  trialEligible?: boolean;
 }
 
 const plans: PricingPlan[] = [
   {
-    id: 'monthly',
-    name: 'Monthly',
-    priceId: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || 'price_monthly_xxxxx',
-    originalPrice: 34.99,
-    ogPrice: 24.50,
-    interval: 'month',
-    intervalCount: 1,
-    perMonth: 34.99,
-    ogPerMonth: 24.50,
-    savings: 10.49,
-    savingsPercent: 30,
+    id: 'free',
+    name: 'Free',
+    price: '$0',
+    interval: '',
+    downloads: '1 download/month',
+    quality: '1080p max',
+    features: [
+      '1 download per month',
+      'Browse full catalog',
+      'Set Builder access',
+      'Up to 1080p quality',
+    ],
+    cta: 'Get Started',
   },
   {
-    id: 'quarterly',
-    name: 'Quarterly',
-    priceId: import.meta.env.VITE_STRIPE_PRICE_QUARTERLY || 'price_quarterly_xxxxx',
-    originalPrice: 99.99,
-    ogPrice: 69.99,
-    interval: 'month',
-    intervalCount: 3,
-    perMonth: 33.33,
-    ogPerMonth: 23.33,
-    savings: 30.00,
-    savingsPercent: 30,
-    badge: 'Save 5%',
+    id: 'starter',
+    name: 'Starter',
+    price: '$35',
+    interval: '/month',
+    downloads: '200 downloads/month',
+    quality: 'Full HD, all versions',
+    features: [
+      '200 downloads per month',
+      'Full HD & all versions',
+      'All genres access',
+      'Set Builder access',
+      'Priority support',
+    ],
+    cta: 'Get Started',
   },
   {
-    id: 'annual',
-    name: 'Annual',
-    priceId: import.meta.env.VITE_STRIPE_PRICE_ANNUAL || 'price_annual_xxxxx',
-    originalPrice: 299.99,
-    ogPrice: 209.99,
-    interval: 'year',
-    intervalCount: 1,
-    perMonth: 25.00,
-    ogPerMonth: 17.50,
-    savings: 90.00,
-    savingsPercent: 30,
+    id: 'pro',
+    name: 'Pro',
+    price: '$100',
+    interval: '/quarter',
+    perMonth: '$33/mo',
+    downloads: '250 downloads/month',
+    quality: 'All versions',
+    features: [
+      '250 downloads per month',
+      'All quality versions',
+      'Batch downloads',
+      'Early access to new releases',
+      'Advanced search & filters',
+      'Set Builder Pro',
+    ],
+    cta: 'Start Free Trial',
     popular: true,
-    badge: 'Save 29%',
+    badge: 'Popular',
+    trialEligible: true,
   },
-];
-
-const features = [
-  'Unlimited access to all videos',
-  'New content every week',
-  'Community Discord access',
-  'Behind-the-scenes content',
-  'Early access to new releases',
-  'Cancel anytime',
+  {
+    id: 'elite',
+    name: 'Elite',
+    price: '$360',
+    interval: '/year',
+    perMonth: '$30/mo',
+    downloads: '300 downloads/month',
+    quality: 'All versions',
+    features: [
+      '300 downloads per month',
+      'All quality versions',
+      'Bulk downloads',
+      'Early access + exclusive content',
+      'Set Builder Pro with AI',
+      '24/7 priority support',
+      'Song request priority',
+    ],
+    cta: 'Start Free Trial',
+    trialEligible: true,
+  },
 ];
 
 export default function PricingCards() {
-  const [promoCode, setPromoCode] = useState('OG500');
-  const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('annual');
   const [loading, setLoading] = useState<string | null>(null);
-  const [spotsRemaining, setSpotsRemaining] = useState(137); // Update dynamically from API
 
-  const handleSubscribe = async (priceId: string, planId: string) => {
+  const handleSubscribe = async (planId: string) => {
+    if (planId === 'free') {
+      window.location.href = '/register';
+      return;
+    }
+
     setLoading(planId);
-    
+
     try {
-      // Call your backend to create checkout session
-      const response = await fetch('/api/checkout/create-session', {
+      const response = await fetch('/api/memberships/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          priceId,
-          promoCode: promoCode || undefined,
-        }),
+        body: JSON.stringify({ planId }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
-      }
+      if (!response.ok) throw new Error('Failed to create checkout session');
 
-      const { url } = await response.json();
-      window.location.href = url;
+      const { checkoutUrl } = await response.json();
+      window.location.href = checkoutUrl;
     } catch (error) {
       console.error('Checkout failed:', error);
       alert('Failed to start checkout. Please try again.');
@@ -108,59 +125,21 @@ export default function PricingCards() {
     <div className="w-full max-w-7xl mx-auto px-4 py-16">
       {/* Header */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full mb-6 animate-pulse">
-          <Sparkles className="w-4 h-4 text-cyan-400" />
-          <span className="text-cyan-400 font-semibold text-sm">
-            OG 500 Special — 30% Off For Life
-          </span>
-        </div>
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
           Choose Your Plan
         </h2>
         <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-          Join the first 500 returning members and lock in 30% off forever.
-          <br />
-          <span className="text-cyan-400 font-semibold">
-            {spotsRemaining} spots remaining
-          </span>
+          Trusted by <span className="text-cyan-400 font-semibold">11,000+ DJs worldwide</span>.
+          Start free, upgrade anytime.
         </p>
       </div>
 
-      {/* Billing Toggle */}
-      <div className="flex justify-center mb-12">
-        <div className="inline-flex items-center gap-1 p-1 bg-[#111] rounded-lg border border-gray-800">
-          <button
-            onClick={() => setBillingInterval('monthly')}
-            className={`px-6 py-2 rounded-md font-medium transition-all ${
-              billingInterval === 'monthly'
-                ? 'bg-cyan-500 text-black'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setBillingInterval('annual')}
-            className={`px-6 py-2 rounded-md font-medium transition-all ${
-              billingInterval === 'annual'
-                ? 'bg-cyan-500 text-black'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Annual
-            <span className="ml-2 text-xs bg-cyan-400/20 text-cyan-400 px-2 py-0.5 rounded">
-              Best Value
-            </span>
-          </button>
-        </div>
-      </div>
-
       {/* Pricing Cards */}
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className={`relative bg-[#111] rounded-2xl p-8 border-2 transition-all hover:scale-[1.02] ${
+            className={`relative bg-[#111] rounded-2xl p-6 border-2 transition-all hover:scale-[1.02] ${
               plan.popular
                 ? 'border-cyan-500 shadow-xl shadow-cyan-500/20'
                 : 'border-gray-800 hover:border-gray-700'
@@ -169,68 +148,35 @@ export default function PricingCards() {
             {/* Popular Badge */}
             {plan.popular && (
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full shadow-lg">
-                <span className="text-black font-bold text-sm">MOST POPULAR</span>
-              </div>
-            )}
-
-            {/* Best Value Badge */}
-            {plan.id === 'annual' && (
-              <div className="absolute -top-3 -right-3 bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full rotate-12 shadow-lg">
-                BEST VALUE
-              </div>
-            )}
-
-            {/* Savings Badge */}
-            {plan.badge && (
-              <div className="absolute top-4 right-4 px-3 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full">
-                <span className="text-cyan-400 font-semibold text-xs">{plan.badge}</span>
+                <span className="text-black font-bold text-sm">{plan.badge}</span>
               </div>
             )}
 
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-              
-              {/* Original Price (Crossed Out) */}
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-gray-500 line-through text-lg">
-                  ${plan.originalPrice.toFixed(2)}
-                </span>
-                <span className="text-xs text-gray-500">regular price</span>
-              </div>
+              <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
+              <p className="text-sm text-gray-500 mb-4">{plan.downloads}</p>
 
-              {/* OG Price */}
+              {/* Price */}
               <div className="flex items-baseline gap-1">
-                <span className="text-5xl font-bold text-cyan-400">
-                  ${Math.floor(plan.ogPrice)}
-                </span>
-                <span className="text-2xl text-cyan-400">
-                  .{(plan.ogPrice % 1).toFixed(2).slice(2)}
-                </span>
-                <span className="text-gray-400 ml-1">
-                  /{plan.intervalCount > 1 ? `${plan.intervalCount} mo` : plan.interval}
-                </span>
+                <span className="text-4xl font-bold text-cyan-400">{plan.price}</span>
+                {plan.interval && (
+                  <span className="text-gray-400">{plan.interval}</span>
+                )}
               </div>
 
-              {/* Per-Month Breakdown */}
-              {plan.intervalCount > 1 && (
-                <p className="text-gray-400 text-sm mt-2">
-                  ${plan.ogPerMonth.toFixed(2)} per month
+              {/* Per-month breakdown */}
+              {plan.perMonth && (
+                <p className="text-gray-400 text-sm mt-1">
+                  {plan.perMonth}
                 </p>
               )}
-
-              {/* Savings */}
-              <div className="mt-3 inline-block px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full">
-                <span className="text-green-400 font-semibold text-sm">
-                  Save ${plan.savings.toFixed(2)}/{plan.interval === 'year' ? 'yr' : plan.intervalCount > 1 ? 'qtr' : 'mo'}
-                </span>
-              </div>
             </div>
 
             {/* CTA Button */}
             <button
-              onClick={() => handleSubscribe(plan.priceId, plan.id)}
+              onClick={() => handleSubscribe(plan.id)}
               disabled={loading === plan.id}
-              className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
+              className={`w-full py-3 rounded-xl font-bold text-base transition-all mb-6 ${
                 plan.popular
                   ? 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-lg shadow-cyan-500/30'
                   : 'bg-gray-800 hover:bg-gray-700 text-white'
@@ -238,19 +184,26 @@ export default function PricingCards() {
             >
               {loading === plan.id ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   Loading...
                 </span>
               ) : (
-                'Subscribe Now'
+                plan.cta
               )}
             </button>
 
+            {/* Trial note */}
+            {plan.trialEligible && (
+              <p className="text-center text-xs text-gray-500 -mt-4 mb-4">
+                7-day free trial included
+              </p>
+            )}
+
             {/* Features */}
-            <ul className="mt-8 space-y-3">
-              {features.map((feature, i) => (
-                <li key={i} className="flex items-start gap-3 text-gray-300">
-                  <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+            <ul className="space-y-2">
+              {plan.features.map((feature, i) => (
+                <li key={i} className="flex items-start gap-2 text-gray-300">
+                  <Check className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
                   <span className="text-sm">{feature}</span>
                 </li>
               ))}
@@ -259,59 +212,12 @@ export default function PricingCards() {
         ))}
       </div>
 
-      {/* Promo Code Input */}
-      <div className="max-w-md mx-auto">
-        <label className="block text-sm font-medium text-gray-400 mb-2">
-          Have a promo code?
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-            placeholder="Enter code"
-            className="flex-1 px-4 py-3 bg-[#111] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none transition-colors"
-          />
-          <button 
-            onClick={() => {
-              if (promoCode) {
-                alert(`Code "${promoCode}" will be applied at checkout`);
-              }
-            }}
-            className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
-          >
-            Apply
-          </button>
-        </div>
-        {promoCode === 'OG500' && (
-          <p className="text-cyan-400 text-sm mt-2 flex items-center gap-1">
-            <Check className="w-4 h-4" />
-            OG500 code ready — 30% off for life!
-          </p>
-        )}
-      </div>
-
       {/* Trust Signals */}
-      <div className="text-center mt-12 space-y-2">
+      <div className="text-center space-y-2">
         <p className="text-gray-400 text-sm">
           Cancel anytime • No long-term contracts • Secure payment by Stripe
         </p>
-        <p className="text-gray-500 text-xs">
-          All subscriptions renew automatically. You can cancel anytime from your account settings.
-        </p>
       </div>
-
-      {/* Urgency Banner (when spots < 100) */}
-      {spotsRemaining < 100 && (
-        <div className="mt-8 max-w-2xl mx-auto bg-gradient-to-r from-orange-500/10 to-red-500/10 border-2 border-orange-500/30 rounded-xl p-6 text-center">
-          <p className="text-orange-400 font-bold text-lg mb-2">
-            ⚠️ Only {spotsRemaining} OG 500 spots left!
-          </p>
-          <p className="text-gray-300 text-sm">
-            Lock in 30% off for life before all spots are claimed.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

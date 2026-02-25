@@ -50,8 +50,8 @@ router.get('/stats', asyncHandler(async (req, res) => {
     query(`
       SELECT
         SUM(CASE
-          WHEN membership_type = 'basic' THEN 19.99
-          WHEN membership_type = 'pro' THEN 39.99
+          WHEN membership_type = 'starter' THEN 35.00
+          WHEN membership_type = 'pro' THEN 33.33
           ELSE 0
         END) as revenue
       FROM users
@@ -182,7 +182,7 @@ router.get('/users/:id', asyncHandler(async (req, res) => {
 // ===========================================
 router.put('/users/:id', [
   body('role').optional().isIn(['user', 'admin']),
-  body('membershipType').optional().isIn(['free', 'basic', 'pro', 'lifetime']),
+  body('membershipType').optional().isIn(['free', 'starter', 'pro', 'elite']),
   body('membershipStatus').optional().isIn(['active', 'suspended', 'cancelled']),
   body('bonusCredits').optional().isInt({ min: 0 }),
 ], asyncHandler(async (req, res) => {
