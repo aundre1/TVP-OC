@@ -7,6 +7,8 @@ import { body, validationResult } from 'express-validator';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import { asyncHandler, Errors } from '../middleware/errorHandler.js';
 import db from '../db/index.js';
+import { initializeBlast, runScheduledBlasts, getAllBlastStatuses } from '../services/blastDistributor.js';
+import { TOTAL_DAILY_CAPACITY } from '../config/emailProviders.js';
 
 const router = Router();
 
@@ -45,15 +47,29 @@ router.post(
 
     const result = await db.query(
       `INSERT INTO marketing_blasts (type, subject, message, segment, recipient_count, status, created_by)
-       VALUES ('email', $1, $2, $3, $4, 'draft', $5)
+       VALUES ('email', $1, $2, $3, $4, 'scheduled', $5)
        RETURNING *`,
       [subject, htmlBody || textBody || '', seg, recipientCount, req.user.id]
     );
 
+    const blast = result.rows[0];
+
+    // Auto-initialize: generate recipients, assign providers, send first batch
+    let blastInfo;
+    try {
+      blastInfo = await initializeBlast(blast.id);
+    } catch (e) {
+      console.error('[BLAST] Auto-init failed:', e.message);
+      blastInfo = { totalRecipients: recipientCount, estimatedDays: Math.ceil(recipientCount / TOTAL_DAILY_CAPACITY), dailyCapacity: TOTAL_DAILY_CAPACITY };
+    }
+
     res.status(201).json({
       success: true,
-      blast: result.rows[0],
-      message: `Email blast saved. ${recipientCount} recipients in "${seg}" segment. Sending will be enabled when email provider is configured.`,
+      blastId: blast.id,
+      totalRecipients: blastInfo.totalRecipients,
+      estimatedDays: blastInfo.estimatedDays,
+      dailyCapacity: TOTAL_DAILY_CAPACITY,
+      message: `Email blast created and sending started. ${blastInfo.totalRecipients} recipients, ~${blastInfo.estimatedDays} days at ${TOTAL_DAILY_CAPACITY}/day.`,
     });
   })
 );
@@ -106,10 +122,25 @@ router.get(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const result = await db.query(
-      'SELECT * FROM marketing_blasts ORDER BY created_at DESC LIMIT 100'
-    );
-    res.json({ success: true, blasts: result.rows });
+    const blasts = await getAllBlastStatuses();
+    res.json({ success: true, blasts });
+  })
+);
+
+// ===========================================
+// INTERNAL: Daily blast runner (called by cron)
+// ===========================================
+router.post(
+  '/internal/run-daily-blasts',
+  asyncHandler(async (req, res) => {
+    // Authenticate via INTERNAL_API_KEY
+    const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+    if (!process.env.INTERNAL_API_KEY || apiKey !== process.env.INTERNAL_API_KEY) {
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+
+    const results = await runScheduledBlasts();
+    res.json({ success: true, ...results });
   })
 );
 

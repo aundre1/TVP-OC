@@ -40,6 +40,10 @@ if (process.env.GOOGLE_APP_PASSWORD) {
 const brevoEnabled = !!process.env.BREVO_API_KEY;
 if (brevoEnabled) console.log('[EMAIL] Brevo API configured');
 
+// Mailjet API (marketing)
+const mailjetEnabled = !!(process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY);
+if (mailjetEnabled) console.log('[EMAIL] Mailjet API configured');
+
 // SendGrid (fallback)
 let sgMail = null;
 if (process.env.SENDGRID_API_KEY) {
@@ -52,6 +56,10 @@ if (process.env.SENDGRID_API_KEY) {
     console.warn('[EMAIL] SendGrid not available:', e.message);
   }
 }
+
+// Elastic Email API (marketing)
+const elasticEmailEnabled = !!process.env.ELASTICEMAIL_API_KEY;
+if (elasticEmailEnabled) console.log('[EMAIL] Elastic Email configured');
 
 // ===========================================
 // SEND FUNCTIONS
@@ -136,6 +144,103 @@ const sendMarketing = async ({ to, subject, text, html }) => {
 
   console.warn(`[EMAIL] No marketing provider — skipping: "${subject}"`);
   return false;
+};
+
+/**
+ * Send a single email via a specific provider (used by blast distributor)
+ * @param {string} provider - Provider key: brevo, mailjet, sendgrid, elasticemail, direct
+ * @param {{ to, subject, text, html }} params
+ * @returns {Promise<boolean>}
+ */
+const sendViaProvider = async (provider, { to, subject, text, html }) => {
+  try {
+    switch (provider) {
+      case 'brevo': {
+        if (!brevoEnabled) return false;
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'content-type': 'application/json',
+            'api-key': process.env.BREVO_API_KEY,
+          },
+          body: JSON.stringify({
+            sender: { name: FROM_NAME, email: FROM_EMAIL },
+            to: [{ email: to }],
+            subject, htmlContent: html, textContent: text,
+          }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return true;
+      }
+
+      case 'mailjet': {
+        if (!mailjetEnabled) return false;
+        const auth = Buffer.from(`${process.env.MAILJET_API_KEY}:${process.env.MAILJET_SECRET_KEY}`).toString('base64');
+        const res = await fetch('https://api.mailjet.com/v3.1/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${auth}`,
+          },
+          body: JSON.stringify({
+            Messages: [{
+              From: { Email: FROM_EMAIL, Name: FROM_NAME },
+              To: [{ Email: to }],
+              Subject: subject,
+              HTMLPart: html,
+              TextPart: text,
+            }],
+          }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return true;
+      }
+
+      case 'sendgrid': {
+        if (!sgMail) return false;
+        await sgMail.send({ to, from: { email: FROM_EMAIL, name: FROM_NAME }, subject, text, html });
+        return true;
+      }
+
+      case 'elasticemail': {
+        if (!elasticEmailEnabled) return false;
+        const params = new URLSearchParams({
+          apikey: process.env.ELASTICEMAIL_API_KEY,
+          from: FROM_EMAIL,
+          fromName: FROM_NAME,
+          to,
+          subject,
+          bodyHtml: html || '',
+          bodyText: text || '',
+        });
+        const res = await fetch('https://api.elasticemail.com/v2/email/send', {
+          method: 'POST',
+          body: params,
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Elastic Email send failed');
+        return true;
+      }
+
+      case 'direct': {
+        if (!gmailTransport) return false;
+        await gmailTransport.sendMail({
+          from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
+          to, subject, text, html,
+        });
+        return true;
+      }
+
+      default:
+        console.warn(`[EMAIL] Unknown provider: ${provider}`);
+        return false;
+    }
+  } catch (e) {
+    console.warn(`[EMAIL] ${provider} send failed for ${to}:`, e.message);
+    return false;
+  }
 };
 
 // Generic send (routes to transactional)
@@ -390,7 +495,7 @@ export const sendSongRequestEmail = async (ticket, user) => {
 // EXPORTS
 // ===========================================
 
-export { sendEmail, sendTransactional, sendMarketing };
+export { sendEmail, sendTransactional, sendMarketing, sendViaProvider };
 
 export default {
   sendEmail,
@@ -407,4 +512,5 @@ export default {
   sendSupportTicketNotification,
   sendSupportResponseEmail,
   sendSongRequestEmail,
+  sendViaProvider,
 };

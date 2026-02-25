@@ -16,7 +16,7 @@
 ## Current Values (Reference Only)
 
 ```
-VERCEL_ORG_ID:       aora-developments-projects
+VERCEL_ORG_ID:       team_xxxxxxxxxxxx
 VERCEL_PROJECT_ID:   prj_tRsJcMGySrU1hFZwerQkVQMJVXSo
 Vercel Project Name: tvp-redesign-2026
 Vercel Production:   https://new.thevideopool.com
@@ -32,7 +32,7 @@ gh secret set VERCEL_TOKEN --repo aundre1/TVP-OC
 # Then paste token when prompted
 
 # Or with --body flag for non-interactive
-gh secret set VERCEL_ORG_ID --repo aundre1/TVP-OC --body "aora-developments-projects"
+gh secret set VERCEL_ORG_ID --repo aundre1/TVP-OC --body "team_xxxxxxxxxxxx"
 ```
 
 ### Using GitHub Web UI

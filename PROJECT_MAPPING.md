@@ -193,7 +193,7 @@ curl https://tvp-oc-production.up.railway.app/api/auth/test
 
 Searched for other TVP projects in /Users/dremacmini/Desktop/OC:
 - ✅ `/Users/dremacmini/Desktop/OC/the-video-pool/` — PRIMARY (active, deployed)
-- ❌ `aora-development/video-pool` segment — Dashboard link only (not a separate project)
+- ❌ No other TVP segment found — Dashboard link only (not a separate project)
 - ❌ No other active TVP backends found
 - ❌ No conflicting projects found
 
