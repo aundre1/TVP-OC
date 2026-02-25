@@ -350,8 +350,8 @@ router.get('/:id/download-url',
          JOIN videos v ON v.id = vv.video_id
          WHERE vv.video_id = $1
            AND vv.version_type = $2
-         ORDER BY CASE vv.quality
-           WHEN '4K'    THEN 1
+         ORDER BY CASE vv.quality::text
+           WHEN '4k'    THEN 1
            WHEN '1080p' THEN 2
            WHEN '720p'  THEN 3
            ELSE 4
