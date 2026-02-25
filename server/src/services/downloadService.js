@@ -140,10 +140,10 @@ export async function recordDownload(userId, videoId, quality, version) {
     const versionResult = await client.query(versionQuery, [videoId, quality, version]);
     const fileSize = versionResult.rows[0]?.file_size || null;
 
-    // Insert download record
+    // Insert download record (downloads table has no file_size column)
     const insertQuery = `
-      INSERT INTO downloads (user_id, video_id, version_type, quality, file_size)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO downloads (user_id, video_id, version_type, quality)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
     const downloadResult = await client.query(insertQuery, [
@@ -151,13 +151,13 @@ export async function recordDownload(userId, videoId, quality, version) {
       videoId,
       version,
       quality,
-      fileSize
     ]);
 
-    // Increment user's downloads_used
+    // Increment user's monthly download counter
     await client.query(`
       UPDATE users
-      SET downloads_used = COALESCE(downloads_used, 0) + 1
+      SET downloads_this_month = COALESCE(downloads_this_month, 0) + 1,
+          total_downloads = COALESCE(total_downloads, 0) + 1
       WHERE id = $1
     `, [userId]);
 
