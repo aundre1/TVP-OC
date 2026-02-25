@@ -34,7 +34,7 @@ router.get('/stats', asyncHandler(async (req, res) => {
     query(`
       SELECT COUNT(*) as count FROM users
       WHERE membership_type != 'free'
-      AND membership_status = 'active'
+      AND status = 'active'
     `),
 
     // Total videos
@@ -56,7 +56,7 @@ router.get('/stats', asyncHandler(async (req, res) => {
         END) as revenue
       FROM users
       WHERE membership_type != 'free'
-      AND membership_status = 'active'
+      AND status = 'active'
     `),
 
     // New users this week
@@ -96,7 +96,7 @@ router.get('/users', asyncHandler(async (req, res) => {
   const [usersResult, countResult] = await Promise.all([
     query(`
       SELECT
-        id, username, email, membership_type, membership_status,
+        id, username, email, membership_type, status,
         download_limit, downloads_used, email_verified,
         two_factor_enabled, role, created_at, last_login
       FROM users
@@ -114,7 +114,7 @@ router.get('/users', asyncHandler(async (req, res) => {
       username: u.username,
       email: u.email,
       membershipType: u.membership_type,
-      membershipStatus: u.membership_status,
+      membershipStatus: u.status,
       downloadLimit: u.download_limit,
       downloadsUsed: u.downloads_used,
       emailVerified: u.email_verified,
@@ -138,7 +138,7 @@ router.get('/users/:id', asyncHandler(async (req, res) => {
 
   const result = await query(`
     SELECT
-      id, username, email, membership_type, membership_status,
+      id, username, email, membership_type, status,
       download_limit, downloads_used, bonus_credits, email_verified,
       two_factor_enabled, role, created_at, last_login,
       stripe_customer_id, stripe_subscription_id
@@ -162,7 +162,7 @@ router.get('/users/:id', asyncHandler(async (req, res) => {
     username: user.username,
     email: user.email,
     membershipType: user.membership_type,
-    membershipStatus: user.membership_status,
+    membershipStatus: user.status,
     downloadLimit: user.download_limit,
     downloadsUsed: user.downloads_used,
     bonusCredits: user.bonus_credits,
@@ -213,7 +213,7 @@ router.put('/users/:id', [
     params.push(limits[membershipType]);
   }
   if (membershipStatus !== undefined) {
-    updates.push(`membership_status = $${paramIndex++}`);
+    updates.push(`status = $${paramIndex++}`);
     params.push(membershipStatus);
   }
   if (bonusCredits !== undefined) {

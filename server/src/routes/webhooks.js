@@ -136,7 +136,7 @@ async function handleCheckoutComplete(session) {
     await query(`
       UPDATE users SET
         membership_type = 'elite',
-        membership_status = 'active',
+        status = 'active',
         download_limit = NULL,
         updated_at = NOW()
       WHERE id = $1
@@ -179,7 +179,7 @@ async function handleSubscriptionUpdate(subscription) {
   await query(`
     UPDATE users SET
       membership_type = $1,
-      membership_status = $2,
+      status = $2,
       download_limit = $3,
       stripe_subscription_id = $4,
       updated_at = NOW()
@@ -207,7 +207,7 @@ async function handleSubscriptionCancelled(subscription) {
   await query(`
     UPDATE users SET
       membership_type = 'free',
-      membership_status = 'cancelled',
+      status = 'cancelled',
       download_limit = 10,
       stripe_subscription_id = NULL,
       updated_at = NOW()

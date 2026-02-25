@@ -20,7 +20,7 @@ export async function checkDownloadLimit(userId) {
     SELECT
       u.id,
       u.membership_type,
-      u.membership_status,
+      u.status AS membership_status,
       u.download_limit,
       u.downloads_used,
       u.download_limit_reset_date,

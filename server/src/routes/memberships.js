@@ -378,7 +378,7 @@ router.post('/start-trial', requireAuth, asyncHandler(async (req, res) => {
       trial_ends_at = $1,
       trial_plan = $2,
       membership_type = $2,
-      membership_status = 'trial'
+      status = 'trial'
      WHERE id = $3`,
     [trialEnds, plan, userId]
   );

@@ -57,7 +57,7 @@ export async function handleFailedPayment(userId, invoiceId) {
     } else if (nextAttempt >= 4) {
       // Day 8: Downgrade
       await db.query(
-        `UPDATE users SET membership_type = 'free', membership_status = 'cancelled', download_limit = 10 WHERE id = $1`,
+        `UPDATE users SET membership_type = 'free', status = 'cancelled', download_limit = 10 WHERE id = $1`,
         [userId]
       );
       await db.query(
