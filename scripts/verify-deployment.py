@@ -28,7 +28,7 @@ ENVIRONMENTS = {
 }
 
 ADMIN_EMAIL = 'admin@thevideopool.com'
-ADMIN_PASSWORD = 'Admin123!@#'
+ADMIN_PASSWORD = 'TVP-Admin-2026!'
 
 # =====================
 
