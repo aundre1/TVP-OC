@@ -197,6 +197,8 @@ export interface VideoVersion {
   quality: '720p' | '1080p' | '4K';
   fileSize: number;
   format: 'mp4' | 'mp3';
+  url?: string;
+  previewUrl?: string;
 }
 
 export interface VideoSection {

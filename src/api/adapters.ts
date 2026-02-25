@@ -11,6 +11,8 @@ interface ServerVersion {
   versionType: string;
   quality: string;
   fileSize?: number;
+  fileUrl?: string;
+  previewUrl?: string;
 }
 
 // Server track shape (from /api/videos)
@@ -146,15 +148,20 @@ export function adaptServerTrackToVideo(s: ServerTrack): Video {
     quality: mapVideoQuality(v.quality),
     fileSize: v.fileSize ?? 0,
     format: 'mp4',
+    url: v.fileUrl,
+    previewUrl: v.previewUrl,
   }));
+
+  const firstPreview = s.versions?.find((v) => v.previewUrl)?.previewUrl;
+  const firstFileUrl = s.versions?.find((v) => v.fileUrl)?.fileUrl;
 
   return {
     id: s.id,
     title: s.title,
     artist: s.artist,
     thumbnailUrl: s.thumbnailUrl || `https://picsum.photos/320/180?random=${s.id}`,
-    previewUrl: undefined,
-    streamUrl: undefined,
+    previewUrl: firstPreview,
+    streamUrl: firstFileUrl,
     duration: s.duration ?? 0,
     bpm: s.bpm,
     key: s.key,
