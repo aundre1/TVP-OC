@@ -5,7 +5,7 @@
 import { get } from './client';
 import { DEV_CONFIG } from '@/config/dev';
 import { sampleTracks, trendingTracks, latestTracks, forYouTracks } from '@/data/tracks';
-import { extractTracks, extractPaginatedTracks } from './adapters';
+import { extractVideos } from './adapters';
 import type { Video, SearchFilters, SearchResult, Category, Track } from '@/types';
 
 interface HomeSectionsResponse {
@@ -90,7 +90,19 @@ export const videosApi = {
         filters: filters || {},
       };
     }
-    return get<SearchResult>('/videos', filters as Record<string, unknown>);
+    const raw = await get<unknown>('/videos', filters as Record<string, unknown>);
+    const obj = raw as Record<string, unknown>;
+    const videos = extractVideos(raw);
+    const total = typeof obj.total === 'number' ? obj.total : videos.length;
+    const page = typeof obj.page === 'number' ? obj.page : 1;
+    const totalPages = typeof obj.totalPages === 'number' ? obj.totalPages : 1;
+    return {
+      videos,
+      total,
+      page,
+      totalPages,
+      filters: filters || {},
+    };
   },
 
   // Get featured/homepage sections
@@ -98,7 +110,8 @@ export const videosApi = {
     if (DEV_CONFIG.useMockAuth) {
       return mockTrending.slice(0, 10);
     }
-    return get<Video[]>('/videos/featured');
+    const raw = await get<unknown>('/videos/featured');
+    return extractVideos(raw);
   },
 
   // Get homepage sections (trending, new, for you, etc.)
@@ -119,16 +132,16 @@ export const videosApi = {
       };
     }
 
-    const [trending, newReleases, recommended] = await Promise.all([
-      get<Video[]>('/videos', { sortBy: 'popular', limit: 20 }),
-      get<Video[]>('/videos', { sortBy: 'newest', limit: 20 }),
-      get<Video[]>('/videos/recommended'),
+    const [trendingRaw, newReleasesRaw, recommendedRaw] = await Promise.all([
+      get<unknown>('/videos', { sortBy: 'popular', limit: 20 }),
+      get<unknown>('/videos', { sortBy: 'newest', limit: 20 }),
+      get<unknown>('/videos/recommended'),
     ]);
 
     return {
-      trending,
-      newReleases,
-      forYou: recommended,
+      trending: extractVideos(trendingRaw),
+      newReleases: extractVideos(newReleasesRaw),
+      forYou: extractVideos(recommendedRaw),
       continueWatching: [],
       recentlyDownloaded: [],
       genres: {},
@@ -145,7 +158,27 @@ export const videosApi = {
         relatedVideos: mockAllVideos.slice(0, 6),
       };
     }
-    return get<VideoResponse>(`/videos/${id}`);
+    // Server /api/videos/{id} has a UUID vs int issue; fall back to list search
+    try {
+      const raw = await get<unknown>(`/videos/${id}`);
+      const videos = extractVideos(raw);
+      if (videos.length > 0) return videos[0] as VideoResponse;
+      // If server returns single object directly (no wrapper)
+      const obj = raw as Record<string, unknown>;
+      if (obj && obj.id) {
+        // Wrap in array for extractVideos to handle
+        const wrapped = extractVideos([raw]);
+        if (wrapped.length > 0) return wrapped[0] as VideoResponse;
+      }
+    } catch {
+      // fall through to list search below
+    }
+    // Fallback: fetch full list and find by id
+    const listRaw = await get<unknown>('/videos', { limit: 100 });
+    const allVideos = extractVideos(listRaw);
+    const found = allVideos.find(v => v.id === id);
+    if (found) return found as VideoResponse;
+    throw new Error(`Video ${id} not found`);
   },
 
   // Get related videos
@@ -153,7 +186,17 @@ export const videosApi = {
     if (DEV_CONFIG.useMockAuth) {
       return mockAllVideos.slice(0, 10);
     }
-    return get<Video[]>(`/videos/related/${id}`);
+    // /videos/related/{id} has a server-side issue; fall back to genre-based related
+    try {
+      const raw = await get<unknown>(`/videos/related/${id}`);
+      const videos = extractVideos(raw);
+      if (videos.length > 0) return videos;
+    } catch {
+      // fall through
+    }
+    // Fallback: return recent videos as "related"
+    const raw = await get<unknown>('/videos', { sortBy: 'newest', limit: 12 });
+    return extractVideos(raw).filter(v => v.id !== id).slice(0, 12);
   },
 
   // Get recommended videos for user
@@ -161,7 +204,8 @@ export const videosApi = {
     if (DEV_CONFIG.useMockAuth) {
       return mockForYou.slice(0, limit);
     }
-    return get<Video[]>('/videos/recommended', { limit });
+    const raw = await get<unknown>('/videos/recommended', { limit });
+    return extractVideos(raw);
   },
 
   // Search videos
@@ -190,10 +234,10 @@ export const videosApi = {
       };
     }
 
-    return get<SearchResult>('/videos', {
-      q: filters.query,
+    const raw = await get<unknown>('/videos', {
+      search: filters.query,
       genre: filters.genre,
-      subGenre: filters.subGenre,
+      subgenre: filters.subGenre,
       bpmMin: filters.bpmMin,
       bpmMax: filters.bpmMax,
       key: filters.key,
@@ -203,6 +247,18 @@ export const videosApi = {
       page: filters.page,
       limit: filters.limit,
     });
+    const obj = raw as Record<string, unknown>;
+    const videos = extractVideos(raw);
+    const total = typeof obj.total === 'number' ? obj.total : videos.length;
+    const page = typeof obj.page === 'number' ? obj.page : filters.page ?? 1;
+    const totalPages = typeof obj.totalPages === 'number' ? obj.totalPages : 1;
+    return {
+      videos,
+      total,
+      page,
+      totalPages,
+      filters,
+    };
   },
 
   // Get video preview URL
@@ -250,7 +306,7 @@ export const videosApi = {
       return mockTrending.slice(0, limit);
     }
     const data = await get<unknown>('/videos', { sortBy: 'popular', limit });
-    return extractTracks(data) as unknown as Video[];
+    return extractVideos(data);
   },
 
   // Get new releases
@@ -259,7 +315,7 @@ export const videosApi = {
       return mockNewReleases.slice(0, limit);
     }
     const data = await get<unknown>('/videos', { sortBy: 'newest', limit });
-    return extractTracks(data) as unknown as Video[];
+    return extractVideos(data);
   },
 
   // Get videos by genre
@@ -268,7 +324,7 @@ export const videosApi = {
       return filterByGenre(genre).slice(0, limit);
     }
     const data = await get<unknown>('/videos', { genre, limit });
-    return extractTracks(data) as unknown as Video[];
+    return extractVideos(data);
   },
 };
 

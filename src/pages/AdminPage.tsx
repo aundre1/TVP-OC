@@ -2,7 +2,7 @@
 // THE VIDEO POOL - ADMIN DASHBOARD PAGE
 // ============================================
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BarChart3,
@@ -22,6 +22,7 @@ import {
   Send,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { get } from '@/api/client';
 import BulkUploader from '@/components/admin/BulkUploader';
 import AdminUsers from '@/components/admin/AdminUsers';
 import AdminVideos from '@/components/admin/AdminVideos';
@@ -33,20 +34,53 @@ import AdminMarketing from '@/components/admin/AdminMarketing';
 
 type Tab = 'overview' | 'insights' | 'users' | 'videos' | 'analytics' | 'uploads' | 'coupons' | 'support' | 'marketing' | 'system';
 
-// Mock data - in production, these would come from API hooks
-const mockStats = {
-  totalUsers: 12458,
-  activeSubscribers: 8234,
-  totalVideos: 45678,
-  downloadsToday: 3456,
-  revenueThisMonth: 124580,
-  newUsersThisWeek: 342,
-};
+interface AdminStats {
+  totalUsers: number;
+  activeSubscribers: number;
+  totalVideos: number;
+  downloadsToday: number;
+  revenueThisMonth: number;
+  newUsersThisWeek: number;
+}
+
+// Skeleton card for loading state
+function StatSkeleton() {
+  return (
+    <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl animate-pulse">
+      <div className="h-3 bg-tvp-bg-tertiary rounded w-2/3 mb-3" />
+      <div className="h-7 bg-tvp-bg-tertiary rounded w-1/2 mb-2" />
+      <div className="h-3 bg-tvp-bg-tertiary rounded w-1/3" />
+    </div>
+  );
+}
 
 export default function AdminPage() {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  const fetchStats = useCallback(async () => {
+    setStatsLoading(true);
+    setStatsError(null);
+    try {
+      const data = await get<AdminStats>('/admin/stats');
+      setStats(data);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      setStatsError(axiosErr?.response?.data?.error || 'Failed to load stats');
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchStats();
+    }
+  }, [isAdmin, fetchStats]);
 
   // Redirect non-admins
   if (!isAdmin) {
@@ -91,8 +125,12 @@ export default function AdminPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-tvp-bg-tertiary hover:bg-tvp-bg-elevated text-tvp-text-secondary rounded-lg transition-colors">
-            <RefreshCw className="w-4 h-4" />
+          <button
+            onClick={fetchStats}
+            disabled={statsLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-tvp-bg-tertiary hover:bg-tvp-bg-elevated text-tvp-text-secondary rounded-lg transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${statsLoading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
         </div>
@@ -122,70 +160,87 @@ export default function AdminPage() {
       {/* Overview Tab */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
+          {/* Error state */}
+          {statsError && (
+            <div className="p-3 bg-tvp-status-error/10 border border-tvp-status-error/30 rounded-lg text-sm text-tvp-status-error">
+              {statsError} — <button onClick={fetchStats} className="underline">Retry</button>
+            </div>
+          )}
+
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
-              <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
-                <Users className="w-4 h-4" />
-                Total Users
-              </div>
-              <p className="text-2xl font-semibold text-tvp-text-primary">
-                {mockStats.totalUsers.toLocaleString()}
-              </p>
-              <p className="text-xs text-tvp-success mt-1">+{mockStats.newUsersThisWeek} this week</p>
-            </div>
+            {statsLoading ? (
+              Array.from({ length: 6 }).map((_, i) => <StatSkeleton key={i} />)
+            ) : (
+              <>
+                <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
+                  <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
+                    <Users className="w-4 h-4" />
+                    Total Users
+                  </div>
+                  <p className="text-2xl font-semibold text-tvp-text-primary">
+                    {(stats?.totalUsers ?? 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-tvp-success mt-1">+{stats?.newUsersThisWeek ?? 0} this week</p>
+                </div>
 
-            <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
-              <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
-                <DollarSign className="w-4 h-4" />
-                Active Subscribers
-              </div>
-              <p className="text-2xl font-semibold text-tvp-accent-cyan">
-                {mockStats.activeSubscribers.toLocaleString()}
-              </p>
-              <p className="text-xs text-tvp-text-muted mt-1">
-                {((mockStats.activeSubscribers / mockStats.totalUsers) * 100).toFixed(1)}% conversion
-              </p>
-            </div>
+                <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
+                  <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
+                    <DollarSign className="w-4 h-4" />
+                    Active Subscribers
+                  </div>
+                  <p className="text-2xl font-semibold text-tvp-accent-cyan">
+                    {(stats?.activeSubscribers ?? 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-tvp-text-muted mt-1">
+                    {stats && stats.totalUsers > 0
+                      ? ((stats.activeSubscribers / stats.totalUsers) * 100).toFixed(1)
+                      : '0.0'}% conversion
+                  </p>
+                </div>
 
-            <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
-              <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
-                <Video className="w-4 h-4" />
-                Total Videos
-              </div>
-              <p className="text-2xl font-semibold text-tvp-text-primary">
-                {mockStats.totalVideos.toLocaleString()}
-              </p>
-            </div>
+                <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
+                  <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
+                    <Video className="w-4 h-4" />
+                    Total Videos
+                  </div>
+                  <p className="text-2xl font-semibold text-tvp-text-primary">
+                    {(stats?.totalVideos ?? 0).toLocaleString()}
+                  </p>
+                </div>
 
-            <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
-              <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
-                <Download className="w-4 h-4" />
-                Downloads Today
-              </div>
-              <p className="text-2xl font-semibold text-tvp-text-primary">
-                {mockStats.downloadsToday.toLocaleString()}
-              </p>
-            </div>
+                <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
+                  <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
+                    <Download className="w-4 h-4" />
+                    Downloads Today
+                  </div>
+                  <p className="text-2xl font-semibold text-tvp-text-primary">
+                    {(stats?.downloadsToday ?? 0).toLocaleString()}
+                  </p>
+                </div>
 
-            <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
-              <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
-                <DollarSign className="w-4 h-4" />
-                Revenue (MTD)
-              </div>
-              <p className="text-2xl font-semibold text-tvp-accent-gold">
-                ${mockStats.revenueThisMonth.toLocaleString()}
-              </p>
-            </div>
+                <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
+                  <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
+                    <DollarSign className="w-4 h-4" />
+                    Revenue (MTD)
+                  </div>
+                  <p className="text-2xl font-semibold text-tvp-accent-gold">
+                    ${(stats?.revenueThisMonth ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </p>
+                </div>
 
-            <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
-              <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
-                <TrendingUp className="w-4 h-4" />
-                Growth Rate
-              </div>
-              <p className="text-2xl font-semibold text-tvp-success">+12.4%</p>
-              <p className="text-xs text-tvp-text-muted mt-1">vs last month</p>
-            </div>
+                <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
+                  <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-2">
+                    <TrendingUp className="w-4 h-4" />
+                    New This Week
+                  </div>
+                  <p className="text-2xl font-semibold text-tvp-success">
+                    +{(stats?.newUsersThisWeek ?? 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-tvp-text-muted mt-1">new users</p>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Quick Actions */}

@@ -73,6 +73,45 @@ router.post('/stripe', async (req, res) => {
 });
 
 // ===========================================
+// Price ID → Membership mapping helper
+// Reads all 4 price IDs from env vars and returns
+// the correct tier name + download limit for a given priceId.
+// ===========================================
+function getMembershipFromPriceId(priceId) {
+  const priceMap = {
+    [process.env.STRIPE_PRICE_STARTER_MONTHLY]: {
+      membershipType: 'starter',
+      downloadLimit: 200,
+    },
+    [process.env.STRIPE_PRICE_PRO_QUARTERLY]: {
+      membershipType: 'pro',
+      downloadLimit: 250,
+    },
+    [process.env.STRIPE_PRICE_ELITE_ANNUAL]: {
+      membershipType: 'elite',
+      downloadLimit: 300,
+    },
+    [process.env.STRIPE_PRICE_FREEMIUM]: {
+      membershipType: 'free',
+      downloadLimit: 1,
+    },
+  };
+
+  // Remove entries where env var was undefined (key = "undefined")
+  delete priceMap['undefined'];
+  delete priceMap[undefined];
+
+  const match = priceMap[priceId];
+  if (match) {
+    return match;
+  }
+
+  // Unknown price ID — default to starter with 100 downloads
+  console.warn(`[WEBHOOK] Unknown price ID: ${priceId}, defaulting to starter`);
+  return { membershipType: 'starter', downloadLimit: 100 };
+}
+
+// ===========================================
 // Webhook Handlers
 // ===========================================
 
@@ -91,8 +130,8 @@ async function handleCheckoutComplete(session) {
     [customerId, userId]
   );
 
-  // If it's a subscription, the subscription webhook will handle the rest
-  // If it's a one-time payment (lifetime), update membership directly
+  // If it's a one-time payment (lifetime/freemium), update membership directly
+  // Subscriptions are handled by the subscription webhook
   if (session.mode === 'payment') {
     await query(`
       UPDATE users SET
@@ -103,7 +142,7 @@ async function handleCheckoutComplete(session) {
       WHERE id = $1
     `, [userId]);
 
-    console.log(`User ${userId} upgraded to Lifetime membership`);
+    console.log(`User ${userId} upgraded to Lifetime/Elite membership`);
   }
 }
 
@@ -123,22 +162,9 @@ async function handleSubscriptionUpdate(subscription) {
 
   const userId = userResult.rows[0].id;
 
-  // Determine membership type from price
+  // Determine membership type from price ID
   const priceId = subscription.items.data[0]?.price?.id;
-  let membershipType = 'free';
-  let downloadLimit = 10;
-
-  if (priceId === process.env.STRIPE_PRICE_MONTHLY || priceId === process.env.STRIPE_PRICE_ANNUAL) {
-    // Check if it's Pro or Basic based on price amount
-    const amount = subscription.items.data[0]?.price?.unit_amount;
-    if (amount >= 10000) { // $100+ (quarterly pro)
-      membershipType = 'pro';
-      downloadLimit = null; // Unlimited
-    } else {
-      membershipType = 'starter';
-      downloadLimit = 100;
-    }
-  }
+  const { membershipType, downloadLimit } = getMembershipFromPriceId(priceId);
 
   // Map subscription status
   let membershipStatus = 'active';
@@ -160,7 +186,7 @@ async function handleSubscriptionUpdate(subscription) {
     WHERE id = $5
   `, [membershipType, membershipStatus, downloadLimit, subscription.id, userId]);
 
-  console.log(`User ${userId} subscription updated to ${membershipType} (${membershipStatus})`);
+  console.log(`User ${userId} subscription updated to ${membershipType} (${membershipStatus}) via price ${priceId}`);
 }
 
 async function handleSubscriptionCancelled(subscription) {

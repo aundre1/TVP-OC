@@ -82,8 +82,9 @@ export default function SearchPage() {
     filters.quality,
   ].filter(Boolean).length;
 
+  // Server returns tracks key; videos.ts searchVideos() now adapts it into SearchResult.videos
   const allVideos = data?.pages.flatMap((page) => page.videos) || [];
-  const totalResults = data?.pages[0]?.total || 0;
+  const totalResults = data?.pages[0]?.total || allVideos.length;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">

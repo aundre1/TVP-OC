@@ -3,7 +3,7 @@
 // Maps server response format to frontend types
 // ============================================
 
-import type { Track, VideoQuality, VersionType } from '@/types';
+import type { Track, Video, VideoQuality, VideoVersion, VersionType } from '@/types';
 
 // Server video version shape
 interface ServerVersion {
@@ -108,6 +108,76 @@ export function extractTracks(data: unknown): Track[] {
   const obj = data as Record<string, unknown>;
   if (Array.isArray(obj.tracks)) return (obj.tracks as ServerTrack[]).map(adaptTrack);
   if (Array.isArray(obj.videos)) return (obj.videos as ServerTrack[]).map(adaptTrack);
+  return [];
+}
+
+// Map quality string to Video's allowed quality values
+function mapVideoQuality(q: string): '720p' | '1080p' | '4K' {
+  if (q === '4K' || q === '4k') return '4K';
+  if (q === '1080p') return '1080p';
+  return '720p';
+}
+
+// Map server versionType to VideoVersion type
+function mapVideoVersionType(vt: string): VideoVersion['type'] {
+  const map: Record<string, VideoVersion['type']> = {
+    clean: 'clean',
+    dirty: 'explicit',
+    explicit: 'explicit',
+    extended: 'extended',
+    instrumental: 'instrumental',
+    quickhit: 'quickhitter',
+    quickhitter: 'quickhitter',
+    'quick hit': 'quickhitter',
+    acapella: 'clean',
+    radio: 'clean',
+    remix: 'clean',
+    intro: 'clean',
+    outro: 'clean',
+  };
+  return map[vt.toLowerCase()] ?? 'clean';
+}
+
+// Convert a server Track directly to the Video interface (used by pages that expect Video, not Track)
+export function adaptServerTrackToVideo(s: ServerTrack): Video {
+  const versions: VideoVersion[] = (s.versions || []).map((v) => ({
+    id: v.id,
+    type: mapVideoVersionType(v.versionType),
+    quality: mapVideoQuality(v.quality),
+    fileSize: v.fileSize ?? 0,
+    format: 'mp4',
+  }));
+
+  return {
+    id: s.id,
+    title: s.title,
+    artist: s.artist,
+    thumbnailUrl: s.thumbnailUrl || `https://picsum.photos/320/180?random=${s.id}`,
+    previewUrl: undefined,
+    streamUrl: undefined,
+    duration: s.duration ?? 0,
+    bpm: s.bpm,
+    key: s.key,
+    genre: s.genre,
+    subGenre: s.subgenre,
+    quality: mapVideoQuality(bestQuality(s.versions)),
+    releaseDate: s.createdAt || new Date().toISOString(),
+    downloadCount: s.downloadCount ?? 0,
+    isExclusive: false,
+    isTrending: s.isHot ?? false,
+    isNew: s.isNew ?? false,
+    tags: [s.genre, s.subgenre].filter(Boolean) as string[],
+    versions,
+  };
+}
+
+// Extract Video[] from server response (for pages that use the Video type)
+export function extractVideos(data: unknown): Video[] {
+  if (!data) return [];
+  if (Array.isArray(data)) return (data as ServerTrack[]).map(adaptServerTrackToVideo);
+  const obj = data as Record<string, unknown>;
+  if (Array.isArray(obj.tracks)) return (obj.tracks as ServerTrack[]).map(adaptServerTrackToVideo);
+  if (Array.isArray(obj.videos)) return (obj.videos as ServerTrack[]).map(adaptServerTrackToVideo);
   return [];
 }
 

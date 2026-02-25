@@ -62,7 +62,8 @@ export function useSearchVideos(filters: SearchFilters) {
     getNextPageParam: (lastPage) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     initialPageParam: 1,
-    enabled: !!filters.query || !!filters.genre,
+    // Always enabled — shows all videos when no filters, filtered results otherwise
+    enabled: true,
     staleTime: 2 * 60 * 1000,
   });
 }

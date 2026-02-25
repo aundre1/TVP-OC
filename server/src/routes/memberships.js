@@ -17,6 +17,37 @@ const stripe = process.env.STRIPE_SECRET_KEY
   : null;
 
 // ===========================================
+// Known price IDs — sourced from env vars.
+// Used to validate priceId before sending to Stripe.
+// ===========================================
+function getKnownPriceIds() {
+  return [
+    process.env.STRIPE_PRICE_STARTER_MONTHLY,
+    process.env.STRIPE_PRICE_PRO_QUARTERLY,
+    process.env.STRIPE_PRICE_ELITE_ANNUAL,
+    process.env.STRIPE_PRICE_FREEMIUM,
+  ].filter(Boolean); // Remove undefined/empty entries
+}
+
+// Map tier slug + interval to the correct price ID env var.
+// Accepts: { tier: 'starter'|'pro'|'elite'|'free', interval: 'monthly'|'quarterly'|'annual' }
+function resolvePriceId(tier, interval) {
+  const key = tier?.toLowerCase() + '_' + interval?.toLowerCase();
+  const map = {
+    starter_monthly:  process.env.STRIPE_PRICE_STARTER_MONTHLY,
+    pro_quarterly:    process.env.STRIPE_PRICE_PRO_QUARTERLY,
+    elite_annual:     process.env.STRIPE_PRICE_ELITE_ANNUAL,
+    free_freemium:    process.env.STRIPE_PRICE_FREEMIUM,
+    // Legacy interval aliases
+    starter_month:    process.env.STRIPE_PRICE_STARTER_MONTHLY,
+    pro_quarter:      process.env.STRIPE_PRICE_PRO_QUARTERLY,
+    elite_year:       process.env.STRIPE_PRICE_ELITE_ANNUAL,
+    elite_annual_:    process.env.STRIPE_PRICE_ELITE_ANNUAL,
+  };
+  return map[key] || null;
+}
+
+// ===========================================
 // GET /memberships - List all membership tiers
 // ===========================================
 router.get('/', asyncHandler(async (req, res) => {
@@ -118,7 +149,7 @@ router.get('/can-download', requireAuth, asyncHandler(async (req, res) => {
 
   const user = result.rows[0];
 
-  // Unlimited downloads (Pro/Lifetime)
+  // Unlimited downloads (Pro/Elite/Lifetime)
   if (user.download_limit === null) {
     return res.json({
       canDownload: true,
@@ -145,17 +176,59 @@ router.get('/can-download', requireAuth, asyncHandler(async (req, res) => {
 
 // ===========================================
 // POST /memberships/create-checkout - Stripe checkout session
+//
+// Accepts ONE of:
+//   { priceId: 'price_xxx' }              — raw Stripe price ID (validated against known IDs)
+//   { tier: 'starter', interval: 'monthly' } — resolved to env var price ID
+//   { membershipId: 2, interval: 'month' }   — legacy: looks up DB then resolves
 // ===========================================
 router.post('/create-checkout', requireAuth, asyncHandler(async (req, res) => {
   if (!stripe) {
     throw Errors.internal('Payment processing not configured');
   }
 
-  const { priceId, successUrl, cancelUrl } = req.body;
+  const { priceId: rawPriceId, tier, interval, membershipId, successUrl, cancelUrl } = req.body;
   const userId = req.user.id;
 
-  if (!priceId) {
-    throw Errors.badRequest('Price ID is required');
+  let resolvedPriceId = rawPriceId;
+
+  // If caller sent tier+interval, resolve to a price ID
+  if (!resolvedPriceId && tier && interval) {
+    resolvedPriceId = resolvePriceId(tier, interval);
+    if (!resolvedPriceId) {
+      throw Errors.badRequest(`No price configured for tier="${tier}" interval="${interval}"`);
+    }
+  }
+
+  // Legacy: membershipId + interval — look up tier slug in DB then resolve
+  if (!resolvedPriceId && membershipId) {
+    const membershipResult = await query(
+      'SELECT slug, stripe_price_monthly, stripe_price_annual FROM memberships WHERE id = $1',
+      [membershipId]
+    );
+    if (membershipResult.rows.length === 0) {
+      throw Errors.badRequest('Membership not found');
+    }
+    const m = membershipResult.rows[0];
+    // Prefer the DB-stored price ID; fall back to env var resolution
+    const dbPriceId = (interval === 'year' || interval === 'annual')
+      ? m.stripe_price_annual
+      : m.stripe_price_monthly;
+    resolvedPriceId = dbPriceId || resolvePriceId(m.slug, interval);
+    if (!resolvedPriceId) {
+      throw Errors.badRequest(`No Stripe price configured for membership ${membershipId}`);
+    }
+  }
+
+  if (!resolvedPriceId) {
+    throw Errors.badRequest('A priceId, or tier+interval, or membershipId is required');
+  }
+
+  // Validate the resolved price ID against our known set
+  const knownPriceIds = getKnownPriceIds();
+  if (knownPriceIds.length > 0 && !knownPriceIds.includes(resolvedPriceId)) {
+    console.warn(`[CHECKOUT] Price ID "${resolvedPriceId}" not in known set. Proceeding anyway.`);
+    // We warn but do NOT block — Stripe will reject invalid IDs on its end
   }
 
   // Get or create Stripe customer
@@ -163,6 +236,10 @@ router.post('/create-checkout', requireAuth, asyncHandler(async (req, res) => {
     'SELECT email, stripe_customer_id FROM users WHERE id = $1',
     [userId]
   );
+
+  if (userResult.rows.length === 0) {
+    throw Errors.notFound('User not found');
+  }
 
   let customerId = userResult.rows[0]?.stripe_customer_id;
 
@@ -179,16 +256,23 @@ router.post('/create-checkout', requireAuth, asyncHandler(async (req, res) => {
     );
   }
 
+  // Build URLs — always fall back to FRONTEND_URL (Vercel)
+  const frontendUrl = process.env.FRONTEND_URL || 'https://tvp-redesign-2026.vercel.app';
+  const finalSuccessUrl = successUrl || `${frontendUrl}/membership/success?session_id={CHECKOUT_SESSION_ID}`;
+  const finalCancelUrl  = cancelUrl  || `${frontendUrl}/membership`;
+
   // Create checkout session
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
     payment_method_types: ['card'],
-    line_items: [{ price: priceId, quantity: 1 }],
+    line_items: [{ price: resolvedPriceId, quantity: 1 }],
     mode: 'subscription',
-    success_url: successUrl || `${process.env.FRONTEND_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/membership`,
+    success_url: finalSuccessUrl,
+    cancel_url: finalCancelUrl,
     metadata: { userId: userId.toString() },
   });
+
+  console.log(`[CHECKOUT] Created session for user ${userId}, price ${resolvedPriceId}`);
 
   res.json({
     checkoutUrl: session.url,
@@ -217,9 +301,11 @@ router.post('/portal', requireAuth, asyncHandler(async (req, res) => {
     throw Errors.badRequest('No billing account found. Please subscribe first.');
   }
 
+  const frontendUrl = process.env.FRONTEND_URL || 'https://tvp-redesign-2026.vercel.app';
+
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
-    return_url: `${process.env.FRONTEND_URL}/settings`,
+    return_url: `${frontendUrl}/settings`,
   });
 
   res.json({ url: session.url });
