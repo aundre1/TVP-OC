@@ -19,6 +19,10 @@ import userRoutes from './routes/user.js';
 import membershipRoutes from './routes/memberships.js';
 import adminRoutes from './routes/admin.js';
 import webhookRoutes from './routes/webhooks.js';
+import genreRoutes from './routes/genres.js';
+import favoriteRoutes from './routes/favorites.js';
+import playlistRoutes from './routes/playlists.js';
+import downloadRoutes from './routes/downloads.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -73,6 +77,27 @@ app.get('/health', (req, res) => {
   });
 });
 
+// API Health check (matches Steve's /api/health for Railway)
+app.get('/api/health', async (req, res) => {
+  try {
+    const { pool } = await import('./db/pool.js');
+    await pool.query('SELECT 1');
+    res.json({
+      status: 'ok',
+      database: 'connected',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      database: 'disconnected',
+      error: error.message || 'Database connection failed',
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 // ===========================================
 // API ROUTES
 // ===========================================
@@ -83,6 +108,10 @@ app.use('/api/user', userRoutes);
 app.use('/api/memberships', membershipRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/genres', genreRoutes);
+app.use('/api/favorites', favoriteRoutes);
+app.use('/api/playlists', playlistRoutes);
+app.use('/api/downloads', downloadRoutes);
 
 // ===========================================
 // ERROR HANDLING

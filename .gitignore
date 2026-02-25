@@ -9,3 +9,4 @@
 secrets/
 .railway.secrets
 railway.env
+.env.generated
