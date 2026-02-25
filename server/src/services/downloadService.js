@@ -21,9 +21,8 @@ export async function checkDownloadLimit(userId) {
       u.id,
       u.membership_type,
       u.status AS membership_status,
-      u.download_limit,
-      u.downloads_used,
-      u.download_limit_reset_date,
+      u.downloads_this_month AS downloads_used,
+      u.downloads_reset_monthly AS download_limit_reset_date,
       m.download_limit as tier_limit
     FROM users u
     LEFT JOIN memberships m ON m.slug = u.membership_type::text
@@ -50,16 +49,14 @@ export async function checkDownloadLimit(userId) {
       return {
         canDownload: false,
         remaining: 0,
-        limit: user.download_limit || user.tier_limit || 0,
+        limit: user.tier_limit || 0,
         resetDate: user.download_limit_reset_date,
         reason: 'Membership not active'
       };
     }
 
-    // Use user-specific limit if set, otherwise use tier limit
-    const effectiveLimit = user.download_limit !== null
-      ? user.download_limit
-      : user.tier_limit;
+    // Use tier limit from memberships table
+    const effectiveLimit = user.tier_limit;
 
     // NULL limit means unlimited
     if (effectiveLimit === null) {
@@ -86,7 +83,7 @@ export async function checkDownloadLimit(userId) {
       const nextResetDate = getNextResetDate();
       await pool.query(`
         UPDATE users
-        SET downloads_used = 0, download_limit_reset_date = $1
+        SET downloads_this_month = 0, downloads_reset_monthly = $1
         WHERE id = $2
       `, [nextResetDate, userId]);
 
