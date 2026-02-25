@@ -311,7 +311,7 @@ export async function getVideoById(id) {
             'previewUrl', vv.preview_url,
             'bitrate', vv.bitrate
           ) ORDER BY
-            CASE vv.quality
+            CASE vv.quality::text
               WHEN '4k' THEN 1
               WHEN '1080p' THEN 2
               WHEN '720p' THEN 3
