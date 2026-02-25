@@ -23,7 +23,7 @@ export async function checkDownloadLimit(userId) {
       u.status AS membership_status,
       u.downloads_this_month AS downloads_used,
       u.downloads_reset_monthly AS download_limit_reset_date,
-      m.download_limit as tier_limit
+      m.monthly_download_limit as tier_limit
     FROM users u
     LEFT JOIN memberships m ON m.slug = u.membership_type::text
     WHERE u.id = $1
