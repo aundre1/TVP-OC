@@ -14,9 +14,16 @@ BEGIN
   END IF;
 END$$;
 
--- Migrate existing users from old plan names
-UPDATE users SET membership_type = 'starter' WHERE membership_type = 'basic';
-UPDATE users SET membership_type = 'elite' WHERE membership_type = 'lifetime';
+-- Migrate existing users from old plan names (only if old enum values exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'basic' AND enumtypid = 'membership_type'::regtype) THEN
+    UPDATE users SET membership_type = 'starter' WHERE membership_type::text = 'basic';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'lifetime' AND enumtypid = 'membership_type'::regtype) THEN
+    UPDATE users SET membership_type = 'elite' WHERE membership_type::text = 'lifetime';
+  END IF;
+END$$;
 
 -- SMS sends tracking table
 CREATE TABLE IF NOT EXISTS sms_sends (

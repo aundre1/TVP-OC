@@ -23,11 +23,13 @@ router.get('/', asyncHandler(async (req, res) => {
   const result = await query(`
     SELECT
       id, name, slug, price_monthly, price_annual,
-      download_limit, features, is_popular, is_active,
-      stripe_price_id_monthly, stripe_price_id_annual
+      monthly_download_limit AS download_limit,
+      features,
+      is_featured AS is_popular,
+      stripe_price_monthly AS stripe_price_id_monthly,
+      stripe_price_annual AS stripe_price_id_annual
     FROM memberships
-    WHERE is_active = true
-    ORDER BY price_monthly ASC NULLS FIRST
+    ORDER BY display_order ASC
   `);
 
   const memberships = result.rows.map(m => ({
@@ -54,13 +56,16 @@ router.get('/status', requireAuth, asyncHandler(async (req, res) => {
 
   const userResult = await query(`
     SELECT
-      u.membership_type, u.membership_status,
-      u.download_limit, u.downloads_used,
-      u.download_limit_reset_date, u.bonus_credits,
+      u.membership_type,
+      u.status AS membership_status,
+      m.monthly_download_limit AS download_limit,
+      u.downloads_this_month AS downloads_used,
+      u.downloads_reset_monthly AS download_limit_reset_date,
+      0 AS bonus_credits,
       u.stripe_subscription_id,
-      m.name as membership_name, m.features
+      m.name AS membership_name, m.features
     FROM users u
-    LEFT JOIN memberships m ON m.slug = u.membership_type
+    LEFT JOIN memberships m ON m.slug = u.membership_type::text
     WHERE u.id = $1
   `, [userId]);
 
@@ -97,9 +102,14 @@ router.get('/can-download', requireAuth, asyncHandler(async (req, res) => {
 
   const result = await query(`
     SELECT
-      download_limit, downloads_used, bonus_credits,
-      membership_type, download_limit_reset_date
-    FROM users WHERE id = $1
+      m.monthly_download_limit AS download_limit,
+      u.downloads_this_month AS downloads_used,
+      0 AS bonus_credits,
+      u.membership_type,
+      u.downloads_reset_monthly AS download_limit_reset_date
+    FROM users u
+    LEFT JOIN memberships m ON m.slug = u.membership_type::text
+    WHERE u.id = $1
   `, [userId]);
 
   if (result.rows.length === 0) {
