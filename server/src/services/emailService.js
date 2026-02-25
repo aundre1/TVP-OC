@@ -66,7 +66,7 @@ if (elasticEmailEnabled) console.log('[EMAIL] Elastic Email configured');
 // ===========================================
 
 /**
- * Send transactional email via Google SMTP (with SendGrid fallback)
+ * Send transactional email via Google SMTP (with Brevo + SendGrid fallbacks)
  */
 const sendTransactional = async ({ to, subject, text, html }) => {
   // Try Google SMTP first
@@ -80,6 +80,35 @@ const sendTransactional = async ({ to, subject, text, html }) => {
       return true;
     } catch (e) {
       console.warn('[EMAIL] SMTP failed, trying fallback:', e.message);
+    }
+  }
+
+  // Fallback to Brevo (transactional emails work on free plan)
+  if (brevoEnabled) {
+    try {
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+        },
+        body: JSON.stringify({
+          sender: { name: FROM_NAME, email: FROM_EMAIL },
+          to: Array.isArray(to) ? to.map(e => ({ email: e })) : [{ email: to }],
+          subject,
+          htmlContent: html,
+          textContent: text,
+        }),
+      });
+      if (res.ok) {
+        console.log(`[EMAIL] Sent via Brevo: "${subject}" → ${to}`);
+        return true;
+      }
+      const errBody = await res.text();
+      console.warn('[EMAIL] Brevo transactional failed:', errBody);
+    } catch (e) {
+      console.warn('[EMAIL] Brevo transactional error:', e.message);
     }
   }
 
