@@ -106,9 +106,8 @@ function getMembershipFromPriceId(priceId) {
     return match;
   }
 
-  // Unknown price ID — default to starter with 100 downloads
-  console.warn(`[WEBHOOK] Unknown price ID: ${priceId}, defaulting to starter`);
-  return { membershipType: 'starter', downloadLimit: 100 };
+  console.error(`[WEBHOOK] CRITICAL: Unknown price ID: ${priceId} — refusing to grant membership. Check Stripe price ID configuration.`);
+  throw new Error(`Unknown Stripe price ID: ${priceId}`);
 }
 
 // ===========================================

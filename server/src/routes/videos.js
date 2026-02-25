@@ -300,11 +300,11 @@ router.post('/:id/download',
         });
       }
 
+      // Record the download FIRST — ensures the quota is decremented before URL is issued
+      await downloadService.recordDownload(userId, videoId, quality, version);
+
       // Generate signed URL
       const downloadInfo = await downloadService.generateSignedUrl(videoId, quality, version);
-
-      // Record the download
-      await downloadService.recordDownload(userId, videoId, quality, version);
 
       // Get updated remaining downloads
       const updatedStatus = await downloadService.checkDownloadLimit(userId);

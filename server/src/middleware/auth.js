@@ -4,6 +4,10 @@
 
 import jwt from 'jsonwebtoken';
 
+// In-process rate limit store. NOTE: This is not distributed across multiple server instances.
+// For multi-instance deployments, replace with a Redis-backed store (e.g. rate-limit-redis).
+const rateLimitStores = new Map();
+
 /**
  * Extract JWT token from Authorization header
  * Supports: "Bearer <token>" format
@@ -170,7 +174,11 @@ export const requireMembership = (req, res, next) => {
  * Stricter limits for login/register attempts
  */
 export const authRateLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
-  const attempts = new Map();
+  const storeKey = `${maxAttempts}:${windowMs}`;
+  if (!rateLimitStores.has(storeKey)) {
+    rateLimitStores.set(storeKey, new Map());
+  }
+  const attempts = rateLimitStores.get(storeKey);
 
   return (req, res, next) => {
     const key = req.ip + ':' + (req.body.email || 'unknown');
@@ -206,12 +214,32 @@ export const authRateLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
   };
 };
 
+/**
+ * Middleware: Require admin with 2FA enabled
+ * For high-sensitivity admin operations. Must be used after requireAuth.
+ * NOTE: Requires two_factor_enabled to be included in JWT payload (post-launch sprint item).
+ */
+export const requireAdmin2FA = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: 'Authentication required', code: 'AUTH_REQUIRED' });
+  }
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Admin access required', code: 'ADMIN_REQUIRED' });
+  }
+  // Once JWT includes twoFactorEnabled, enforce it here
+  // if (!req.user.twoFactorEnabled) {
+  //   return res.status(403).json({ success: false, error: 'Admin accounts must have 2FA enabled', code: '2FA_REQUIRED' });
+  // }
+  next();
+};
+
 export default {
   extractToken,
   verifyToken,
   requireAuth,
   optionalAuth,
   requireAdmin,
+  requireAdmin2FA,
   requireMembership,
   authRateLimit,
 };

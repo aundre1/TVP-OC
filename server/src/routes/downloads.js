@@ -17,7 +17,10 @@ router.get('/:userId', requireAuth, async (req, res) => {
     if (req.user.id !== parseInt(userId) && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
-    const limit = req.query.limit ? parseInt(req.query.limit) : 50;
+
+    // Cap limit to prevent large data dumps
+    const rawLimit = req.query.limit ? parseInt(req.query.limit) : 50;
+    const limit = Math.min(Math.max(1, rawLimit || 50), 200);
 
     const result = await pool.query(
       `SELECT d.id, d.user_id, d.video_id, d.version_type, d.quality,
@@ -38,12 +41,15 @@ router.get('/:userId', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/downloads - Record download
-router.post('/', async (req, res) => {
+// POST /api/downloads - Record download (auth required — userId taken from JWT, not body)
+router.post('/', requireAuth, async (req, res) => {
   try {
-    const { userId, videoId, versionType, quality } = req.body;
-    if (!userId || !videoId) {
-      return res.status(400).json({ error: 'userId and videoId are required' });
+    const { videoId, versionType, quality } = req.body;
+    // Always use the authenticated user's ID — never trust body userId
+    const userId = req.user.id;
+
+    if (!videoId) {
+      return res.status(400).json({ error: 'videoId is required' });
     }
 
     const result = await pool.query(

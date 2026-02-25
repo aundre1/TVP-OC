@@ -12,6 +12,20 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
 const ADMIN_URL = process.env.ADMIN_URL || `${FRONTEND_URL}/admin`;
 
 // ===========================================
+// HTML ESCAPING (prevents XSS in email templates)
+// ===========================================
+
+const escapeHtml = (str) => {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+};
+
+// ===========================================
 // PROVIDER SETUP
 // ===========================================
 
@@ -306,7 +320,7 @@ export const sendVerificationEmail = async (email, code, name = '') => {
     subject: `${code} is your Video Pool verification code`,
     text: `${greeting},\n\nYour verification code is: ${code}\n\nThis code expires in 15 minutes.\n\n- The Video Pool Team`,
     html: wrap(`
-      <p style="color: #fff; font-size: 16px;">${greeting},</p>
+      <p style="color: #fff; font-size: 16px;">${escapeHtml(greeting)},</p>
       <p style="color: #aaa; font-size: 14px;">Enter this code to verify your email:</p>
       <div style="background: #1a1a1a; border-radius: 8px; padding: 24px; text-align: center; margin: 20px 0; border: 1px solid #333;">
         <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #00d4ff;">${code}</span>
@@ -324,7 +338,7 @@ export const sendPasswordResetEmail = async (email, token, name = '') => {
     subject: 'Reset your Video Pool password',
     text: `${greeting},\n\nReset your password: ${resetUrl}\n\nThis link expires in 1 hour.\n\n- The Video Pool Team`,
     html: wrap(`
-      <p style="color: #fff; font-size: 16px;">${greeting},</p>
+      <p style="color: #fff; font-size: 16px;">${escapeHtml(greeting)},</p>
       <p style="color: #aaa; font-size: 14px;">Click below to reset your password:</p>
       <div style="text-align: center; margin: 24px 0;">
         <a href="${resetUrl}" style="display: inline-block; background: #00d4ff; color: #000; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px;">Reset Password</a>
@@ -341,7 +355,7 @@ export const sendWelcomeEmail = async (email, name = '') => {
     subject: 'Welcome to The Video Pool!',
     text: `${greeting}\n\nYour account is active. Browse 30,000+ HD DJ music videos.\n\nLog in: ${FRONTEND_URL}/login\n\n- The Video Pool Team`,
     html: wrap(`
-      <h2 style="color: #fff; font-size: 22px; text-align: center;">${greeting}</h2>
+      <h2 style="color: #fff; font-size: 22px; text-align: center;">${escapeHtml(greeting)}</h2>
       <p style="color: #aaa; font-size: 14px;">Your account is active. Here's what you can do:</p>
       <div style="background: #1a1a1a; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #333;">
         <ul style="color: #ccc; font-size: 14px; margin: 0; padding-left: 20px;">
@@ -365,7 +379,7 @@ export const sendPaymentFailedEmail = async (email, name = '') => {
     subject: 'Your Video Pool payment didn\'t go through',
     text: `${greeting},\n\nWe couldn't process your payment. Please update your payment method at ${FRONTEND_URL}/settings.\n\n- The Video Pool Team`,
     html: wrap(`
-      <p style="color: #fff; font-size: 16px;">${greeting},</p>
+      <p style="color: #fff; font-size: 16px;">${escapeHtml(greeting)},</p>
       <p style="color: #aaa; font-size: 14px;">We couldn't process your latest payment. Please update your payment method to keep your subscription active.</p>
       <div style="text-align: center; margin: 24px 0;">
         <a href="${FRONTEND_URL}/settings" style="display: inline-block; background: #00d4ff; color: #000; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px;">Update Payment</a>
@@ -381,9 +395,9 @@ export const sendSubscriptionConfirmedEmail = async (email, planName, name = '')
     subject: `Welcome to ${planName}!`,
     text: `${greeting},\n\nYou're now on the ${planName} plan! Enjoy all features.\n\n- The Video Pool Team`,
     html: wrap(`
-      <p style="color: #fff; font-size: 16px;">${greeting},</p>
+      <p style="color: #fff; font-size: 16px;">${escapeHtml(greeting)},</p>
       <div style="background: #0a2a1a; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #1a4a2a;">
-        <p style="color: #4ade80; font-size: 16px; margin: 0; font-weight: bold;">🎉 Welcome to ${planName}!</p>
+        <p style="color: #4ade80; font-size: 16px; margin: 0; font-weight: bold;">🎉 Welcome to ${escapeHtml(planName)}!</p>
       </div>
       <p style="color: #aaa; font-size: 14px;">Your subscription is now active. Enjoy all the features of your new plan.</p>
       <div style="text-align: center; margin: 24px 0;">
@@ -400,7 +414,7 @@ export const sendDownloadLimitEmail = async (email, used, limit, name = '') => {
     subject: `You've used ${used} of ${limit} downloads this month`,
     text: `${greeting},\n\nYou've used ${used} of your ${limit} monthly downloads. Upgrade for more: ${FRONTEND_URL}/membership\n\n- The Video Pool Team`,
     html: wrap(`
-      <p style="color: #fff; font-size: 16px;">${greeting},</p>
+      <p style="color: #fff; font-size: 16px;">${escapeHtml(greeting)},</p>
       <p style="color: #aaa; font-size: 14px;">You've used <strong style="color: #fff;">${used}</strong> of your <strong style="color: #fff;">${limit}</strong> monthly downloads.</p>
       <div style="background: #1a1a1a; border-radius: 8px; padding: 16px; margin: 20px 0; border: 1px solid #333;">
         <div style="background: #222; border-radius: 4px; height: 8px; overflow: hidden;">
@@ -422,7 +436,7 @@ export const send2FAEnabledEmail = async (email, name = '') => {
     subject: 'Two-factor authentication enabled',
     text: `${greeting},\n\n2FA has been enabled on your account.\n\n- The Video Pool Team`,
     html: wrap(`
-      <p style="color: #fff; font-size: 16px;">${greeting},</p>
+      <p style="color: #fff; font-size: 16px;">${escapeHtml(greeting)},</p>
       <div style="background: #0a2a1a; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #1a4a2a;">
         <p style="color: #4ade80; font-size: 14px; margin: 0;"><strong>Two-factor authentication is now enabled</strong> on your account.</p>
       </div>
@@ -438,7 +452,7 @@ export const sendPasswordChangedEmail = async (email, name = '') => {
     subject: 'Your password was changed',
     text: `${greeting},\n\nYour password was just changed. If this wasn't you, contact support.\n\n- The Video Pool Team`,
     html: wrap(`
-      <p style="color: #fff; font-size: 16px;">${greeting},</p>
+      <p style="color: #fff; font-size: 16px;">${escapeHtml(greeting)},</p>
       <p style="color: #aaa; font-size: 14px;">Your Video Pool password was just changed.</p>
       <div style="background: #2a1a1a; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #4a2a2a;">
         <p style="color: #f87171; font-size: 14px; margin: 0;"><strong>Didn't make this change?</strong> Contact support immediately.</p>
@@ -459,11 +473,11 @@ export const sendSupportTicketNotification = async (ticket, user) => {
     text: `New support ticket from ${user.name || user.email}\n\nCategory: ${ticket.category}\nPriority: ${ticket.priority}\nPlan: ${user.membership_type || 'free'}\n\n${ticket.message}\n\nView: ${adminLink}`,
     html: wrap(`
       <h3 style="color: #fff;">New Support Ticket</h3>
-      <p style="color: #aaa;"><strong>From:</strong> ${user.name || 'N/A'} (${user.email})</p>
-      <p style="color: #aaa;"><strong>Plan:</strong> ${user.membership_type || 'free'}</p>
-      <p style="color: #aaa;"><strong>Category:</strong> ${ticket.category} | <strong>Priority:</strong> ${ticket.priority}</p>
+      <p style="color: #aaa;"><strong>From:</strong> ${escapeHtml(user.name || 'N/A')} (${escapeHtml(user.email)})</p>
+      <p style="color: #aaa;"><strong>Plan:</strong> ${escapeHtml(user.membership_type || 'free')}</p>
+      <p style="color: #aaa;"><strong>Category:</strong> ${escapeHtml(ticket.category)} | <strong>Priority:</strong> ${escapeHtml(ticket.priority)}</p>
       <div style="background: #1a1a1a; border-radius: 8px; padding: 16px; margin: 16px 0; border: 1px solid #333;">
-        <p style="color: #ccc; margin: 0;">${ticket.message}</p>
+        <p style="color: #ccc; margin: 0;">${escapeHtml(ticket.message)}</p>
       </div>
       <div style="text-align: center;">
         <a href="${adminLink}" style="display: inline-block; background: #00d4ff; color: #000; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 8px;">View in Admin</a>
@@ -480,7 +494,7 @@ export const sendSupportResponseEmail = async (userEmail, originalSubject, respo
     html: wrap(`
       <p style="color: #fff; font-size: 16px;">We've responded to your ticket:</p>
       <div style="background: #1a1a1a; border-radius: 8px; padding: 16px; margin: 16px 0; border: 1px solid #333;">
-        <p style="color: #ccc; margin: 0;">${response}</p>
+        <p style="color: #ccc; margin: 0;">${escapeHtml(response)}</p>
       </div>
       <p style="color: #666; font-size: 13px;">Ticket reference: #${ticketId}</p>
     `),
@@ -508,10 +522,10 @@ export const sendSongRequestEmail = async (ticket, user) => {
       text: `New song request:\n\nArtist: ${artist}\nTitle: ${title}\nRequested by: ${user.name || user.email}\nNotes: ${ticket.message || 'None'}\n\nMark complete: ${completeLink}`,
       html: wrap(`
         <h3 style="color: #fff;">🎵 New Song Request</h3>
-        <p style="color: #aaa;"><strong>Artist:</strong> ${artist}</p>
-        <p style="color: #aaa;"><strong>Title:</strong> ${title}</p>
-        <p style="color: #aaa;"><strong>Requested by:</strong> ${user.name || user.email}</p>
-        ${ticket.message ? `<p style="color: #aaa;"><strong>Notes:</strong> ${ticket.message}</p>` : ''}
+        <p style="color: #aaa;"><strong>Artist:</strong> ${escapeHtml(artist)}</p>
+        <p style="color: #aaa;"><strong>Title:</strong> ${escapeHtml(title)}</p>
+        <p style="color: #aaa;"><strong>Requested by:</strong> ${escapeHtml(user.name || user.email)}</p>
+        ${ticket.message ? `<p style="color: #aaa;"><strong>Notes:</strong> ${escapeHtml(ticket.message)}</p>` : ''}
         <div style="text-align: center; margin: 24px 0;">
           <a href="${completeLink}" style="display: inline-block; background: #4ade80; color: #000; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 8px;">Mark as Completed</a>
         </div>

@@ -5,6 +5,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import QRCode from 'qrcode';
+import jwt from 'jsonwebtoken';
 
 import { requireAuth, authRateLimit } from '../middleware/auth.js';
 import { asyncHandler, Errors } from '../middleware/errorHandler.js';
@@ -220,7 +221,8 @@ router.post(
     // Get user
     const result = await db.query(
       `SELECT id, email, password_hash, name, role, membership_type,
-              email_verified, two_factor_enabled, two_factor_secret
+              email_verified, two_factor_enabled, two_factor_secret,
+              phone_verified
        FROM users WHERE email = $1`,
       [email]
     );
@@ -261,12 +263,11 @@ router.post(
     // Check if 2FA is enabled
     if (user.two_factor_enabled) {
       // Create temporary session token for 2FA completion
-      const tempToken = generateToken({
-        id: user.id,
-        email: user.email,
-        role: 'pending_2fa',
-        membershipType: 'none',
-      });
+      const tempToken = jwt.sign(
+        { userId: user.id, email: user.email, role: 'pending_2fa', membershipType: 'none', type: 'access' },
+        process.env.JWT_SECRET,
+        { expiresIn: '10m', issuer: 'thevideopool.com', audience: 'tvp-client' }
+      );
 
       return res.status(200).json({
         success: true,
@@ -310,6 +311,7 @@ router.post(
         name: user.name,
         role: user.role,
         membershipType: user.membership_type,
+        phoneVerified: user.phone_verified || false,
       },
       accessToken,
       refreshToken,
@@ -336,7 +338,7 @@ router.post(
     // Verify temp token
     let decoded;
     try {
-      decoded = require('jsonwebtoken').verify(tempToken, process.env.JWT_SECRET);
+      decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
     } catch (error) {
       throw Errors.unauthorized('Invalid or expired session', 'INVALID_SESSION');
     }
@@ -952,6 +954,9 @@ router.post(
       [req.user.id]
     );
 
+    // Invalidate all sessions — re-authentication required after disabling 2FA
+    await db.query('DELETE FROM sessions WHERE user_id = $1', [req.user.id]);
+
     res.json({
       success: true,
       message: '2FA disabled successfully',
@@ -1005,6 +1010,226 @@ router.post(
       backupCodes: backupCodes.map(c => c.code),
       warning: 'Previous backup codes are now invalid. Save these new codes securely.',
     });
+  })
+);
+
+
+// ===========================================
+// GOOGLE OAUTH
+// ===========================================
+
+/**
+ * POST /google
+ * Authenticate with Google OAuth access token
+ */
+router.post(
+  '/google',
+  authRateLimit(10, 60 * 60 * 1000),
+  asyncHandler(async (req, res) => {
+    const { accessToken: googleAccessToken } = req.body;
+
+    if (!googleAccessToken) {
+      throw Errors.badRequest('Google access token is required');
+    }
+
+    // Fetch user profile from Google
+    const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${googleAccessToken}` },
+    });
+
+    if (!googleRes.ok) {
+      throw Errors.unauthorized('Invalid Google token. Please try again.', 'INVALID_GOOGLE_TOKEN');
+    }
+
+    const profile = await googleRes.json();
+    const { sub: googleId, email, name, picture } = profile;
+
+    // Verify token was issued for this application (prevents cross-app token reuse)
+    const expectedClientId = process.env.GOOGLE_CLIENT_ID;
+    if (expectedClientId) {
+      const tokenInfoRes = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${googleAccessToken}`);
+      if (tokenInfoRes.ok) {
+        const tokenInfo = await tokenInfoRes.json();
+        if (tokenInfo.aud !== expectedClientId) {
+          throw Errors.unauthorized('Google token not issued for this application', 'INVALID_GOOGLE_TOKEN');
+        }
+      }
+    }
+
+    if (!email) {
+      throw Errors.badRequest('Google account must have an email address');
+    }
+
+    // Find existing user by google_id or email
+    let userResult = await db.query(
+      `SELECT id, email, name, role, membership_type, google_id
+       FROM users WHERE google_id = $1 OR email = $2
+       LIMIT 1`,
+      [googleId, email]
+    );
+
+    let user;
+
+    if (userResult.rows.length === 0) {
+      // Create new user — Google-authenticated users skip password & email verify
+      const newUser = await db.query(
+        `INSERT INTO users
+           (email, name, google_id, avatar_url, email_verified, password_hash)
+         VALUES ($1, $2, $3, $4, true, '')
+         RETURNING id, email, name, role, membership_type`,
+        [email, name || email.split('@')[0], googleId, picture || null]
+      );
+      user = newUser.rows[0];
+
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail(email, user.name).catch(() => {});
+    } else {
+      user = userResult.rows[0];
+
+      // Link google_id if not already linked
+      if (!user.google_id) {
+        await db.query(
+          `UPDATE users SET google_id = $1, avatar_url = COALESCE(avatar_url, $2), email_verified = true
+           WHERE id = $3`,
+          [googleId, picture || null, user.id]
+        );
+      }
+    }
+
+    // Generate tokens
+    const jwtAccessToken = generateToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Create session
+    const sessionData = createSessionData(user, req);
+    await db.query(
+      `INSERT INTO sessions (user_id, session_id, refresh_token_hash, user_agent, ip_address, expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        user.id,
+        sessionData.sessionId,
+        hashResetToken(refreshToken),
+        sessionData.userAgent,
+        sessionData.ipAddress,
+        sessionData.expiresAt,
+      ]
+    );
+
+    await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
+
+    res.json({
+      success: true,
+      message: 'Google authentication successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        membershipType: user.membership_type,
+      },
+      accessToken: jwtAccessToken,
+      refreshToken,
+    });
+  })
+);
+
+// ===========================================
+// SMS PHONE VERIFICATION
+// ===========================================
+
+/**
+ * POST /send-phone-verification
+ * Send a 6-digit SMS code to verify phone number (requires auth)
+ */
+router.post(
+  '/send-phone-verification',
+  requireAuth,
+  authRateLimit(3, 60 * 60 * 1000), // 3 per hour
+  asyncHandler(async (req, res) => {
+    const userResult = await db.query(
+      'SELECT id, phone, phone_verified FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    if (userResult.rows.length === 0) throw Errors.notFound('User');
+    const user = userResult.rows[0];
+
+    if (!user.phone) {
+      throw Errors.badRequest('No phone number on file. Please add a phone number first.');
+    }
+
+    if (user.phone_verified) {
+      return res.json({ success: true, message: 'Phone already verified.' });
+    }
+
+    // Generate 6-digit code
+    const code = generateVerificationCode();
+    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await db.query(
+      'UPDATE users SET phone_code = $1, phone_code_expires = $2 WHERE id = $3',
+      [code, expires, user.id]
+    );
+
+    // Import and send SMS
+    const { sendSMS } = await import('../services/smsService.js');
+    const result = await sendSMS(
+      user.phone,
+      `The Video Pool: Your verification code is ${code}. Valid for 10 minutes.`,
+      user.id
+    );
+
+    res.json({
+      success: true,
+      message: `Verification code sent to ${user.phone.slice(0, 3)}***${user.phone.slice(-4)}`,
+    });
+  })
+);
+
+/**
+ * POST /verify-phone-code
+ * Verify SMS code and mark phone as verified (requires auth)
+ */
+router.post(
+  '/verify-phone-code',
+  requireAuth,
+  authRateLimit(5, 15 * 60 * 1000),
+  [
+    body('code')
+      .isLength({ min: 6, max: 6 })
+      .isNumeric()
+      .withMessage('Valid 6-digit code is required'),
+  ],
+  asyncHandler(async (req, res) => {
+    validate(req);
+    const { code } = req.body;
+
+    const userResult = await db.query(
+      'SELECT id, phone_code, phone_code_expires, phone_verified FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    if (userResult.rows.length === 0) throw Errors.notFound('User');
+    const user = userResult.rows[0];
+
+    if (user.phone_verified) {
+      return res.json({ success: true, message: 'Phone already verified.' });
+    }
+
+    if (!user.phone_code || user.phone_code !== code) {
+      throw Errors.unauthorized('Invalid verification code', 'INVALID_CODE');
+    }
+
+    if (new Date(user.phone_code_expires) < new Date()) {
+      throw Errors.unauthorized('Verification code expired. Please request a new one.', 'CODE_EXPIRED');
+    }
+
+    await db.query(
+      `UPDATE users SET phone_verified = true, phone_code = NULL, phone_code_expires = NULL WHERE id = $1`,
+      [user.id]
+    );
+
+    res.json({ success: true, message: 'Phone number verified successfully.' });
   })
 );
 

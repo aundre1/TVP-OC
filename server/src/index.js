@@ -12,6 +12,18 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
+// Security assertions
+if (!process.env.JWT_SECRET) {
+  console.error('[SECURITY FATAL] JWT_SECRET is not set. Refusing to start.');
+  process.exit(1);
+}
+if (!process.env.REFRESH_TOKEN_SECRET) {
+  console.error('[SECURITY WARNING] REFRESH_TOKEN_SECRET is not set — falling back to JWT_SECRET. Set a separate secret for production security isolation.');
+}
+if (!process.env.STRIPE_WEBHOOK_SECRET && process.env.NODE_ENV === 'production') {
+  console.warn('[SECURITY WARNING] STRIPE_WEBHOOK_SECRET not set — Stripe webhooks will be accepted without signature verification.');
+}
+
 // Import routes
 import authRoutes from './routes/auth.js';
 import videoRoutes from './routes/videos.js';
@@ -81,8 +93,6 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV,
   });
 });
 
@@ -95,13 +105,11 @@ app.get('/api/health', async (req, res) => {
       status: 'ok',
       database: 'connected',
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
     });
   } catch (error) {
     res.status(503).json({
       status: 'error',
       database: 'disconnected',
-      error: error.message || 'Database connection failed',
       timestamp: new Date().toISOString(),
     });
   }
