@@ -17,6 +17,9 @@ import {
   AlertTriangle,
   RefreshCw,
   PieChart,
+  Tag,
+  MessageSquare,
+  Send,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import BulkUploader from '@/components/admin/BulkUploader';
@@ -24,8 +27,11 @@ import AdminUsers from '@/components/admin/AdminUsers';
 import AdminVideos from '@/components/admin/AdminVideos';
 import AdminAnalytics from '@/components/admin/AdminAnalytics';
 import AdminInsightsSummary from '@/components/admin/AdminInsightsSummary';
+import AdminCoupons from '@/components/admin/AdminCoupons';
+import AdminSupport from '@/components/admin/AdminSupport';
+import AdminMarketing from '@/components/admin/AdminMarketing';
 
-type Tab = 'overview' | 'insights' | 'users' | 'videos' | 'analytics' | 'uploads' | 'system';
+type Tab = 'overview' | 'insights' | 'users' | 'videos' | 'analytics' | 'uploads' | 'coupons' | 'support' | 'marketing' | 'system';
 
 // Mock data - in production, these would come from API hooks
 const mockStats = {
@@ -68,6 +74,9 @@ export default function AdminPage() {
     { id: 'videos', label: 'Videos', icon: Video },
     { id: 'analytics', label: 'Analytics', icon: TrendingUp },
     { id: 'uploads', label: 'Bulk Upload', icon: Upload },
+    { id: 'coupons', label: 'Coupons', icon: Tag },
+    { id: 'support', label: 'Support', icon: MessageSquare },
+    { id: 'marketing', label: 'Marketing', icon: Send },
     { id: 'system', label: 'System', icon: Settings },
   ] as const;
 
@@ -251,6 +260,15 @@ export default function AdminPage() {
 
       {/* Bulk Upload Tab */}
       {activeTab === 'uploads' && <BulkUploader />}
+
+      {/* Coupons Tab */}
+      {activeTab === 'coupons' && <AdminCoupons />}
+
+      {/* Support Tab */}
+      {activeTab === 'support' && <AdminSupport />}
+
+      {/* Marketing Tab */}
+      {activeTab === 'marketing' && <AdminMarketing />}
 
       {/* System Tab */}
       {activeTab === 'system' && (

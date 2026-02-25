@@ -16,6 +16,8 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [success, setSuccess] = useState(false);
   const [devCode, setDevCode] = useState<string | null>(null);
@@ -29,6 +31,7 @@ export default function RegisterPage() {
 
   const isPasswordValid = passwordRequirements.every((req) => req.met);
   const doPasswordsMatch = password === confirmPassword && confirmPassword.length > 0;
+  const isPhoneValid = /^\+[1-9]\d{6,14}$/.test(phone);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +45,8 @@ export default function RegisterPage() {
       return;
     }
 
-    const result = await register({ username, email, password });
+    if (!isPhoneValid) return;
+    const result = await register({ username, email, password, phone, smsOptIn });
     if (result) {
       // Navigate to verification page with email and dev code
       navigate('/verify-email', {
@@ -175,6 +179,42 @@ export default function RegisterPage() {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-tvp-text-secondary mb-1.5">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className={`w-full px-4 py-3 bg-tvp-bg-tertiary border rounded-xl text-tvp-text-primary placeholder:text-tvp-text-muted focus:ring-2 outline-none transition-all ${
+                  phone.length > 0
+                    ? isPhoneValid
+                      ? 'border-tvp-success focus:border-tvp-success focus:ring-tvp-success/20'
+                      : 'border-tvp-error focus:border-tvp-error focus:ring-tvp-error/20'
+                    : 'border-tvp-border-default focus:border-tvp-accent-cyan focus:ring-tvp-accent-cyan/20'
+                }`}
+                placeholder="+1XXXXXXXXXX"
+                required
+              />
+              {phone.length > 0 && !isPhoneValid && (
+                <p className="text-xs text-tvp-error mt-1">Enter a valid phone number with country code (e.g. +12125551234)</p>
+              )}
+            </div>
+
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="smsOptIn"
+                checked={smsOptIn}
+                onChange={(e) => setSmsOptIn(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded border-tvp-border-default bg-tvp-bg-tertiary text-tvp-accent-cyan focus:ring-tvp-accent-cyan/20"
+              />
+              <label htmlFor="smsOptIn" className="text-sm text-tvp-text-secondary">
+                Yes, send me occasional updates via text (max 2/month). We'll never share or sell your info.
+              </label>
+            </div>
+
             <div className="flex items-start gap-2">
               <input
                 type="checkbox"
@@ -192,7 +232,7 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              disabled={isLoading || !isPasswordValid || !doPasswordsMatch}
+              disabled={isLoading || !isPasswordValid || !doPasswordsMatch || !isPhoneValid}
               className="w-full py-3 bg-tvp-accent-cyan hover:bg-tvp-accent-cyan-hover text-tvp-bg-primary font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (

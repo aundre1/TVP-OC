@@ -14,7 +14,10 @@ import {
   ListMusic,
   DownloadCloud,
   X,
+  PlusCircle,
 } from 'lucide-react';
+import { useState } from 'react';
+import SongRequestForm from '@/components/SongRequestForm';
 import { useBrowseStore } from '@/stores/browseStore';
 
 interface SidebarProps {
@@ -30,6 +33,7 @@ interface NavItem {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const [showSongRequest, setShowSongRequest] = useState(false);
   const clearGenres = useBrowseStore((state) => state.clearGenres);
   const resetFilters = useBrowseStore((state) => state.resetFilters);
 
@@ -134,11 +138,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           ))}
         </nav>
 
+        {/* Request a Track */}
+        <div className="px-4 pb-2">
+          <button
+            onClick={() => setShowSongRequest(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors text-cyan-400 group"
+          >
+            <PlusCircle size={20} />
+            <span className="text-sm font-medium">Request a Track</span>
+          </button>
+        </div>
+
         {/* Footer */}
         <div className="p-4 border-t border-gray-700 text-xs text-gray-400 space-y-1">
           <p>💿 Professional DJ Video Platform</p>
           <p>30,000+ HD Music Videos</p>
         </div>
+
+        {/* Song Request Modal */}
+        {showSongRequest && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowSongRequest(false)}>
+            <div className="bg-tvp-bg-secondary border border-tvp-border-subtle rounded-2xl p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+              <SongRequestForm onClose={() => setShowSongRequest(false)} />
+            </div>
+          </div>
+        )}
       </aside>
     </>
   );
