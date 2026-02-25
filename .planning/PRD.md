@@ -1,677 +1,462 @@
-# The Video Pool - Product Requirements Document (PRD)
+# The Video Pool -- Product Requirements Document v2.0
 
-**Version:** 1.0
-**Date:** January 17, 2026
-**Status:** Approved for Implementation
-**Product Owner:** TVP Executive Team
+| Field | Value |
+|-------|-------|
+| **Version** | 2.0 |
+| **Date** | February 25, 2026 |
+| **Status** | LAUNCH READY |
+| **Owner** | Aundre Oldacre |
+| **Frontend** | https://tvp-redesign-2026.vercel.app |
+| **API** | https://tvp-oc-production.up.railway.app |
+| **Repository** | github.com/aundre1/TVP-OC.git |
+
+### Version History
+
+| Version | Date | Author | Summary |
+|---------|------|--------|---------|
+| 1.0 | Jan 17, 2026 | Aundre Oldacre | Initial PRD -- feature wishlist, architecture proposal, tier definitions |
+| **2.0** | **Feb 25, 2026** | **Aundre Oldacre / CoCo** | **Complete rewrite reflecting built system. All critical blockers resolved. Launch-ready state.** |
 
 ---
 
-## 1. Product Overview
+## 1. Product Summary
 
-### 1.1 Product Vision
+The Video Pool is a professional DJ music video streaming and download platform serving 26,043+ videos across all major genres. DJs and VJs subscribe to access high-quality music video files (720p through 4K) for live performance, with features built around how working DJs actually find, preview, organize, and download content.
 
-The Video Pool is an AI-native professional video DJ platform that transforms how DJs discover, organize, and download music videos. By combining a premium 30,000+ video catalog with intelligent recommendations, natural language search, and a world-class user experience, The Video Pool becomes the indispensable tool for every video DJ's workflow.
+The platform replaces a legacy system (www.thevideopool.com, operated by Steve -- DO NOT TOUCH) with a modern stack, new brand identity, and a subscription model designed around DJ workflow economics.
 
-### 1.2 Product Principles
+**Core value proposition:** Find the right video in under 10 seconds, download it in the quality you need, and get back to your set.
 
-1. **DJ Workflow First** - Every feature must make DJs faster or better at their craft
-2. **AI-Enhanced, Not AI-Dependent** - AI improves the experience but manual control is always available
-3. **Speed is a Feature** - Sub-200ms search, instant previews, fast downloads
-4. **Dark Mode Default** - DJs work at night; respect their environment
-5. **Professional Quality** - 1080p minimum, accurate metadata, reliable downloads
+### Product Principles
 
-### 1.3 Success Criteria
-
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| User Activation | 60%+ download within 24 hours | Analytics |
-| Search Success | 85%+ searches result in download | Funnel analysis |
-| User Satisfaction | 4.5+ star rating | In-app feedback |
-| Performance | <2s page load, <200ms search | Performance monitoring |
+1. **DJ Workflow First** -- Every feature must make DJs faster or better at their craft
+2. **Speed is a Feature** -- Sub-500ms search, instant previews, fast downloads
+3. **Dark Mode Default** -- DJs work at night; respect their environment
+4. **Professional Quality** -- 720p/1080p/4K, accurate metadata, reliable downloads
+5. **AI-Enhanced, Not AI-Dependent** -- AI improves the experience but manual control is always available
 
 ---
 
 ## 2. User Personas
 
-### 2.1 Primary Persona: "DJ Mike" - The Working Professional
-
-**Demographics:**
-- Age 28-45
-- 5+ years DJ experience
-- 2-6 gigs per month
-- Uses Serato or VirtualDJ
-- Pays for tools that save time
-
-**Goals:**
-- Find the right video fast when client makes a request
-- Build coherent sets that flow well
-- Stay current with new releases
-- Maintain a organized, searchable library
-
-**Pain Points:**
-- Searching through multiple pools for one track
-- Outdated interfaces that slow prep work
-- Missing metadata (wrong BPM, missing key)
-- Download limits that run out mid-month
-
-**Quote:** *"I don't have time to dig through 50,000 videos. Just show me what I need for Saturday's wedding."*
-
-### 2.2 Secondary Persona: "VJ Sarah" - The Visual Artist
-
-**Demographics:**
-- Age 22-35
-- Focused on visual performance
-- Club residencies and festivals
-- Uses Resolume or VDMX
-- Values visual quality over quantity
-
-**Goals:**
-- Find visually stunning content
-- Match video aesthetics to music genres
-- Create unique visual experiences
-- Access high-resolution content (1080p/4K)
-
-**Pain Points:**
-- Low-quality encodes from other pools
-- No way to filter by visual style
-- Generic content that every VJ has
-
-**Quote:** *"I need content that makes the crowd look up from their phones."*
-
-### 2.3 Tertiary Persona: "DJ Carlos" - The Up-and-Comer
-
-**Demographics:**
-- Age 21-30
-- 1-2 years experience
-- Building their business
-- Price-conscious but wants quality
-- Learning what content to collect
-
-**Goals:**
-- Build a solid foundation library
-- Learn what tracks work in different situations
-- Get gigs by having the right content
-- Not look amateur with bad video quality
-
-**Pain Points:**
-- Overwhelmed by catalog size
-- Doesn't know what to download
-- Limited budget
-- Needs guidance on must-haves
-
-**Quote:** *"I don't even know what I don't have. Just tell me what a wedding DJ needs."*
+| Persona | Profile | Needs | Tier Fit |
+|---------|---------|-------|----------|
+| **DJ Mike** (Primary) | Working pro, 28-45, 2-6 gigs/month, uses Serato/VirtualDJ | Fast search, reliable downloads, genre depth, saves time | Starter / Pro |
+| **VJ Sarah** (Secondary) | Visual artist, 22-35, clubs + festivals, uses Resolume/VDMX | 1080p/4K quality, batch downloads, visual browsing | Pro / Elite |
+| **DJ Carlos** (Tertiary) | Up-and-comer, 21-30, building library, price-conscious | Free tier to explore, upgrade path when gigs come | Freemium / Starter |
 
 ---
 
-## 3. Feature Requirements
+## 3. Business Goals
 
-### 3.1 Core Features (MVP - Launch Required)
-
-#### 3.1.1 User Authentication & Accounts
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| Email/password registration | P0 | User can create account with email verification |
-| Social login (Google) | P1 | One-click signup/login with Google |
-| Password reset | P0 | Secure password reset via email link |
-| Profile management | P1 | User can update name, email, password |
-| Subscription management | P0 | User can view plan, upgrade, downgrade, cancel |
-| Download history | P0 | Complete history of all downloads with re-download |
-
-#### 3.1.2 Video Catalog & Search
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| Basic search | P0 | Search by title, artist, returns results <200ms |
-| Advanced filters | P0 | Filter by genre, BPM range, key, decade, resolution |
-| Natural language search | P1 | "90s hip hop clean edits around 95 BPM" returns relevant results |
-| Autocomplete | P0 | Suggestions appear after 2 characters, <100ms |
-| Sort options | P0 | Sort by newest, popular, alphabetical, BPM |
-| Search history | P2 | Recent searches saved and suggested |
-
-#### 3.1.3 Video Display & Preview
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| Grid view | P0 | Responsive grid with thumbnails, 16:9 aspect ratio |
-| List view | P0 | Compact list with inline metadata |
-| View toggle | P0 | Instant switch between grid/list |
-| Hover preview | P1 | 10-second video preview on hover (after 500ms delay) |
-| Video detail modal | P0 | Full metadata, multiple versions, download options |
-| Quality badges | P0 | Clear 720p/1080p/4K indicators with color coding |
-
-#### 3.1.4 Downloads & Library
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| One-click download | P0 | Single click initiates download, shows progress |
-| Download queue | P1 | Queue multiple downloads, manage order |
-| Download history | P0 | Complete searchable history with re-download |
-| Download counter | P0 | Clear display of downloads used/remaining |
-| Multiple versions | P0 | Clean, explicit, intro, outro versions where available |
-| Quality selection | P0 | Choose resolution before download |
-
-#### 3.1.5 Organization (Crates/Playlists)
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| Create crates | P0 | User can create named crates |
-| Add to crate | P0 | Add any video to any crate (even if not downloaded) |
-| Crate management | P0 | Rename, delete, reorder crates |
-| Drag-and-drop ordering | P1 | Reorder videos within crate via drag |
-| Bulk download crate | P1 | Download all videos in crate with one click |
-| **Setlist sharing (viral)** | P0 | Share crate publicly with blurred preview for non-members |
-
-#### 3.1.6 AI-Powered Features
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| Personalized recommendations | P1 | "For You" section based on download history |
-| Similar videos | P1 | "More like this" suggestions on detail page |
-| Smart set builder | P1 | AI suggests next track based on BPM/key/genre flow |
-| Trending content | P0 | "Trending This Week" based on platform activity |
-| New releases | P0 | "New This Week" chronological feed |
-
-### 3.2 Secondary Features (Post-MVP)
-
-#### 3.2.1 Enhanced AI
-
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| Predictive downloads | AI suggests downloads before you search | P2 |
-| Context-aware suggestions | "You usually download house on Thursdays" | P2 |
-| Event-based packs | "Build me a wedding set" automation | P2 |
-| Voice search | Speak queries naturally | P3 |
-
-#### 3.2.2 Social Features
-
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| Public profiles | Optional DJ profile page | P2 |
-| Follow DJs | See what other DJs download/share | P3 |
-| Community charts | "Top downloads by Miami DJs" | P3 |
-
-#### 3.2.3 Integrations
-
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| Serato Video plugin | Direct download into Serato library | P3 |
-| VirtualDJ integration | Seamless workflow integration | P3 |
-| Calendar sync | Import gig calendar for suggestions | P3 |
-
-### 3.3 Admin & Backend Features
-
-#### 3.3.1 Content Management
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| Video upload pipeline | P0 | Automated ingestion with quality checks |
-| Metadata management | P0 | BPM, key, genre, artist, year tagging |
-| Version management | P0 | Track clean/explicit/edit versions |
-| Quality encoding | P0 | Standardized encoding for consistent playback |
-
-#### 3.3.2 User Management
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| User dashboard | P0 | View all users, subscriptions, activity |
-| Subscription management | P0 | Manual adjustments, credits, extensions |
-| Support tools | P1 | Impersonation, download resets |
-
-#### 3.3.3 Analytics & Reporting
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| Download analytics | P0 | Track downloads by video, user, time |
-| Search analytics | P0 | Monitor search terms, success rates |
-| Revenue reporting | P0 | MRR, churn, cohort analysis |
-| Content performance | P1 | Identify top-performing content |
-
-#### 3.3.4 Automated Systems
-
-| Requirement | Priority | Acceptance Criteria |
-|-------------|----------|---------------------|
-| Feature request capture | P1 | Database of user requests with AI triage |
-| Wishlist tracking | P1 | Track requested songs, notify when available |
-| Automated alerts | P1 | Notify team of issues, opportunities |
+| Metric | Target | Timeframe |
+|--------|--------|-----------|
+| Paid subscribers | 1,000 | 90 days post-launch |
+| Activation rate (download within 24h of signup) | 60%+ | Ongoing |
+| Search-to-download conversion | 85%+ | Ongoing |
+| Average revenue per subscriber | $34.99/mo | Steady state |
+| Content velocity | 50-100 new videos/week | Post-launch |
+| Monthly churn | < 5% | Steady state |
 
 ---
 
-## 4. User Stories
-
-### 4.1 Authentication & Onboarding
-
-```
-US-001: As a new user, I want to sign up with my email so I can start browsing videos.
-Acceptance: Email validation, password requirements, confirmation email sent.
-
-US-002: As a returning user, I want to log in quickly so I can get to my downloads.
-Acceptance: Remember me option, <2s login flow, redirect to last page.
-
-US-003: As a new subscriber, I want to understand my plan limits so I know what I'm getting.
-Acceptance: Clear display of downloads remaining, plan features visible.
-```
-
-### 4.2 Discovery & Search
-
-```
-US-010: As a DJ prepping for a gig, I want to search by song title so I can find specific requests.
-Acceptance: Results appear <200ms, exact matches first, fuzzy matching for typos.
-
-US-011: As a DJ, I want to filter by BPM range so I can find tracks that mix well together.
-Acceptance: Slider or input for BPM min/max, results update instantly.
-
-US-012: As a DJ, I want to use natural language like "upbeat 80s pop for weddings" so I don't have to set multiple filters.
-Acceptance: AI interprets query, returns relevant results, shows interpretation.
-
-US-013: As a DJ, I want to see what's trending so I can stay current with popular content.
-Acceptance: Trending section on homepage, updated daily, based on download velocity.
-
-US-014: As a DJ, I want personalized recommendations so I discover content I'll actually use.
-Acceptance: "For You" section based on download history, improves over time.
-```
-
-### 4.3 Video Preview & Details
-
-```
-US-020: As a DJ, I want to preview a video before downloading so I know what I'm getting.
-Acceptance: Hover triggers preview after 500ms, 10-second clip, muted by default.
-
-US-021: As a DJ, I want to see all metadata (BPM, key, duration, year) so I can judge mixability.
-Acceptance: Metadata visible on card, complete data in detail modal.
-
-US-022: As a DJ, I want to see available versions (clean, explicit, intro) so I can choose the right one.
-Acceptance: Version dropdown in modal, all versions accessible.
-
-US-023: As a DJ, I want to see the video quality clearly so I don't download low-res by mistake.
-Acceptance: Quality badges (720p/1080p/4K) with distinct colors.
-```
-
-### 4.4 Downloads & Library
-
-```
-US-030: As a DJ, I want to download with one click so I can work fast.
-Acceptance: Single click initiates download, progress shown, success confirmation.
-
-US-031: As a DJ, I want to queue multiple downloads so I can continue browsing.
-Acceptance: Downloads queued, progress visible, notifications on completion.
-
-US-032: As a DJ, I want to see my complete download history so I can re-download lost files.
-Acceptance: Searchable history, one-click re-download, date/time stamps.
-
-US-033: As a DJ, I want to see my remaining downloads so I don't unexpectedly run out.
-Acceptance: Counter always visible, warning at 10% remaining.
-```
-
-### 4.5 Organization
-
-```
-US-040: As a DJ, I want to create crates for different events so I stay organized.
-Acceptance: Create crate with name, add videos, view/edit crates.
-
-US-041: As a DJ, I want to save videos to crates before downloading so I can plan ahead.
-Acceptance: "Add to Crate" works for any video, regardless of download status.
-
-US-042: As a DJ, I want to share my setlist publicly so other DJs can see what I played.
-Acceptance: Generate shareable link, non-members see blurred thumbnails + CTA.
-
-US-043: As a DJ, I want to bulk download an entire crate so I can grab everything at once.
-Acceptance: One click downloads all, progress for batch, counts against limit.
-```
-
-### 4.6 AI-Powered Features
-
-```
-US-050: As a DJ building a set, I want AI to suggest what plays next based on my current selections.
-Acceptance: "Suggest Next" considers BPM, key compatibility, genre flow.
-
-US-051: As a DJ, I want the system to learn my preferences over time so recommendations improve.
-Acceptance: Recommendations become more relevant with usage, visible improvement.
-
-US-052: As a DJ, I want to see "More Like This" for videos I love so I can find similar content.
-Acceptance: Similar suggestions on detail page based on multiple factors.
-```
-
----
-
-## 5. Information Architecture
-
-### 5.1 Site Map
-
-```
-The Video Pool
-├── Home (Dashboard)
-│   ├── New This Week
-│   ├── Trending Now
-│   ├── Recommended For You
-│   ├── Recently Downloaded
-│   └── Quick Search
-├── Browse
-│   ├── All Videos (filterable grid/list)
-│   ├── By Genre (mega menu navigation)
-│   ├── By Decade
-│   └── By Mood/Energy
-├── Search Results
-│   └── Filtered results with refinement options
-├── Video Detail (Modal)
-│   ├── Preview player
-│   ├── Metadata
-│   ├── Versions
-│   └── Related videos
-├── My Library
-│   ├── Download History
-│   ├── My Crates
-│   │   └── [Crate Detail]
-│   └── Wishlist
-├── Set Builder (Panel)
-│   ├── Current Set
-│   ├── AI Suggestions
-│   └── Export Options
-├── Account
-│   ├── Profile
-│   ├── Subscription
-│   ├── Billing History
-│   └── Settings
-└── Support
-    ├── Help Center
-    ├── Request a Song
-    └── Contact
-```
-
-### 5.2 Navigation Structure
-
-**Primary Navigation (Header):**
-- Logo (→ Home)
-- Search bar (global)
-- Genre mega menu
-- My Library
-- Account dropdown
-
-**Secondary Navigation (Contextual):**
-- Filter bar (on browse pages)
-- Crate sidebar (on library pages)
-- Set Builder panel (slide-out right)
-
----
-
-## 6. UI/UX Requirements
-
-### 6.1 Design System Reference
-
-See [TECHNICAL_SPECIFICATION.md](../TECHNICAL_SPECIFICATION.md) for complete design system including:
-- Color palette (dark theme, cyan accent #00d4ff)
-- Typography (Inter, Plus Jakarta Sans, JetBrains Mono)
-- Component library specifications
-- Spacing and grid system
-
-### 6.2 Key UX Requirements
-
-| Requirement | Specification |
-|-------------|---------------|
-| Dark mode default | Primary background #0a0a0f |
-| Responsive breakpoints | 480px, 768px, 1024px, 1200px, 1400px |
-| Touch targets | Minimum 44x44px on mobile |
-| Loading states | Skeleton loaders for all async content |
-| Error handling | Friendly messages with recovery actions |
-| Keyboard navigation | Full functionality without mouse |
-| Accessibility | WCAG 2.1 AA compliance |
-
-### 6.3 Critical User Flows
-
-**Flow 1: Search to Download**
-```
-Search → Results → Preview → Download → Confirmation
-Target: <30 seconds for experienced user
-```
-
-**Flow 2: Build a Set**
-```
-Open Set Builder → Search/Browse → Add to Set → AI Suggest Next → Repeat → Export/Download
-Target: Build 10-song set in <5 minutes
-```
-
-**Flow 3: Share Setlist (Viral)**
-```
-View Crate → Click Share → Copy Link → Share Externally → Non-member Clicks → Sees Blurred Preview → Signs Up
-Target: Every shared setlist drives measurable signups
-```
-
----
-
-## 7. Technical Requirements
-
-### 7.1 Performance Requirements
-
-| Metric | Target | Maximum |
-|--------|--------|---------|
-| Initial page load | <2s | 3s |
-| Search results | <200ms | 500ms |
-| Filter application | <100ms | 200ms |
-| Video preview start | <1s | 2s |
-| Download initiation | <500ms | 1s |
-
-### 7.2 Scalability Requirements
-
-| Scenario | Requirement |
-|----------|-------------|
-| Concurrent users | Support 1,000+ simultaneous users |
-| Catalog size | Scale to 100,000+ videos |
-| Download throughput | Handle 10,000+ downloads/day |
-| Search index | Sub-200ms at 100K+ documents |
-
-### 7.3 Browser Support
-
-| Browser | Minimum Version |
-|---------|-----------------|
-| Chrome | Last 2 versions |
-| Firefox | Last 2 versions |
-| Safari | Last 2 versions |
-| Edge | Last 2 versions |
-| Mobile Safari | iOS 14+ |
-| Mobile Chrome | Android 10+ |
-
-### 7.4 Integration Requirements
-
-| Integration | Purpose | Priority |
-|-------------|---------|----------|
-| Stripe | Payments, subscriptions | P0 |
-| Cloudflare/CDN | Video delivery | P0 |
-| AWS S3/Wasabi | Video storage | P0 |
-| SendGrid/Postmark | Transactional email | P0 |
-| Analytics (Mixpanel/Amplitude) | Product analytics | P1 |
-| Error tracking (Sentry) | Bug monitoring | P1 |
-
----
-
-## 8. Content Requirements
-
-### 8.1 Video Quality Standards
-
-| Resolution | Codec | Bitrate | Use Case |
-|------------|-------|---------|----------|
-| 720p | H.264 | 5-8 Mbps | Standard delivery |
-| 1080p | H.264 | 10-15 Mbps | Premium delivery |
-| 4K | H.265 | 25-35 Mbps | Future premium |
-
-### 8.2 Metadata Requirements
-
-**Required Fields:**
-- Title (official song title)
-- Artist (primary artist)
-- Featuring artists (if applicable)
-- BPM (accurate to ±1)
-- Key (Camelot notation: 1A-12B)
-- Duration (seconds)
-- Year (release year)
-- Genre (primary genre)
-- Resolution (720p/1080p/4K)
-- Version (clean/explicit/intro/outro/etc.)
-
-**Optional Fields:**
-- Record label
-- Subgenre
-- Mood/energy tags
-- ISRC code
-- Album
-
-### 8.3 Content Velocity Targets
-
-| Metric | Target |
-|--------|--------|
-| New videos per week | 50-100 |
-| Catalog growth per month | 200-400 |
-| Request fulfillment rate | 70%+ within 30 days |
-
----
-
-## 9. Pricing & Monetization
-
-### 9.1 Subscription Tiers
-
-| Tier | Price | Downloads/Month | Features |
-|------|-------|-----------------|----------|
-| **Free Trial** | $0 | 2 | 6-month access, basic features, watermarked previews |
-| **Monthly** | $34.99 | 200 | Full access, 1080p, all features |
-| **Quarterly** | $99.99 | 300 | Full access, 1080p, all features, priority support |
-| **Annual** | $299.99 | 400 | Full access, 1080p, all features, priority support, early access |
-
-### 9.2 Feature Access Matrix
-
-| Feature | Free | Monthly | Quarterly | Annual |
-|---------|------|---------|-----------|--------|
-| Browse catalog | ✓ | ✓ | ✓ | ✓ |
-| Search & filter | ✓ | ✓ | ✓ | ✓ |
-| Video preview | Watermark | ✓ | ✓ | ✓ |
-| Downloads | 2/month | 200/month | 300/month | 400/month |
-| Crate organization | ✓ | ✓ | ✓ | ✓ |
+## 4. Subscription Tiers (Live Stripe)
+
+| Tier | Price | Billing | Downloads/Month | Stripe Price ID | Status |
+|------|-------|---------|-----------------|-----------------|--------|
+| Freemium | $0 | -- | 2 | `price_1SkCTX2xxXTR95tlX49TIN8n` | LIVE |
+| Starter | $34.99 | Monthly | 200 | `s2_ca2738deb60b058a12d8fcd77ac4a6e9` | LIVE |
+| Pro | $99.99 | Quarterly | 300 | `s2_59282b1c818949d8529a63bba9bf10f8` | LIVE |
+| Elite | $299.99 | Annual | 400 | `s2_3fa73632a345d05262b57252a883fbee` | LIVE |
+
+All 7 checkout variants return real `cs_live_` Stripe session IDs. Checkout endpoint: `POST /api/memberships/create-checkout` with body `{"tier":"starter","interval":"monthly"}`.
+
+### Feature Access by Tier
+
+| Feature | Freemium | Starter | Pro | Elite |
+|---------|----------|---------|-----|-------|
+| Browse catalog | Yes | Yes | Yes | Yes |
+| Search and filter | Yes | Yes | Yes | Yes |
+| Video preview | Yes | Yes | Yes | Yes |
+| Downloads per month | 2 | 200 | 300 | 400 |
+| Crate organization | Yes | Yes | Yes | Yes |
 | AI recommendations | Basic | Full | Full | Full |
-| Setlist sharing | ✓ | ✓ | ✓ | ✓ |
-| 1080p downloads | ✗ | ✓ | ✓ | ✓ |
-| Priority support | ✗ | ✗ | ✓ | ✓ |
-| Early access | ✗ | ✗ | ✗ | ✓ |
+| Setlist sharing | Yes | Yes | Yes | Yes |
+| 1080p/4K downloads | No | Yes | Yes | Yes |
+| Priority support | No | No | Yes | Yes |
+| Early access to new content | No | No | No | Yes |
 
 ---
 
-## 10. Analytics & Tracking
+## 5. Tech Stack
 
-### 10.1 Events to Track
+| Layer | Technology | Notes |
+|-------|-----------|-------|
+| Frontend | React 18 + TypeScript + Vite | Dev port 3001 |
+| Styling | TailwindCSS | Custom `tvp-` prefixed classes, dark-first |
+| State | Zustand + TanStack React Query | Client + server state separation |
+| Backend | Node.js + Express | Railway deployment |
+| Database | PostgreSQL (Supabase) | Project: jvgsmiqsqtqgfagghoiv |
+| ORM | Drizzle | |
+| Storage | Wasabi S3 | Bucket: thevideopool-us, region: us-east-1 |
+| Payments | Stripe | Live keys, webhook at `/api/webhooks/stripe` |
+| Email | Brevo (primary) + SendGrid (fallback) | Chain: SMTP -> Brevo -> SendGrid |
+| Auth | JWT + Refresh tokens | Google OAuth, TOTP 2FA, SMS verification |
+| CDN | Vercel edge (frontend), Wasabi presigned URLs (video) | |
+| Virtualization | react-window | Required for 30K+ video lists |
 
-**Acquisition:**
-- Page views (with source)
-- Signup started
-- Signup completed
-- Free trial activated
+### Brand and Design System
 
-**Activation:**
-- First search
-- First video preview
-- First download
-- First crate created
-
-**Engagement:**
-- Search performed (with query)
-- Filter applied (with values)
-- Video previewed
-- Video downloaded
-- Crate created/edited
-- Setlist shared
-
-**Retention:**
-- Session started
-- Session duration
-- Downloads per session
-- Days since last visit
-
-**Revenue:**
-- Upgrade initiated
-- Upgrade completed
-- Downgrade initiated
-- Cancellation initiated
-- Cancellation completed
-- Payment failed
-- Payment recovered
-
-### 10.2 Key Dashboards
-
-1. **Executive Dashboard** - MRR, subscribers, churn, growth
-2. **Product Dashboard** - Activation, engagement, feature usage
-3. **Content Dashboard** - Top downloads, search misses, request volume
-4. **Health Dashboard** - Errors, performance, uptime
+| Property | Value |
+|----------|-------|
+| Primary color | Cyan `#00d4ff` |
+| Background | `#0a0a0f` (near-black) |
+| Body font | Inter |
+| Heading font | Plus Jakarta Sans |
+| Mono font | JetBrains Mono |
+| Mode | Dark-first |
+| CSS prefix | `tvp-` |
+| Design references | Spotify, YouTube, Apple Music, Serato, Beatport, Tidal, Billboard |
 
 ---
 
-## 11. Launch Checklist
+## 6. Frontend Routes (19 Total)
 
-### 11.1 Pre-Launch Requirements
+All routes are implemented and deployed.
 
-**Product:**
-- [ ] All P0 features complete and tested
-- [ ] Performance targets met
-- [ ] Mobile responsive verified
-- [ ] Error handling comprehensive
-- [ ] Loading states implemented
+| Route | Page | Auth | Status |
+|-------|------|------|--------|
+| `/welcome` | Landing page | Public | BUILT |
+| `/` | Root redirect (-> /home if auth'd, -> /welcome if not) | Conditional | BUILT |
+| `/login` | Login (Google OAuth + email/password + 2FA) | Public | BUILT |
+| `/register` | Registration with phone validation | Public | BUILT |
+| `/forgot-password` | Password reset request | Public | BUILT |
+| `/reset-password` | Password reset with token | Public | BUILT |
+| `/verify-email` | Email verification | Public | BUILT |
+| `/verify-phone` | SMS phone verification (post-login) | Protected | BUILT |
+| `/home` | Main app dashboard | Protected | BUILT |
+| `/video/:id` | Video detail page | Protected | BUILT |
+| `/search` | Search results | Protected | BUILT |
+| `/library` | Playlists / crates / favorites | Protected | BUILT |
+| `/downloads` | Download history | Protected | BUILT |
+| `/membership` | Subscription plans | Protected | BUILT |
+| `/membership/success` | Post-Stripe checkout confirmation | Protected | BUILT |
+| `/settings` | Account settings | Protected | BUILT |
+| `/admin` | Admin dashboard (10 tabs) | Admin only | BUILT |
+| `/insights` | Business intelligence | Admin only | BUILT |
+| `/set/:shareId` | Public shared setlist | Public | BUILT |
+| `/og500` | OG500 marketing page | Public | BUILT |
 
-**Content:**
-- [ ] Minimum 30,000 videos in catalog
-- [ ] All videos have complete metadata
-- [ ] Quality encoding verified
-- [ ] Sample content for all major genres
-
-**Business:**
-- [ ] Stripe integration complete
-- [ ] All subscription tiers configured
-- [ ] Email flows active (welcome, trial ending, etc.)
-- [ ] Support documentation ready
-
-**Legal:**
-- [ ] Terms of Service finalized
-- [ ] Privacy Policy published
-- [ ] Content licenses verified
-- [ ] DMCA process documented
-
-### 11.2 Soft Launch Criteria
-
-- [ ] 100-200 beta users invited
-- [ ] Feedback mechanism active
-- [ ] Bug tracking operational
-- [ ] On-call support available
-
-### 11.3 Full Launch Criteria
-
-- [ ] Soft launch issues resolved
-- [ ] <1% error rate
-- [ ] <5s average page load
-- [ ] NPS >40 from beta users
-- [ ] Marketing assets ready
+Protected routes require a valid JWT. Admin routes require `role: 'admin'`.
 
 ---
 
-## 12. Appendices
+## 7. Backend API Reference
 
-### Appendix A: Wireframes
+### 7.1 Authentication
 
-*To be added - reference design files*
+| Method | Endpoint | Description | Status |
+|--------|----------|-------------|--------|
+| POST | `/api/auth/register` | Email/phone/password registration | LIVE |
+| POST | `/api/auth/login` | Login, returns JWT + refresh token | LIVE |
+| POST | `/api/auth/google` | Google OAuth -> JWT (find or create user) | LIVE |
+| POST | `/api/auth/send-phone-verification` | Send SMS code (requiresAuth) | LIVE (stub) |
+| POST | `/api/auth/verify-phone-code` | Confirm SMS code | LIVE (stub) |
+| GET | `/api/auth/me` | Current user profile | LIVE |
+| POST | `/api/auth/forgot-password` | Request password reset email | LIVE |
+| POST | `/api/auth/reset-password` | Reset password with token | LIVE |
+| POST | `/api/auth/2fa/setup` | Generate TOTP secret + QR | LIVE |
+| POST | `/api/auth/2fa/verify` | Confirm TOTP code | LIVE |
+| POST | `/api/auth/2fa/disable` | Disable 2FA | LIVE |
 
-### Appendix B: API Specifications
+### 7.2 Videos and Content
 
-*See technical documentation*
+| Method | Endpoint | Description | Status |
+|--------|----------|-------------|--------|
+| GET | `/api/videos` | List videos (filters: genre, year, label, BPM, search) | LIVE |
+| GET | `/api/videos/:id` | Single video with all versions | LIVE |
+| GET | `/api/videos/search?q=` | Dedicated search endpoint | LIVE |
+| GET | `/api/videos/:id/download` | Presigned Wasabi download URL | LIVE |
+| GET | `/api/genres` | Genre list | LIVE |
+| GET | `/api/sets/:shareId` | Public shared set data | LIVE |
 
-### Appendix C: Competitive Feature Comparison
+### 7.3 Subscriptions and Billing
 
-*See BRD competitive analysis*
+| Method | Endpoint | Description | Status |
+|--------|----------|-------------|--------|
+| GET | `/api/memberships` | List 4 tiers | LIVE |
+| POST | `/api/memberships/create-checkout` | Create Stripe checkout session | LIVE |
+| POST | `/api/memberships/cancel` | Cancel subscription | LIVE |
+| GET | `/api/billing/*` | Billing history, portal, payment methods | LIVE |
+| POST | `/api/webhooks/stripe` | Stripe webhook handler | LIVE |
+
+### 7.4 User Data
+
+| Method | Endpoint | Description | Status |
+|--------|----------|-------------|--------|
+| GET | `/api/user/downloads` | Download history | LIVE |
+| GET | `/api/playlists` | User playlists/crates | LIVE |
+| GET | `/api/favorites` | User favorites | LIVE |
+
+### 7.5 Admin (requires admin role)
+
+| Method | Endpoint | Description | Status |
+|--------|----------|-------------|--------|
+| GET | `/api/admin/stats` | Dashboard stat cards | LIVE |
+| GET | `/api/admin/users` | Paginated user list with search | LIVE |
+| PUT | `/api/admin/users/:id` | Update user role/tier/status | LIVE |
+| GET | `/api/admin/videos` | Paginated video list with search | LIVE |
+| POST | `/api/admin/videos/bulk-upload` | JSON/CSV ingest (up to 100 per batch) | LIVE |
+| GET | `/api/admin/analytics` | Downloads/signups/top videos | LIVE |
+| POST | `/api/admin/marketing/email` | Email blast (multi-provider distributor) | LIVE |
+| POST | `/api/admin/marketing/sms` | SMS blast | LIVE (stub) |
+| GET | `/api/admin/marketing/history` | Blast history | LIVE |
 
 ---
 
-**Document Approval:**
+## 8. Admin Dashboard (10 Tabs)
 
-| Role | Name | Date | Signature |
-|------|------|------|-----------|
-| Product Owner | | | |
-| Technical Lead | Steve | | |
-| Design Lead | | | |
+All tabs are implemented at `/admin`. Credentials: `admin@thevideopool.com` / `Admin123!@#`
+
+| Tab | Component | Capabilities |
+|-----|-----------|-------------|
+| **Overview** | AdminOverview | 6 stat cards (users, subscribers, videos, downloads today, MRR, new this week), quick actions, recent activity feed |
+| **Business Intel** | AdminInsightsSummary | Revenue trends, cohort analysis, churn indicators |
+| **Users** | AdminUsers | Paginated user list, search, inline role/tier/status editing |
+| **Videos** | AdminVideos | Paginated video list, search, delete |
+| **Analytics** | AdminAnalytics | Downloads and signups per day charts, top videos, membership distribution |
+| **Bulk Upload** | BulkUploader | JSON/CSV video ingest, up to 100 videos per batch |
+| **Coupons** | AdminCoupons | Discount code creation and management |
+| **Support** | AdminSupport | Support ticket queue and management |
+| **Marketing** | AdminMarketing | Email/SMS blast composer, 4 audience segments (all, subscribers, free, inactive) |
+| **System** | AdminSystem | Health check, cache clear, audit logs, error logs |
 
 ---
 
-*Last Updated: January 17, 2026*
-*Next Review: Post-Soft Launch*
+## 9. Feature Status Matrix
+
+| Feature | Current State | Target State | Priority | Owner |
+|---------|--------------|--------------|----------|-------|
+| Email/password auth | LIVE | -- | Done | -- |
+| Google OAuth | LIVE (needs VITE_GOOGLE_CLIENT_ID on Vercel) | Fully live | P0 | Aundre |
+| Phone SMS verification | Stub mode (no AWS keys) | Live via AWS SNS | P1 | Aundre |
+| TOTP 2FA | LIVE | -- | Done | -- |
+| Video search (keyword) | LIVE | -- | Done | -- |
+| Natural language search | UI built (AISearchHero + AISearchInput) | Backend NLP processing wired | P2 | Backlog |
+| Genre/year/label/BPM filters | LIVE | -- | Done | -- |
+| Video preview modal | BUILT (PreviewModalV2) | -- | Done | -- |
+| Presigned download URLs | LIVE (Wasabi, tested 83-190MB files) | -- | Done | -- |
+| Download quality selector | BUILT (DownloadQualityModal) | -- | Done | -- |
+| Batch download modal | BUILT (BatchDownloadModal) | -- | Done | -- |
+| Download counter | BUILT (DownloadCounter) | -- | Done | -- |
+| Download history | LIVE | -- | Done | -- |
+| Playlists/crates | BUILT | -- | Done | -- |
+| Set builder + AI suggestions | BUILT (SetBuilder) | -- | Done | -- |
+| Shared setlists (public) | LIVE at /set/:shareId | -- | Done | -- |
+| Camelot wheel (key compatibility) | BUILT (CamelotWheel) | -- | Done | -- |
+| Waveform preview | BUILT (WaveformPreview) | -- | Done | -- |
+| Stripe checkout (7 variants) | LIVE (cs_live_ sessions confirmed) | -- | Done | -- |
+| Stripe webhook | Code live at /api/webhooks/stripe | URL registered in Stripe dashboard | P0 | Aundre |
+| Membership cancel | LIVE | -- | Done | -- |
+| Email delivery (Brevo) | LIVE (all 8 auth triggers confirmed) | -- | Done | -- |
+| react-window virtualization | Code exists (VirtualizedVideoList) | Wired to live 26K dataset | P1 | Backlog |
+| Recommendations API | Backend at /api/recommendations | Frontend wired to backend | P2 | Backlog |
+| Thumbnail rendering | URLs present in DB | Visual QA pass across all views | P1 | Backlog |
+| Social logins (7 providers) | UI built (coming-soon tooltips) | Live OAuth per provider | P3 | Backlog |
+| SMS marketing blasts | Stub in AdminMarketing | Live via AWS SNS | P2 | Backlog |
+| Admin dashboard (10 tabs) | ALL BUILT | -- | Done | -- |
+| OG500 marketing page | BUILT | -- | Done | -- |
+| Search autocomplete | BUILT (SearchAutocomplete) | -- | Done | -- |
+| Free trial banner + expired modal | BUILT | -- | Done | -- |
+| Social login grid | BUILT (Google live, 7 coming-soon) | -- | Done | -- |
+
+---
+
+## 10. Integration Status
+
+| Service | Purpose | Status | Blocking Action |
+|---------|---------|--------|-----------------|
+| **Stripe** | Payments, subscriptions | LIVE -- all 7 checkout variants working | Register webhook URL in Stripe dashboard |
+| **Wasabi S3** | Video/thumbnail/audio storage | LIVE -- 26,043 videos, presigned URLs verified | None |
+| **Supabase** | PostgreSQL database | LIVE -- all tables populated | None |
+| **Brevo** | Transactional email (primary) | LIVE -- delivery confirmed | None |
+| **SendGrid** | Transactional email (fallback) | Configured as fallback in chain | None |
+| **Google OAuth** | Social login | Code live, tested | Set `VITE_GOOGLE_CLIENT_ID` on Vercel |
+| **AWS SNS** | SMS verification + marketing blasts | Stub mode | Set `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` on Railway |
+| **Vercel** | Frontend hosting + edge CDN | LIVE | None |
+| **Railway** | Backend hosting | LIVE -- healthy, all routes functional | None |
+
+---
+
+## 11. User-Facing Components
+
+| Component | Purpose |
+|-----------|---------|
+| `HeaderV2` | Search bar with autocomplete, genre nav, user dropdown, download counter |
+| `GenreNav` | Genre mega menu navigation |
+| `VideoCardV2` | Grid card: quality badge, hover preview, add-to-crate, download |
+| `VirtualizedVideoList` | react-window list view for 30K+ video performance |
+| `VideoGrid` | Standard grid layout |
+| `PreviewModalV2` | Video preview with all versions, full metadata, download options |
+| `SetBuilder` | Slide-out set builder panel with AI-powered next-track suggestions |
+| `AISearchHero` + `AISearchInput` | Natural language search UI |
+| `CamelotWheel` | Musical key compatibility wheel visualization |
+| `WaveformPreview` | Audio waveform display |
+| `SearchAutocomplete` | Debounced search with suggestions dropdown |
+| `DownloadCounter` | Downloads used/remaining indicator |
+| `BatchDownloadModal` | Multi-video download queue |
+| `DownloadQualityModal` | Quality selector (720p/1080p/4K) before download |
+| `FreeTrialBanner` | Upgrade prompt for free-tier users |
+| `TrialExpiredModal` | Trial expiry gate with upgrade CTA |
+| `SocialLoginGrid` | 2x4 grid (Google live, 7 coming-soon with tooltips) |
+| `Toast` | Pill-style bottom-center notifications |
+| `ErrorBoundary` | React error boundaries |
+| `SidePanel` + sub-panels | Context panels: Details, Download, Library, Preview, Admin |
+
+---
+
+## 12. Database Schema (Key Tables)
+
+| Table | Records | Purpose |
+|-------|---------|---------|
+| `videos` | 26,043 | Master catalog: title, artist, genre, release_year, record_label, BPM, key |
+| `video_versions` | 27,619 | Quality variants per video (720p, 1080p, 4K) with Wasabi S3 keys |
+| `users` | -- | Accounts: email, password_hash, role, google_id, avatar_url, phone fields |
+| `memberships` | 4 | Tier definitions with Stripe price IDs |
+| `user_memberships` | -- | Active subscriptions per user |
+| `downloads` | -- | Download history: user_id, video_id, version_id, timestamp |
+| `playlists` | -- | User crates/playlists |
+| `playlist_videos` | -- | Videos in playlists (join table) |
+| `favorites` | -- | User favorited videos |
+| `shared_sets` | -- | Public shareable setlists |
+
+**Important schema note:** `videos.release_year` and `videos.record_label` hold the real data. The columns `year` and `label` exist but are empty. The API aliases them: `v.release_year AS year, v.record_label AS label`. Genre coverage: 99.5%. Release year coverage: 99.9%. Record label coverage: 99.1%.
+
+---
+
+## 13. Analytics Events to Track
+
+### Activation and Conversion
+- `user.registered` -- method (email/google), timestamp
+- `user.verified_email` -- time from registration
+- `user.verified_phone` -- method
+- `user.first_download` -- time-to-first-download from signup
+- `membership.checkout_started` -- tier, interval
+- `membership.checkout_completed` -- tier, interval, amount
+- `membership.cancelled` -- tier, reason, months_active
+
+### Engagement
+- `video.searched` -- query, results_count, time_to_first_click
+- `video.previewed` -- video_id, duration_watched
+- `video.downloaded` -- video_id, quality, file_size_mb
+- `video.added_to_crate` -- video_id, crate_id
+- `set.created` -- video_count
+- `set.shared` -- share_id, recipient_count
+- `filter.applied` -- filter_type, value
+
+### Retention
+- `session.started` -- days_since_last_session
+- `downloads.quota_warning` -- used, remaining, percentage
+- `downloads.quota_exhausted` -- tier, days_until_reset
+- `membership.renewal_success` -- tier, amount
+- `membership.renewal_failed` -- tier, failure_reason
+
+### Admin
+- `admin.bulk_upload` -- count, success, failed
+- `admin.marketing_blast` -- channel (email/sms), segment, recipient_count
+- `admin.user_modified` -- user_id, field_changed, old_value, new_value
+
+---
+
+## 14. Security
+
+| Mechanism | Implementation | Status |
+|-----------|---------------|--------|
+| JWT access tokens | Configurable expiry, signed with JWT_SECRET | LIVE |
+| Refresh token rotation | Separate REFRESH_TOKEN_SECRET | LIVE |
+| TOTP 2FA | Setup/verify/disable endpoints | LIVE |
+| Phone SMS verification | Post-login step, skippable | LIVE (stub) |
+| Google OAuth | Stateless find-or-create flow | LIVE |
+| Password reset | Signed email tokens via Brevo | LIVE |
+| Admin role enforcement | Middleware on all /api/admin/* routes | LIVE |
+| Presigned download URLs | Time-limited, per-user Wasabi URLs | LIVE |
+| CORS | Configured for frontend origin only | LIVE |
+| Stripe webhook verification | Signature validation on /api/webhooks/stripe | LIVE |
+| Rate limiting | Applied to auth endpoints | LIVE |
+
+---
+
+## 15. What's Missing -- Prioritized Backlog
+
+### P0 -- Launch Day (minutes of work)
+
+1. **Register Stripe webhook URL** in Stripe dashboard: `https://tvp-oc-production.up.railway.app/api/webhooks/stripe`
+2. **Set `VITE_GOOGLE_CLIENT_ID`** on Vercel for live Google OAuth (authorized JS origin: `tvp-redesign-2026.vercel.app`)
+
+### P1 -- First Week Post-Launch
+
+3. **Wire react-window virtualization** to live 26K dataset -- VirtualizedVideoList component exists, needs connection to real data source
+4. **Visual QA pass on thumbnails** -- URLs present in DB, need to verify rendering across grid, list, and preview views
+5. **Enable live SMS verification** via AWS SNS -- set `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` on Railway
+6. **Verify Stripe billing portal** -- confirm customer portal link works end-to-end for self-service plan changes
+
+### P2 -- First Month
+
+7. **Wire recommendations API** -- backend exists at `/api/recommendations/*`, frontend currently hits `/api/videos/recommended` (mismatch)
+8. **Natural language search backend** -- AISearchHero/AISearchInput UI is built, needs NLP query parsing on server
+9. **Live SMS marketing blasts** -- AdminMarketing tab is ready, needs AWS SNS credentials
+10. **Automated content ingestion pipeline** -- weekly Wasabi-to-DB import for 50-100 new videos/week target
+
+### P3 -- Quarter 1
+
+11. **Additional social logins** -- Instagram, Facebook, Twitter/X, LinkedIn, TikTok (UI slots ready with coming-soon tooltips in SocialLoginGrid)
+12. **Mobile app or PWA** -- DJ Mike uses phone at gigs, needs responsive native experience
+13. **Serato/VirtualDJ integration** -- direct crate export to DJ software file formats
+14. **Advanced analytics** -- cohort analysis, LTV calculation, churn prediction beyond current AdminAnalytics
+15. **Referral program** -- DJ community is word-of-mouth driven; incentivize sharing
+
+---
+
+## 16. Launch Readiness
+
+| Criterion | Target | Current Status |
+|-----------|--------|----------------|
+| Homepage loads under 2s | LCP < 2000ms | Verify post-deploy |
+| Search returns results under 500ms | p95 < 500ms | Verify post-deploy |
+| Download URL generation under 1s | Presigned URL response time | PASS |
+| Stripe checkout completes | All 7 variants return cs_live_ | PASS |
+| Email delivery works | All 8 auth email triggers deliver | PASS |
+| Auth flow end-to-end | Register -> verify -> login -> access content | PASS |
+| Admin dashboard functional | All 10 tabs render and operate | PASS |
+| Video catalog accessible | 26,043 videos queryable with genre/year/label/BPM filters | PASS |
+| Presigned downloads work | Wasabi URLs return real files (83-190MB tested) | PASS |
+| Zero critical errors | Frontend error boundary + backend logs clean | Verify post-deploy |
+
+### Immediate Post-Launch Checklist
+
+- [ ] Register Stripe webhook URL in dashboard (5 min)
+- [ ] Set VITE_GOOGLE_CLIENT_ID on Vercel (2 min)
+- [ ] Verify frontend loads correctly with live backend (manual check)
+- [ ] Complete one full user flow: register -> verify email -> login -> search -> download (10 min)
+- [ ] Verify admin login and all 10 tabs (5 min)
+- [ ] Monitor error logs for first 24 hours
+
+---
+
+## 17. Critical Code Warnings
+
+These are hard-won lessons from development. Do not repeat these mistakes.
+
+1. **www.thevideopool.com is Steve's production site.** Never touch, reference, or deploy to it.
+2. **Server returns `tracks` key, not `videos`.** The adapter layer (`src/api/adapters.ts`) maps `{tracks:[]}` to the frontend's `Track[]` type. Do not bypass it.
+3. **Stripe price IDs use legacy `s2_` format.** They are valid and functional. Do not replace them with `price_` format.
+4. **Database columns `v.year` and `v.label` are EMPTY.** Real data lives in `release_year` and `record_label`. The API aliases them.
+5. **Admin password contains special characters** (`Admin123!@#`). Use proper encoding (Python urllib or `--data-raw` in curl) when testing via CLI.
+6. **`extractKey()` must decode percent-encoded S3 keys** before passing to AWS SDK to prevent double-encoding.
+7. **Quality enum in ORDER BY must be cast to text** (`vv.quality::text`) to prevent PostgreSQL error 22P02. The enum value is `'4k'` (lowercase), not `'4K'`.
+
+---
+
+*This document is the single source of truth for The Video Pool platform. It reflects the actual built state as of February 25, 2026. When the product changes, update this document -- not scattered notes.*
+
+*Next review: 1 week post-launch.*

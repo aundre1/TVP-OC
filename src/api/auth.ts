@@ -265,6 +265,21 @@ export const authApi = {
     }
     return post<{ backupCodes: string[] }>('/auth/2fa/backup-codes/regenerate', { code });
   },
+
+  // Phone verification
+  async sendPhoneVerification(): Promise<{ message: string; stub?: boolean }> {
+    if (DEV_CONFIG.useMockAuth) {
+      return { message: 'Verification code sent (mock)', stub: true };
+    }
+    return post<{ message: string; stub?: boolean }>('/auth/send-phone-verification');
+  },
+
+  async verifyPhoneCode(code: string): Promise<{ message: string }> {
+    if (DEV_CONFIG.useMockAuth) {
+      return { message: 'Phone verified (mock)' };
+    }
+    return post<{ message: string }>('/auth/verify-phone-code', { code });
+  },
 };
 
 export default authApi;

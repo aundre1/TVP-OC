@@ -6,7 +6,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import GoogleLoginButton from '@/components/GoogleLoginButton';
+import { useAuthStore } from '@/stores/authStore';
+import SocialLoginGrid from '@/components/SocialLoginGrid';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -17,13 +18,22 @@ export default function LoginPage() {
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  const redirectAfterLogin = () => {
+    const user = useAuthStore.getState().user;
+    if (user && user.phoneVerified === false) {
+      navigate('/verify-phone');
+    } else {
+      navigate('/');
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
 
     const success = await login({ username, password });
     if (success) {
-      navigate('/');
+      redirectAfterLogin();
     }
   };
 
@@ -33,7 +43,7 @@ export default function LoginPage() {
 
     const success = await verify2FA(twoFactorCode);
     if (success) {
-      navigate('/');
+      redirectAfterLogin();
     }
   };
 
@@ -149,7 +159,7 @@ export default function LoginPage() {
               </div>
 
               {/* Google Login */}
-              <GoogleLoginButton mode="login" />
+              <SocialLoginGrid mode="login" />
             </>
           ) : (
             <form onSubmit={handle2FAVerify} className="space-y-4">

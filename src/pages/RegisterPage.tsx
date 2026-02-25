@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import GoogleLoginButton from '@/components/GoogleLoginButton';
+import SocialLoginGrid from '@/components/SocialLoginGrid';
 
 export default function RegisterPage() {
   const { register, error, isLoading, clearError } = useAuth();
@@ -259,7 +259,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Google Sign Up */}
-          <GoogleLoginButton mode="signup" />
+          <SocialLoginGrid mode="signup" />
 
           <div className="mt-6 text-center">
             <span className="text-sm text-tvp-text-muted">

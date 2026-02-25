@@ -22,6 +22,7 @@ const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const EmailVerificationPage = lazy(() => import('@/pages/EmailVerificationPage'));
+const PhoneVerificationPage = lazy(() => import('@/pages/PhoneVerificationPage'));
 const VideoPage = lazy(() => import('@/pages/VideoPage'));
 const SearchPage = lazy(() => import('@/pages/SearchPage'));
 const LibraryPage = lazy(() => import('@/pages/LibraryPage'));
@@ -171,6 +172,14 @@ export default function App() {
           <Route
             path="/verify-email"
             element={<EmailVerificationPage />}
+          />
+          <Route
+            path="/verify-phone"
+            element={
+              <ProtectedRoute>
+                <PhoneVerificationPage />
+              </ProtectedRoute>
+            }
           />
 
           {/* Public shared set page (no auth required) */}

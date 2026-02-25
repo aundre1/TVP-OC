@@ -132,6 +132,7 @@ export interface User {
   membershipType: 'free' | 'starter' | 'pro' | 'elite';
   isAdmin: boolean;
   emailVerified: boolean;
+  phoneVerified?: boolean;
   twoFactorEnabled: boolean;
   profileImage?: string;
   createdAt: string;
