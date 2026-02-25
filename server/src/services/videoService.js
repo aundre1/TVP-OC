@@ -162,7 +162,9 @@ export async function getAllVideos(filters = {}, pagination = {}) {
             'id', vv.id,
             'versionType', vv.version_type,
             'quality', vv.quality,
-            'fileSize', vv.file_size
+            'fileSize', vv.file_size,
+            'fileUrl', vv.file_url,
+            'previewUrl', vv.preview_url
           )
         ) FILTER (WHERE vv.id IS NOT NULL),
         '[]'
@@ -305,6 +307,8 @@ export async function getVideoById(id) {
             'versionType', vv.version_type,
             'quality', vv.quality,
             'fileSize', vv.file_size,
+            'fileUrl', vv.file_url,
+            'previewUrl', vv.preview_url,
             'bitrate', vv.bitrate
           ) ORDER BY
             CASE vv.quality
@@ -351,7 +355,9 @@ export async function getFeaturedVideos(limit = 20) {
             'id', vv.id,
             'versionType', vv.version_type,
             'quality', vv.quality,
-            'fileSize', vv.file_size
+            'fileSize', vv.file_size,
+            'fileUrl', vv.file_url,
+            'previewUrl', vv.preview_url
           )
         ) FILTER (WHERE vv.id IS NOT NULL),
         '[]'
@@ -445,7 +451,9 @@ export async function getRecommendedVideos(userId, limit = 20) {
               'id', vv.id,
               'versionType', vv.version_type,
               'quality', vv.quality,
-              'fileSize', vv.file_size
+              'fileSize', vv.file_size,
+              'fileUrl', vv.file_url,
+              'previewUrl', vv.preview_url
             )
           ) FILTER (WHERE vv.id IS NOT NULL),
           '[]'
@@ -564,7 +572,9 @@ export async function getRelatedVideos(videoId, limit = 20) {
               'id', vv.id,
               'versionType', vv.version_type,
               'quality', vv.quality,
-              'fileSize', vv.file_size
+              'fileSize', vv.file_size,
+              'fileUrl', vv.file_url,
+              'previewUrl', vv.preview_url
             )
           ) FILTER (WHERE vv.id IS NOT NULL),
           '[]'

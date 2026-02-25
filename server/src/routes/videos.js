@@ -8,6 +8,8 @@ import { body, query, param, validationResult } from 'express-validator';
 import { requireAuth, optionalAuth } from '../middleware/auth.js';
 import videoService from '../services/videoService.js';
 import downloadService from '../services/downloadService.js';
+import pool from '../db/pool.js';
+import { getPresignedDownloadUrl, getPresignedPreviewUrl, isStorageConfigured } from '../services/storageService.js';
 
 const router = express.Router();
 
@@ -313,6 +315,119 @@ router.get('/search',
       const result = await videoService.searchVideos(req.query.q, filters, pagination);
 
       res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ===========================================
+// PRESIGNED URL ENDPOINTS
+// ===========================================
+
+/**
+ * GET /api/videos/:id/download-url
+ * Generate a presigned download URL for a specific video version.
+ * Auth required. Records a download entry.
+ *
+ * Query params:
+ *   versionType - clean | explicit | extended | intro | outro | quickhit (default: clean)
+ *   quality     - 4K | 1080p | 720p | 480p (default: best available)
+ */
+router.get('/:id/download-url',
+  requireAuth,
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { versionType = 'clean', quality = '1080p' } = req.query;
+
+      // Fetch the video version record — prefer requested quality, fall back to best available
+      const versionResult = await pool.query(
+        `SELECT vv.file_url, vv.version_type, vv.quality,
+                v.title, v.artist
+         FROM video_versions vv
+         JOIN videos v ON v.id = vv.video_id
+         WHERE vv.video_id = $1
+           AND vv.version_type = $2
+         ORDER BY CASE vv.quality
+           WHEN '4K'    THEN 1
+           WHEN '1080p' THEN 2
+           WHEN '720p'  THEN 3
+           ELSE 4
+         END
+         LIMIT 1`,
+        [id, versionType]
+      );
+
+      if (versionResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Video version not found' });
+      }
+
+      const version = versionResult.rows[0];
+
+      // If S3 creds are absent (e.g. local dev without keys), return raw URL
+      if (!isStorageConfigured()) {
+        return res.json({ url: version.file_url, expires: null });
+      }
+
+      // Generate time-limited presigned URL
+      const url = await getPresignedDownloadUrl(version.file_url);
+
+      // Record the download (ON CONFLICT DO NOTHING prevents duplicates)
+      await pool.query(
+        `INSERT INTO downloads (user_id, video_id, version_type, quality, ip_address)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT DO NOTHING`,
+        [req.user.id, id, version.version_type, version.quality, req.ip]
+      );
+
+      res.json({
+        url,
+        expires: Math.floor(Date.now() / 1000) + 3600,
+        title: version.title,
+        artist: version.artist,
+        versionType: version.version_type,
+        quality: version.quality,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/videos/:id/preview-url
+ * Generate a presigned URL for a short preview clip.
+ * No auth required — public endpoint for pre-purchase previewing.
+ */
+router.get('/:id/preview-url',
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      const result = await pool.query(
+        `SELECT vv.preview_url, v.title, v.artist
+         FROM video_versions vv
+         JOIN videos v ON v.id = vv.video_id
+         WHERE vv.video_id = $1
+           AND vv.preview_url IS NOT NULL
+         LIMIT 1`,
+        [id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Preview not available' });
+      }
+
+      const { preview_url } = result.rows[0];
+
+      // Graceful fallback when storage is not configured or preview_url is absent
+      if (!isStorageConfigured() || !preview_url) {
+        return res.json({ url: preview_url || null });
+      }
+
+      const url = await getPresignedPreviewUrl(preview_url);
+      res.json({ url, expires: Math.floor(Date.now() / 1000) + 3600 });
     } catch (error) {
       next(error);
     }
