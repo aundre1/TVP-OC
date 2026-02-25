@@ -37,6 +37,9 @@ import { notFoundHandler } from './middleware/notFoundHandler.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust Railway/Heroku/Vercel reverse proxy
+app.set('trust proxy', 1);
+
 // ===========================================
 // MIDDLEWARE
 // ===========================================
