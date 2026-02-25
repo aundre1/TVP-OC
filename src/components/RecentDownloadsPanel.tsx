@@ -122,7 +122,7 @@ export default function RecentDownloadsPanel() {
                 </div>
 
                 {/* Download Count Warning */}
-                {download.downloadCount > 1 && (
+                {(download.downloadCount ?? 0) > 1 && (
                   <div
                     className={clsx(
                       'flex items-center gap-1 px-2 py-1',

@@ -11,6 +11,11 @@ export interface DownloadRecord {
   artist: string;
   genre: string;
   thumbnail_url: string;
+  // Optional enriched fields used by RecentDownloadsPanel
+  bpm?: number;
+  key?: string;
+  downloadCount?: number;
+  date?: string;
 }
 
 export async function getDownloadHistory(userId: string | number, limit = 50): Promise<DownloadRecord[]> {
