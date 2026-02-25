@@ -39,6 +39,7 @@ const handleValidationErrors = (req, res, next) => {
 router.get('/',
   [
     query('search').optional().trim().escape(),
+    query('q').optional().trim().escape(), // alias for search
     query('genre').optional().trim(),
     query('subGenre').optional().trim(),
     query('bpmMin').optional().isInt({ min: 1, max: 300 }),
@@ -54,7 +55,7 @@ router.get('/',
   async (req, res, next) => {
     try {
       const filters = {
-        search: req.query.search,
+        search: req.query.search || req.query.q, // accept both ?search= and ?q=
         genre: req.query.genre,
         subGenre: req.query.subGenre,
         bpmMin: req.query.bpmMin,
@@ -173,6 +174,50 @@ router.get('/related/:id',
 );
 
 // ===========================================
+// SEARCH ENDPOINT (must be before /:id)
+// ===========================================
+
+/**
+ * GET /api/videos/search
+ * Search videos (alias for GET /api/videos with search param)
+ */
+router.get('/search',
+  [
+    query('q').trim().notEmpty().withMessage('Search query is required'),
+    query('genre').optional().trim(),
+    query('bpmMin').optional().isInt({ min: 1, max: 300 }),
+    query('bpmMax').optional().isInt({ min: 1, max: 300 }),
+    query('key').optional().trim(),
+    query('sortBy').optional().isIn(['newest', 'oldest', 'popular', 'title', 'artist', 'bpm']),
+    query('page').optional().isInt({ min: 1 }).toInt(),
+    query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
+  ],
+  handleValidationErrors,
+  async (req, res, next) => {
+    try {
+      const filters = {
+        genre: req.query.genre,
+        bpmMin: req.query.bpmMin,
+        bpmMax: req.query.bpmMax,
+        key: req.query.key,
+        sortBy: req.query.sortBy || 'popular'
+      };
+
+      const pagination = {
+        page: req.query.page || 1,
+        limit: req.query.limit || 20
+      };
+
+      const result = await videoService.searchVideos(req.query.q, filters, pagination);
+
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ===========================================
 // SINGLE VIDEO ENDPOINTS
 // ===========================================
 
@@ -278,50 +323,6 @@ router.post('/:id/download',
 );
 
 // ===========================================
-// SEARCH ENDPOINT
-// ===========================================
-
-/**
- * GET /api/videos/search
- * Search videos (alias for GET /api/videos with search param)
- */
-router.get('/search',
-  [
-    query('q').trim().notEmpty().withMessage('Search query is required'),
-    query('genre').optional().trim(),
-    query('bpmMin').optional().isInt({ min: 1, max: 300 }),
-    query('bpmMax').optional().isInt({ min: 1, max: 300 }),
-    query('key').optional().trim(),
-    query('sortBy').optional().isIn(['newest', 'oldest', 'popular', 'title', 'artist', 'bpm']),
-    query('page').optional().isInt({ min: 1 }).toInt(),
-    query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
-  ],
-  handleValidationErrors,
-  async (req, res, next) => {
-    try {
-      const filters = {
-        genre: req.query.genre,
-        bpmMin: req.query.bpmMin,
-        bpmMax: req.query.bpmMax,
-        key: req.query.key,
-        sortBy: req.query.sortBy || 'popular'
-      };
-
-      const pagination = {
-        page: req.query.page || 1,
-        limit: req.query.limit || 20
-      };
-
-      const result = await videoService.searchVideos(req.query.q, filters, pagination);
-
-      res.json(result);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-// ===========================================
 // PRESIGNED URL ENDPOINTS
 // ===========================================
 
@@ -390,6 +391,10 @@ router.get('/:id/download-url',
         quality: version.quality,
       });
     } catch (error) {
+      // 22P02 = invalid input syntax (e.g. non-existent or malformed ID)
+      if (error.code === '22P02') {
+        return res.status(404).json({ error: 'Video not found' });
+      }
       next(error);
     }
   }
