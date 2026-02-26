@@ -57,8 +57,8 @@ export default function GoogleLoginButton({ mode = 'login', className = '' }: Go
         setIsLoading(false);
       }
     },
-    onError: (error) => {
-      toast.error('Google sign-in failed. Please try again.');
+    onError: () => {
+      toast.error('Google sign-in is unavailable. Please use email/password to log in.');
       setIsLoading(false);
     },
   });

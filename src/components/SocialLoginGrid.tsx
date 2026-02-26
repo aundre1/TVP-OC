@@ -190,7 +190,7 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
   }, [loginWithGoogle, navigate, toast]);
 
   const handleGoogleError = useCallback(() => {
-    toast.error('Google sign-in cancelled or failed.');
+    toast.error('Google sign-in is unavailable. Please use email/password to log in.');
     setLoadingProvider(null);
   }, [toast]);
 

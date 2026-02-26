@@ -1053,6 +1053,10 @@ router.post(
 
     // Verify token was issued for this application (prevents cross-app token reuse)
     const expectedClientId = process.env.GOOGLE_CLIENT_ID;
+    if (!expectedClientId && process.env.NODE_ENV === 'production') {
+      console.error('[AUTH] GOOGLE_CLIENT_ID not set — Google OAuth is disabled in production');
+      throw Errors.badRequest('Google sign-in is temporarily unavailable. Please use email/password login.');
+    }
     if (expectedClientId) {
       const tokenInfoRes = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${googleAccessToken}`);
       if (tokenInfoRes.ok) {
@@ -1060,6 +1064,8 @@ router.post(
         if (tokenInfo.aud !== expectedClientId) {
           throw Errors.unauthorized('Google token not issued for this application', 'INVALID_GOOGLE_TOKEN');
         }
+      } else {
+        throw Errors.unauthorized('Could not verify Google token. Please try again.', 'GOOGLE_TOKEN_VERIFY_FAILED');
       }
     }
 

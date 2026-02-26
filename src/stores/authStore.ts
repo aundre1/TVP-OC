@@ -91,8 +91,9 @@ export const useAuthStore = create<AuthStore>()(
           });
           return true;
         } catch (error: any) {
+          const message = error.response?.data?.error || 'Google sign-in is temporarily unavailable. Please use email/password.';
           set({
-            error: error.response?.data?.error || 'Google login failed',
+            error: message,
             isLoading: false,
           });
           return false;
