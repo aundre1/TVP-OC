@@ -3,12 +3,12 @@
 // API endpoints for user operations
 // ===========================================
 
-import express from 'express';
-import { body, query, param, validationResult } from 'express-validator';
-import { requireAuth } from '../middleware/auth.js';
-import downloadService from '../services/downloadService.js';
-import { pool } from '../db/pool.js';
-import { v4 as uuidv4 } from 'uuid';
+import express from "express";
+import { body, query, param, validationResult } from "express-validator";
+import { requireAuth } from "../middleware/auth.js";
+import downloadService from "../services/downloadService.js";
+import { pool } from "../db/pool.js";
+import { v4 as uuidv4 } from "uuid";
 
 const router = express.Router();
 
@@ -23,8 +23,8 @@ const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
-      error: 'Validation failed',
-      details: errors.array()
+      error: "Validation failed",
+      details: errors.array(),
     });
   }
   next();
@@ -38,45 +38,44 @@ const handleValidationErrors = (req, res, next) => {
  * GET /api/user/downloads
  * Get user's download history with pagination
  */
-router.get('/downloads',
+router.get(
+  "/downloads",
   [
-    query('page').optional().isInt({ min: 1 }).toInt(),
-    query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
+    query("page").optional().isInt({ min: 1 }).toInt(),
+    query("limit").optional().isInt({ min: 1, max: 100 }).toInt(),
   ],
   handleValidationErrors,
   async (req, res, next) => {
     try {
       const pagination = {
         page: req.query.page || 1,
-        limit: req.query.limit || 20
+        limit: req.query.limit || 20,
       };
 
       const result = await downloadService.getUserDownloadHistory(
         req.user.id,
-        pagination
+        pagination,
       );
 
       res.json(result);
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
  * GET /api/user/downloads/recent
  * Get user's last 10 downloads
  */
-router.get('/downloads/recent',
-  async (req, res, next) => {
-    try {
-      const downloads = await downloadService.getRecentDownloads(req.user.id, 10);
-      res.json({ downloads });
-    } catch (error) {
-      next(error);
-    }
+router.get("/downloads/recent", async (req, res, next) => {
+  try {
+    const downloads = await downloadService.getRecentDownloads(req.user.id, 10);
+    res.json({ downloads });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 // ===========================================
 // USER SETS (PLAYLISTS) ENDPOINTS
@@ -86,10 +85,9 @@ router.get('/downloads/recent',
  * GET /api/user/sets
  * Get user's playlists
  */
-router.get('/sets',
-  async (req, res, next) => {
-    try {
-      const query = `
+router.get("/sets", async (req, res, next) => {
+  try {
+    const query = `
         SELECT
           us.id,
           us.name,
@@ -121,47 +119,51 @@ router.get('/sets',
         ORDER BY us.updated_at DESC
       `;
 
-      const result = await pool.query(query, [req.user.id]);
+    const result = await pool.query(query, [req.user.id]);
 
-      const sets = result.rows.map(row => ({
-        id: row.id,
-        name: row.name,
-        description: row.description,
-        shareId: row.share_id,
-        isPublic: row.is_public,
-        viewCount: row.view_count,
-        copyCount: row.copy_count,
-        likeCount: row.like_count,
-        trackCount: parseInt(row.track_count),
-        tracksPreview: row.tracks_preview.slice(0, 4), // First 4 tracks for preview
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
-      }));
+    const sets = result.rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      shareId: row.share_id,
+      isPublic: row.is_public,
+      viewCount: row.view_count,
+      copyCount: row.copy_count,
+      likeCount: row.like_count,
+      trackCount: parseInt(row.track_count),
+      tracksPreview: row.tracks_preview.slice(0, 4), // First 4 tracks for preview
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
 
-      res.json({ sets });
-    } catch (error) {
-      next(error);
-    }
+    res.json({ sets });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /**
  * POST /api/user/sets
  * Create a new playlist
  */
-router.post('/sets',
+router.post(
+  "/sets",
   [
-    body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 255 }),
-    body('description').optional().trim().isLength({ max: 1000 }),
-    body('trackIds').optional().isArray(),
-    body('trackIds.*').optional().isInt({ min: 1 })
+    body("name")
+      .trim()
+      .notEmpty()
+      .withMessage("Name is required")
+      .isLength({ max: 255 }),
+    body("description").optional().trim().isLength({ max: 1000 }),
+    body("trackIds").optional().isArray(),
+    body("trackIds.*").optional().isInt({ min: 1 }),
   ],
   handleValidationErrors,
   async (req, res, next) => {
     const client = await pool.connect();
 
     try {
-      await client.query('BEGIN');
+      await client.query("BEGIN");
 
       const { name, description, trackIds = [] } = req.body;
 
@@ -174,7 +176,7 @@ router.post('/sets',
       const setResult = await client.query(insertSetQuery, [
         req.user.id,
         name,
-        description || null
+        description || null,
       ]);
 
       const setId = setResult.rows[0].id;
@@ -190,7 +192,7 @@ router.post('/sets',
         await client.query(insertTracksQuery, [setId, trackIds, positions]);
       }
 
-      await client.query('COMMIT');
+      await client.query("COMMIT");
 
       res.status(201).json({
         id: setId,
@@ -198,25 +200,24 @@ router.post('/sets',
         description,
         isPublic: false,
         trackCount: trackIds.length,
-        createdAt: setResult.rows[0].created_at
+        createdAt: setResult.rows[0].created_at,
       });
     } catch (error) {
-      await client.query('ROLLBACK');
+      await client.query("ROLLBACK");
       next(error);
     } finally {
       client.release();
     }
-  }
+  },
 );
 
 /**
  * GET /api/user/sets/:id
  * Get a specific playlist with all tracks
  */
-router.get('/sets/:id',
-  [
-    param('id').isInt({ min: 1 }).toInt()
-  ],
+router.get(
+  "/sets/:id",
+  [param("id").isInt({ min: 1 }).toInt()],
   handleValidationErrors,
   async (req, res, next) => {
     try {
@@ -239,7 +240,7 @@ router.get('/sets/:id',
       const result = await pool.query(query, [req.params.id, req.user.id]);
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Set not found' });
+        return res.status(404).json({ error: "Set not found" });
       }
 
       // Get tracks separately for full details
@@ -283,46 +284,50 @@ router.get('/sets/:id',
           key: row.key,
           camelotKey: row.camelot_key,
           duration: row.duration,
-          thumbnailUrl: row.thumbnail_url
+          thumbnailUrl: row.thumbnail_url,
         })),
         createdAt: set.created_at,
-        updatedAt: set.updated_at
+        updatedAt: set.updated_at,
       });
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
  * PUT /api/user/sets/:id
  * Update a playlist (name, description, tracks, visibility)
  */
-router.put('/sets/:id',
+router.put(
+  "/sets/:id",
   [
-    param('id').isInt({ min: 1 }).toInt(),
-    body('name').optional().trim().notEmpty().isLength({ max: 255 }),
-    body('description').optional().trim().isLength({ max: 1000 }),
-    body('trackIds').optional().isArray(),
-    body('trackIds.*').optional().isInt({ min: 1 }),
-    body('isPublic').optional().isBoolean()
+    param("id").isInt({ min: 1 }).toInt(),
+    body("name").optional().trim().notEmpty().isLength({ max: 255 }),
+    body("description").optional().trim().isLength({ max: 1000 }),
+    body("trackIds").optional().isArray(),
+    body("trackIds.*").optional().isInt({ min: 1 }),
+    body("isPublic").optional().isBoolean(),
   ],
   handleValidationErrors,
   async (req, res, next) => {
     const client = await pool.connect();
 
     try {
-      await client.query('BEGIN');
+      await client.query("BEGIN");
 
       // Verify ownership
       const checkQuery = `
         SELECT id FROM user_sets WHERE id = $1 AND user_id = $2
       `;
-      const checkResult = await client.query(checkQuery, [req.params.id, req.user.id]);
+      const checkResult = await client.query(checkQuery, [
+        req.params.id,
+        req.user.id,
+      ]);
 
       if (checkResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return res.status(404).json({ error: 'Set not found' });
+        await client.query("ROLLBACK");
+        return res.status(404).json({ error: "Set not found" });
       }
 
       const { name, description, trackIds, isPublic } = req.body;
@@ -349,7 +354,7 @@ router.put('/sets/:id',
         updates.push(`updated_at = NOW()`);
         const updateQuery = `
           UPDATE user_sets
-          SET ${updates.join(', ')}
+          SET ${updates.join(", ")}
           WHERE id = $${paramIndex}
         `;
         values.push(req.params.id);
@@ -359,7 +364,9 @@ router.put('/sets/:id',
       // Update tracks if provided
       if (trackIds !== undefined) {
         // Remove existing tracks
-        await client.query('DELETE FROM set_tracks WHERE set_id = $1', [req.params.id]);
+        await client.query("DELETE FROM set_tracks WHERE set_id = $1", [
+          req.params.id,
+        ]);
 
         // Add new tracks
         if (trackIds.length > 0) {
@@ -369,30 +376,33 @@ router.put('/sets/:id',
             FROM UNNEST($2::int[], $3::int[]) AS t(video_id, position)
           `;
           const positions = trackIds.map((_, i) => i + 1);
-          await client.query(insertTracksQuery, [req.params.id, trackIds, positions]);
+          await client.query(insertTracksQuery, [
+            req.params.id,
+            trackIds,
+            positions,
+          ]);
         }
       }
 
-      await client.query('COMMIT');
+      await client.query("COMMIT");
 
-      res.json({ message: 'Set updated successfully' });
+      res.json({ message: "Set updated successfully" });
     } catch (error) {
-      await client.query('ROLLBACK');
+      await client.query("ROLLBACK");
       next(error);
     } finally {
       client.release();
     }
-  }
+  },
 );
 
 /**
  * DELETE /api/user/sets/:id
  * Delete a playlist
  */
-router.delete('/sets/:id',
-  [
-    param('id').isInt({ min: 1 }).toInt()
-  ],
+router.delete(
+  "/sets/:id",
+  [param("id").isInt({ min: 1 }).toInt()],
   handleValidationErrors,
   async (req, res, next) => {
     try {
@@ -405,24 +415,23 @@ router.delete('/sets/:id',
       const result = await pool.query(query, [req.params.id, req.user.id]);
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Set not found' });
+        return res.status(404).json({ error: "Set not found" });
       }
 
-      res.json({ message: 'Set deleted successfully' });
+      res.json({ message: "Set deleted successfully" });
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
  * POST /api/user/sets/:id/share
  * Generate a shareable link for a playlist
  */
-router.post('/sets/:id/share',
-  [
-    param('id').isInt({ min: 1 }).toInt()
-  ],
+router.post(
+  "/sets/:id/share",
+  [param("id").isInt({ min: 1 }).toInt()],
   handleValidationErrors,
   async (req, res, next) => {
     try {
@@ -431,10 +440,13 @@ router.post('/sets/:id/share',
         SELECT id, share_id FROM user_sets
         WHERE id = $1 AND user_id = $2
       `;
-      const checkResult = await pool.query(checkQuery, [req.params.id, req.user.id]);
+      const checkResult = await pool.query(checkQuery, [
+        req.params.id,
+        req.user.id,
+      ]);
 
       if (checkResult.rows.length === 0) {
-        return res.status(404).json({ error: 'Set not found' });
+        return res.status(404).json({ error: "Set not found" });
       }
 
       let shareId = checkResult.rows[0].share_id;
@@ -451,16 +463,16 @@ router.post('/sets/:id/share',
         await pool.query(updateQuery, [shareId, req.params.id]);
       }
 
-      const baseUrl = process.env.FRONTEND_URL || 'https://thevideopool.com';
+      const baseUrl = process.env.FRONTEND_URL || "https://thevideopool.com";
 
       res.json({
         shareId,
-        shareUrl: `${baseUrl}/set/${shareId}`
+        shareUrl: `${baseUrl}/set/${shareId}`,
       });
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 // ===========================================
@@ -471,10 +483,11 @@ router.post('/sets/:id/share',
  * GET /api/user/favorites
  * Get user's favorite videos
  */
-router.get('/favorites',
+router.get(
+  "/favorites",
   [
-    query('page').optional().isInt({ min: 1 }).toInt(),
-    query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
+    query("page").optional().isInt({ min: 1 }).toInt(),
+    query("limit").optional().isInt({ min: 1, max: 100 }).toInt(),
   ],
   handleValidationErrors,
   async (req, res, next) => {
@@ -511,7 +524,7 @@ router.get('/favorites',
 
       const [favoritesResult, countResult] = await Promise.all([
         pool.query(query, [req.user.id, limit, offset]),
-        pool.query(countQuery, [req.user.id])
+        pool.query(countQuery, [req.user.id]),
       ]);
 
       const total = parseInt(countResult.rows[0].count);
@@ -531,39 +544,38 @@ router.get('/favorites',
             duration: row.duration,
             thumbnailUrl: row.thumbnail_url,
             isNew: row.is_new,
-            isHot: row.is_hot
-          }
+            isHot: row.is_hot,
+          },
         })),
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit),
       });
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
  * POST /api/user/favorites/:videoId
  * Add a video to favorites
  */
-router.post('/favorites/:videoId',
-  [
-    param('videoId').isInt({ min: 1 }).toInt()
-  ],
+router.post(
+  "/favorites/:videoId",
+  [param("videoId").isInt({ min: 1 }).toInt()],
   handleValidationErrors,
   async (req, res, next) => {
     try {
       // Check if video exists
       const videoCheck = await pool.query(
-        'SELECT id FROM videos WHERE id = $1',
-        [req.params.videoId]
+        "SELECT id FROM videos WHERE id = $1",
+        [req.params.videoId],
       );
 
       if (videoCheck.rows.length === 0) {
-        return res.status(404).json({ error: 'Video not found' });
+        return res.status(404).json({ error: "Video not found" });
       }
 
       // Add to favorites (upsert)
@@ -578,27 +590,26 @@ router.post('/favorites/:videoId',
 
       if (result.rows.length === 0) {
         // Already favorited
-        return res.json({ message: 'Already in favorites' });
+        return res.json({ message: "Already in favorites" });
       }
 
       res.status(201).json({
-        message: 'Added to favorites',
-        favoriteId: result.rows[0].id
+        message: "Added to favorites",
+        favoriteId: result.rows[0].id,
       });
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
  * DELETE /api/user/favorites/:videoId
  * Remove a video from favorites
  */
-router.delete('/favorites/:videoId',
-  [
-    param('videoId').isInt({ min: 1 }).toInt()
-  ],
+router.delete(
+  "/favorites/:videoId",
+  [param("videoId").isInt({ min: 1 }).toInt()],
   handleValidationErrors,
   async (req, res, next) => {
     try {
@@ -611,24 +622,23 @@ router.delete('/favorites/:videoId',
       const result = await pool.query(query, [req.user.id, req.params.videoId]);
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Favorite not found' });
+        return res.status(404).json({ error: "Favorite not found" });
       }
 
-      res.json({ message: 'Removed from favorites' });
+      res.json({ message: "Removed from favorites" });
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
  * GET /api/user/favorites/check/:videoId
  * Check if a video is favorited
  */
-router.get('/favorites/check/:videoId',
-  [
-    param('videoId').isInt({ min: 1 }).toInt()
-  ],
+router.get(
+  "/favorites/check/:videoId",
+  [param("videoId").isInt({ min: 1 }).toInt()],
   handleValidationErrors,
   async (req, res, next) => {
     try {
@@ -645,7 +655,7 @@ router.get('/favorites/check/:videoId',
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 // ===========================================
@@ -657,10 +667,13 @@ router.get('/favorites/check/:videoId',
  * Delete current user's account and all associated data.
  * Requires password confirmation for security.
  */
-router.delete('/account',
+router.delete(
+  "/account",
   [
-    body('password').notEmpty().withMessage('Password is required to confirm account deletion'),
-    body('reason').optional().trim().isLength({ max: 500 }),
+    body("password")
+      .notEmpty()
+      .withMessage("Password is required to confirm account deletion"),
+    body("reason").optional().trim().isLength({ max: 500 }),
   ],
   handleValidationErrors,
   async (req, res, next) => {
@@ -672,33 +685,36 @@ router.delete('/account',
 
       // Verify password
       const userResult = await client.query(
-        'SELECT id, password_hash, email, stripe_customer_id, stripe_subscription_id FROM users WHERE id = $1',
-        [userId]
+        "SELECT id, password_hash, email, stripe_customer_id, stripe_subscription_id FROM users WHERE id = $1",
+        [userId],
       );
 
       if (userResult.rows.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: "User not found" });
       }
 
       const user = userResult.rows[0];
 
       // Verify password using bcrypt
-      const { default: bcrypt } = await import('bcrypt');
+      const { default: bcrypt } = await import("bcrypt");
       const passwordValid = await bcrypt.compare(password, user.password_hash);
       if (!passwordValid) {
-        return res.status(401).json({ error: 'Invalid password' });
+        return res.status(401).json({ error: "Invalid password" });
       }
 
-      await client.query('BEGIN');
+      await client.query("BEGIN");
 
       // Cancel Stripe subscription if active
       if (user.stripe_subscription_id) {
         try {
-          const Stripe = (await import('stripe')).default;
+          const Stripe = (await import("stripe")).default;
           const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
           await stripe.subscriptions.cancel(user.stripe_subscription_id);
         } catch (stripeErr) {
-          console.error('[GDPR] Failed to cancel Stripe subscription:', stripeErr.message);
+          console.error(
+            "[GDPR] Failed to cancel Stripe subscription:",
+            stripeErr.message,
+          );
           // Continue with deletion — subscription will lapse naturally
         }
       }
@@ -707,106 +723,109 @@ router.delete('/account',
       await client.query(
         `INSERT INTO account_deletion_requests (user_id, reason, status, completed_at)
          VALUES ($1, $2, 'completed', NOW())`,
-        [userId, reason || null]
+        [userId, reason || null],
       );
 
       // Delete all user data in correct order (foreign key constraints)
-      await client.query('DELETE FROM downloads WHERE user_id = $1', [userId]);
-      await client.query('DELETE FROM favorites WHERE user_id = $1', [userId]);
+      await client.query("DELETE FROM downloads WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM favorites WHERE user_id = $1", [userId]);
 
       // Delete user's playlists and their items
       const playlistIds = await client.query(
-        'SELECT id FROM user_sets WHERE user_id = $1',
-        [userId]
+        "SELECT id FROM user_sets WHERE user_id = $1",
+        [userId],
       );
       if (playlistIds.rows.length > 0) {
         const ids = playlistIds.rows.map(r => r.id);
         await client.query(
           `DELETE FROM user_set_items WHERE set_id = ANY($1)`,
-          [ids]
+          [ids],
         );
-        await client.query('DELETE FROM user_sets WHERE user_id = $1', [userId]);
+        await client.query("DELETE FROM user_sets WHERE user_id = $1", [
+          userId,
+        ]);
       }
 
       // Delete sessions
-      await client.query('DELETE FROM sessions WHERE user_id = $1', [userId]);
+      await client.query("DELETE FROM sessions WHERE user_id = $1", [userId]);
 
       // Delete support tickets
-      await client.query('DELETE FROM support_tickets WHERE user_id = $1', [userId]);
+      await client.query("DELETE FROM support_tickets WHERE user_id = $1", [
+        userId,
+      ]);
 
       // Delete the user record itself
-      await client.query('DELETE FROM users WHERE id = $1', [userId]);
+      await client.query("DELETE FROM users WHERE id = $1", [userId]);
 
-      await client.query('COMMIT');
+      await client.query("COMMIT");
 
       console.log(`[GDPR] Account deleted: user ${userId} (${user.email})`);
 
       res.json({
         success: true,
-        message: 'Your account and all associated data have been permanently deleted.',
+        message:
+          "Your account and all associated data have been permanently deleted.",
       });
     } catch (error) {
-      await client.query('ROLLBACK');
-      console.error('[GDPR] Account deletion failed:', error);
+      await client.query("ROLLBACK");
+      console.error("[GDPR] Account deletion failed:", error);
       next(error);
     } finally {
       client.release();
     }
-  }
+  },
 );
 
 /**
  * GET /api/user/data-export
  * GDPR: Export all user data in JSON format.
  */
-router.get('/data-export',
-  async (req, res, next) => {
-    try {
-      const userId = req.user.id;
+router.get("/data-export", async (req, res, next) => {
+  try {
+    const userId = req.user.id;
 
-      // Gather all user data
-      const [userData, downloads, favorites, playlists] = await Promise.all([
-        pool.query(
-          `SELECT id, name, email, membership_type, status, created_at, last_login,
+    // Gather all user data
+    const [userData, downloads, favorites, playlists] = await Promise.all([
+      pool.query(
+        `SELECT id, name, email, membership_type, status, created_at, last_login,
                   email_verified, phone, phone_verified, two_factor_enabled
            FROM users WHERE id = $1`,
-          [userId]
-        ),
-        pool.query(
-          `SELECT d.video_id, d.version_type, d.quality, d.downloaded_at,
+        [userId],
+      ),
+      pool.query(
+        `SELECT d.video_id, d.version_type, d.quality, d.downloaded_at,
                   v.title, v.artist
            FROM downloads d
            JOIN videos v ON v.id = d.video_id
            WHERE d.user_id = $1
            ORDER BY d.downloaded_at DESC`,
-          [userId]
-        ),
-        pool.query(
-          `SELECT f.video_id, f.created_at, v.title, v.artist
+        [userId],
+      ),
+      pool.query(
+        `SELECT f.video_id, f.created_at, v.title, v.artist
            FROM favorites f
            JOIN videos v ON v.id = f.video_id
            WHERE f.user_id = $1`,
-          [userId]
-        ),
-        pool.query(
-          `SELECT us.id, us.name, us.description, us.created_at
+        [userId],
+      ),
+      pool.query(
+        `SELECT us.id, us.name, us.description, us.created_at
            FROM user_sets us
            WHERE us.user_id = $1`,
-          [userId]
-        ),
-      ]);
+        [userId],
+      ),
+    ]);
 
-      res.json({
-        exportDate: new Date().toISOString(),
-        user: userData.rows[0] || null,
-        downloads: downloads.rows,
-        favorites: favorites.rows,
-        playlists: playlists.rows,
-      });
-    } catch (error) {
-      next(error);
-    }
+    res.json({
+      exportDate: new Date().toISOString(),
+      user: userData.rows[0] || null,
+      downloads: downloads.rows,
+      favorites: favorites.rows,
+      playlists: playlists.rows,
+    });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 export default router;

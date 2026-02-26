@@ -3,13 +3,17 @@
 // API endpoints for video catalog operations
 // ===========================================
 
-import express from 'express';
-import { body, query, param, validationResult } from 'express-validator';
-import { requireAuth, optionalAuth } from '../middleware/auth.js';
-import videoService from '../services/videoService.js';
-import downloadService from '../services/downloadService.js';
-import pool from '../db/pool.js';
-import { getPresignedDownloadUrl, getPresignedPreviewUrl, isStorageConfigured } from '../services/storageService.js';
+import express from "express";
+import { body, query, param, validationResult } from "express-validator";
+import { requireAuth, optionalAuth } from "../middleware/auth.js";
+import videoService from "../services/videoService.js";
+import downloadService from "../services/downloadService.js";
+import pool from "../db/pool.js";
+import {
+  getPresignedDownloadUrl,
+  getPresignedPreviewUrl,
+  isStorageConfigured,
+} from "../services/storageService.js";
 
 const router = express.Router();
 
@@ -21,8 +25,8 @@ const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
-      error: 'Validation failed',
-      details: errors.array()
+      error: "Validation failed",
+      details: errors.array(),
     });
   }
   next();
@@ -38,21 +42,26 @@ const handleValidationErrors = (req, res, next) => {
  * Requires authentication — catalog access is a member benefit.
  * Public discovery: use /api/videos/featured or /api/videos/recommended instead.
  */
-router.get('/',
+router.get(
+  "/",
   requireAuth,
   [
-    query('search').optional().trim().escape(),
-    query('q').optional().trim().escape(), // alias for search
-    query('genre').optional().trim(),
-    query('subGenre').optional().trim(),
-    query('bpmMin').optional().isInt({ min: 1, max: 300 }),
-    query('bpmMax').optional().isInt({ min: 1, max: 300 }),
-    query('key').optional().trim(),
-    query('quality').optional().isIn(['4k', '1080p', '720p', '480p']),
-    query('version').optional().isIn(['clean', 'explicit', 'extended', 'intro', 'outro', 'quickhit']),
-    query('sortBy').optional().isIn(['newest', 'oldest', 'popular', 'title', 'artist', 'bpm']),
-    query('page').optional().isInt({ min: 1 }).toInt(),
-    query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
+    query("search").optional().trim().escape(),
+    query("q").optional().trim().escape(), // alias for search
+    query("genre").optional().trim(),
+    query("subGenre").optional().trim(),
+    query("bpmMin").optional().isInt({ min: 1, max: 300 }),
+    query("bpmMax").optional().isInt({ min: 1, max: 300 }),
+    query("key").optional().trim(),
+    query("quality").optional().isIn(["4k", "1080p", "720p", "480p"]),
+    query("version")
+      .optional()
+      .isIn(["clean", "explicit", "extended", "intro", "outro", "quickhit"]),
+    query("sortBy")
+      .optional()
+      .isIn(["newest", "oldest", "popular", "title", "artist", "bpm"]),
+    query("page").optional().isInt({ min: 1 }).toInt(),
+    query("limit").optional().isInt({ min: 1, max: 100 }).toInt(),
   ],
   handleValidationErrors,
   async (req, res, next) => {
@@ -66,12 +75,12 @@ router.get('/',
         key: req.query.key,
         quality: req.query.quality,
         version: req.query.version,
-        sortBy: req.query.sortBy || 'newest'
+        sortBy: req.query.sortBy || "newest",
       };
 
       const pagination = {
         page: req.query.page || 1,
-        limit: req.query.limit || 20
+        limit: req.query.limit || 20,
       };
 
       const result = await videoService.getAllVideos(filters, pagination);
@@ -80,17 +89,16 @@ router.get('/',
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
  * GET /api/videos/featured
  * Get trending/featured videos
  */
-router.get('/featured',
-  [
-    query('limit').optional().isInt({ min: 1, max: 50 }).toInt()
-  ],
+router.get(
+  "/featured",
+  [query("limit").optional().isInt({ min: 1, max: 50 }).toInt()],
   handleValidationErrors,
   async (req, res, next) => {
     try {
@@ -101,7 +109,7 @@ router.get('/featured',
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
@@ -110,11 +118,10 @@ router.get('/featured',
  * If authenticated, returns personalized recommendations based on user history
  * If not authenticated, returns featured/trending videos
  */
-router.get('/recommended',
+router.get(
+  "/recommended",
   optionalAuth,
-  [
-    query('limit').optional().isInt({ min: 1, max: 50 }).toInt()
-  ],
+  [query("limit").optional().isInt({ min: 1, max: 50 }).toInt()],
   handleValidationErrors,
   async (req, res, next) => {
     try {
@@ -125,22 +132,21 @@ router.get('/recommended',
 
       res.json({
         tracks: result.tracks,
-        isPersonalized: result.isPersonalized
+        isPersonalized: result.isPersonalized,
       });
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
  * GET /api/videos/autocomplete
  * Get search autocomplete suggestions
  */
-router.get('/autocomplete',
-  [
-    query('q').trim().notEmpty().withMessage('Query is required')
-  ],
+router.get(
+  "/autocomplete",
+  [query("q").trim().notEmpty().withMessage("Query is required")],
   handleValidationErrors,
   async (req, res, next) => {
     try {
@@ -149,17 +155,18 @@ router.get('/autocomplete',
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /**
  * GET /api/videos/related/:id
  * Get videos related to a specific video
  */
-router.get('/related/:id',
+router.get(
+  "/related/:id",
   [
-    param('id').isInt({ min: 1 }).toInt(),
-    query('limit').optional().isInt({ min: 1, max: 50 }).toInt()
+    param("id").isInt({ min: 1 }).toInt(),
+    query("limit").optional().isInt({ min: 1, max: 50 }).toInt(),
   ],
   handleValidationErrors,
   async (req, res, next) => {
@@ -173,7 +180,7 @@ router.get('/related/:id',
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 // ===========================================
@@ -184,16 +191,19 @@ router.get('/related/:id',
  * GET /api/videos/search
  * Search videos (alias for GET /api/videos with search param)
  */
-router.get('/search',
+router.get(
+  "/search",
   [
-    query('q').trim().notEmpty().withMessage('Search query is required'),
-    query('genre').optional().trim(),
-    query('bpmMin').optional().isInt({ min: 1, max: 300 }),
-    query('bpmMax').optional().isInt({ min: 1, max: 300 }),
-    query('key').optional().trim(),
-    query('sortBy').optional().isIn(['newest', 'oldest', 'popular', 'title', 'artist', 'bpm']),
-    query('page').optional().isInt({ min: 1 }).toInt(),
-    query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
+    query("q").trim().notEmpty().withMessage("Search query is required"),
+    query("genre").optional().trim(),
+    query("bpmMin").optional().isInt({ min: 1, max: 300 }),
+    query("bpmMax").optional().isInt({ min: 1, max: 300 }),
+    query("key").optional().trim(),
+    query("sortBy")
+      .optional()
+      .isIn(["newest", "oldest", "popular", "title", "artist", "bpm"]),
+    query("page").optional().isInt({ min: 1 }).toInt(),
+    query("limit").optional().isInt({ min: 1, max: 100 }).toInt(),
   ],
   handleValidationErrors,
   async (req, res, next) => {
@@ -203,21 +213,25 @@ router.get('/search',
         bpmMin: req.query.bpmMin,
         bpmMax: req.query.bpmMax,
         key: req.query.key,
-        sortBy: req.query.sortBy || 'popular'
+        sortBy: req.query.sortBy || "popular",
       };
 
       const pagination = {
         page: req.query.page || 1,
-        limit: req.query.limit || 20
+        limit: req.query.limit || 20,
       };
 
-      const result = await videoService.searchVideos(req.query.q, filters, pagination);
+      const result = await videoService.searchVideos(
+        req.query.q,
+        filters,
+        pagination,
+      );
 
       res.json(result);
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 // ===========================================
@@ -228,10 +242,9 @@ router.get('/search',
  * GET /api/videos/:id
  * Get single video details with all versions
  */
-router.get('/:id',
-  [
-    param('id').isInt({ min: 1 }).toInt()
-  ],
+router.get(
+  "/:id",
+  [param("id").isInt({ min: 1 }).toInt()],
   handleValidationErrors,
   async (req, res, next) => {
     try {
@@ -239,7 +252,7 @@ router.get('/:id',
 
       if (!video) {
         return res.status(404).json({
-          error: 'Video not found'
+          error: "Video not found",
         });
       }
 
@@ -247,7 +260,7 @@ router.get('/:id',
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 // ===========================================
@@ -258,12 +271,17 @@ router.get('/:id',
  * POST /api/videos/:id/download
  * Request a download URL for a video (auth required)
  */
-router.post('/:id/download',
+router.post(
+  "/:id/download",
   requireAuth,
   [
-    param('id').isInt({ min: 1 }).toInt(),
-    body('quality').isIn(['4k', '1080p', '720p', '480p']).withMessage('Invalid quality'),
-    body('version').isIn(['clean', 'explicit', 'extended', 'intro', 'outro', 'quickhit']).withMessage('Invalid version')
+    param("id").isInt({ min: 1 }).toInt(),
+    body("quality")
+      .isIn(["4k", "1080p", "720p", "480p"])
+      .withMessage("Invalid quality"),
+    body("version")
+      .isIn(["clean", "explicit", "extended", "intro", "outro", "quickhit"])
+      .withMessage("Invalid version"),
   ],
   handleValidationErrors,
   async (req, res, next) => {
@@ -276,47 +294,56 @@ router.post('/:id/download',
       const video = await videoService.getVideoById(videoId);
       if (!video) {
         return res.status(404).json({
-          error: 'Video not found'
+          error: "Video not found",
         });
       }
 
       // Verify the requested version exists
       const versionExists = video.versions.some(
-        v => v.quality === quality && v.versionType === version
+        v => v.quality === quality && v.versionType === version,
       );
       if (!versionExists) {
         return res.status(404).json({
-          error: 'Requested video version not available'
+          error: "Requested video version not available",
         });
       }
 
       // Check download limit AND record atomically (prevents race condition)
-      const limitResult = await downloadService.checkAndRecordDownload(userId, videoId, quality, version);
+      const limitResult = await downloadService.checkAndRecordDownload(
+        userId,
+        videoId,
+        quality,
+        version,
+      );
       if (!limitResult.canDownload) {
         return res.status(403).json({
-          error: 'Download limit reached',
+          error: "Download limit reached",
           limit: limitResult.limit,
           used: limitResult.limit - limitResult.remaining,
           remaining: limitResult.remaining,
           resetDate: limitResult.resetDate,
-          upgradeUrl: '/membership',
+          upgradeUrl: "/membership",
         });
       }
 
       // Generate signed URL
-      const downloadInfo = await downloadService.generateSignedUrl(videoId, quality, version);
+      const downloadInfo = await downloadService.generateSignedUrl(
+        videoId,
+        quality,
+        version,
+      );
 
       res.json({
         downloadUrl: downloadInfo.downloadUrl,
         expiresIn: downloadInfo.expiresIn,
         fileName: downloadInfo.fileName,
         fileSize: downloadInfo.fileSize,
-        remainingDownloads: limitResult.remaining
+        remainingDownloads: limitResult.remaining,
       });
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 // ===========================================
@@ -332,16 +359,14 @@ router.post('/:id/download',
  *   versionType - clean | explicit | extended | intro | outro | quickhit (default: clean)
  *   quality     - 4K | 1080p | 720p | 480p (default: best available)
  */
-router.get('/:id/download-url',
-  requireAuth,
-  async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const { versionType = 'clean', quality = '1080p' } = req.query;
+router.get("/:id/download-url", requireAuth, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { versionType = "clean", quality = "1080p" } = req.query;
 
-      // Fetch the video version record — prefer requested quality, fall back to best available
-      const versionResult = await pool.query(
-        `SELECT vv.file_url, vv.version_type, vv.quality,
+    // Fetch the video version record — prefer requested quality, fall back to best available
+    const versionResult = await pool.query(
+      `SELECT vv.file_url, vv.version_type, vv.quality,
                 v.title, v.artist
          FROM video_versions vv
          JOIN videos v ON v.id = vv.video_id
@@ -354,86 +379,83 @@ router.get('/:id/download-url',
            ELSE 4
          END
          LIMIT 1`,
-        [id, versionType]
-      );
+      [id, versionType],
+    );
 
-      if (versionResult.rows.length === 0) {
-        return res.status(404).json({ error: 'Video version not found' });
-      }
+    if (versionResult.rows.length === 0) {
+      return res.status(404).json({ error: "Video version not found" });
+    }
 
-      const version = versionResult.rows[0];
+    const version = versionResult.rows[0];
 
-      // If S3 creds are absent (e.g. local dev without keys), return raw URL
-      if (!isStorageConfigured()) {
-        return res.json({ url: version.file_url, expires: null });
-      }
+    // If S3 creds are absent (e.g. local dev without keys), return raw URL
+    if (!isStorageConfigured()) {
+      return res.json({ url: version.file_url, expires: null });
+    }
 
-      // Generate time-limited presigned URL
-      const url = await getPresignedDownloadUrl(version.file_url);
+    // Generate time-limited presigned URL
+    const url = await getPresignedDownloadUrl(version.file_url);
 
-      // Record the download (ON CONFLICT DO NOTHING prevents duplicates)
-      await pool.query(
-        `INSERT INTO downloads (user_id, video_id, version_type, quality, ip_address)
+    // Record the download (ON CONFLICT DO NOTHING prevents duplicates)
+    await pool.query(
+      `INSERT INTO downloads (user_id, video_id, version_type, quality, ip_address)
          VALUES ($1, $2, $3, $4, $5)
          ON CONFLICT DO NOTHING`,
-        [req.user.id, id, version.version_type, version.quality, req.ip]
-      );
+      [req.user.id, id, version.version_type, version.quality, req.ip],
+    );
 
-      res.json({
-        url,
-        expires: Math.floor(Date.now() / 1000) + 3600,
-        title: version.title,
-        artist: version.artist,
-        versionType: version.version_type,
-        quality: version.quality,
-      });
-    } catch (error) {
-      // 22P02 = invalid input syntax (e.g. non-existent or malformed ID)
-      if (error.code === '22P02') {
-        return res.status(404).json({ error: 'Video not found' });
-      }
-      next(error);
+    res.json({
+      url,
+      expires: Math.floor(Date.now() / 1000) + 3600,
+      title: version.title,
+      artist: version.artist,
+      versionType: version.version_type,
+      quality: version.quality,
+    });
+  } catch (error) {
+    // 22P02 = invalid input syntax (e.g. non-existent or malformed ID)
+    if (error.code === "22P02") {
+      return res.status(404).json({ error: "Video not found" });
     }
+    next(error);
   }
-);
+});
 
 /**
  * GET /api/videos/:id/preview-url
  * Generate a presigned URL for a short preview clip.
  * No auth required — public endpoint for pre-purchase previewing.
  */
-router.get('/:id/preview-url',
-  async (req, res, next) => {
-    try {
-      const { id } = req.params;
+router.get("/:id/preview-url", async (req, res, next) => {
+  try {
+    const { id } = req.params;
 
-      const result = await pool.query(
-        `SELECT vv.preview_url, v.title, v.artist
+    const result = await pool.query(
+      `SELECT vv.preview_url, v.title, v.artist
          FROM video_versions vv
          JOIN videos v ON v.id = vv.video_id
          WHERE vv.video_id = $1
            AND vv.preview_url IS NOT NULL
          LIMIT 1`,
-        [id]
-      );
+      [id],
+    );
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Preview not available' });
-      }
-
-      const { preview_url } = result.rows[0];
-
-      // Graceful fallback when storage is not configured or preview_url is absent
-      if (!isStorageConfigured() || !preview_url) {
-        return res.json({ url: preview_url || null });
-      }
-
-      const url = await getPresignedPreviewUrl(preview_url);
-      res.json({ url, expires: Math.floor(Date.now() / 1000) + 3600 });
-    } catch (error) {
-      next(error);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Preview not available" });
     }
+
+    const { preview_url } = result.rows[0];
+
+    // Graceful fallback when storage is not configured or preview_url is absent
+    if (!isStorageConfigured() || !preview_url) {
+      return res.json({ url: preview_url || null });
+    }
+
+    const url = await getPresignedPreviewUrl(preview_url);
+    res.json({ url, expires: Math.floor(Date.now() / 1000) + 3600 });
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 export default router;

@@ -16,13 +16,13 @@
  */
 export function csrfProtection(req, res, next) {
   // Only check state-changing methods
-  const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+  const safeMethods = ["GET", "HEAD", "OPTIONS"];
   if (safeMethods.includes(req.method)) {
     return next();
   }
 
   // Skip CSRF check for webhook endpoints (Stripe sends POST without browser origin)
-  if (req.path.includes('/webhooks/')) {
+  if (req.path.includes("/webhooks/")) {
     return next();
   }
 
@@ -39,15 +39,15 @@ export function csrfProtection(req, res, next) {
     // No origin, no referer, no auth header — suspicious
     return res.status(403).json({
       success: false,
-      error: 'CSRF validation failed: missing Origin header',
-      code: 'CSRF_FAILED',
+      error: "CSRF validation failed: missing Origin header",
+      code: "CSRF_FAILED",
     });
   }
 
   // Validate against allowed origins
-  const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3001')
-    .split(',')
-    .map((o) => o.trim())
+  const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3001")
+    .split(",")
+    .map(o => o.trim())
     .filter(Boolean);
 
   // Also allow the API's own origin
@@ -62,8 +62,8 @@ export function csrfProtection(req, res, next) {
   console.warn(`[CSRF] Blocked request from origin: ${requestOrigin}`);
   return res.status(403).json({
     success: false,
-    error: 'CSRF validation failed: untrusted origin',
-    code: 'CSRF_FAILED',
+    error: "CSRF validation failed: untrusted origin",
+    code: "CSRF_FAILED",
   });
 }
 
@@ -74,10 +74,10 @@ export function csrfProtection(req, res, next) {
 export function setSecureCookie(res, name, value, options = {}) {
   const defaults = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict',
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: '/',
+    path: "/",
   };
 
   res.cookie(name, value, { ...defaults, ...options });

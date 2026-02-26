@@ -3,7 +3,7 @@
 // Records admin actions for compliance tracking
 // ===========================================
 
-import { query } from '../db/config.js';
+import { query } from "../db/config.js";
 
 /**
  * Log an admin action for audit purposes.
@@ -38,12 +38,12 @@ export async function logAuditEvent({
         JSON.stringify(details),
         ipAddress,
         userAgent,
-      ]
+      ],
     );
   } catch (error) {
     // Audit logging should never block the main operation.
     // Log the error but don't rethrow.
-    console.error('[AUDIT] Failed to write audit log:', error.message);
+    console.error("[AUDIT] Failed to write audit log:", error.message);
   }
 }
 
@@ -63,7 +63,7 @@ export function auditMiddleware(action, getResourceInfo) {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         const info = getResourceInfo
           ? getResourceInfo(req)
-          : { resourceType: 'unknown', resourceId: null, details: {} };
+          : { resourceType: "unknown", resourceId: null, details: {} };
 
         logAuditEvent({
           adminId: req.user?.id,
@@ -72,7 +72,7 @@ export function auditMiddleware(action, getResourceInfo) {
           resourceId: info.resourceId,
           details: info.details,
           ipAddress: req.ip,
-          userAgent: req.get('user-agent'),
+          userAgent: req.get("user-agent"),
         });
       }
       originalEnd.apply(res, args);
@@ -85,7 +85,13 @@ export function auditMiddleware(action, getResourceInfo) {
  * Get audit logs with pagination and filtering.
  * For admin dashboard consumption.
  */
-export async function getAuditLogs({ page = 1, limit = 50, adminId, action, resourceType } = {}) {
+export async function getAuditLogs({
+  page = 1,
+  limit = 50,
+  adminId,
+  action,
+  resourceType,
+} = {}) {
   const conditions = [];
   const params = [];
   let paramIdx = 1;
@@ -103,7 +109,8 @@ export async function getAuditLogs({ page = 1, limit = 50, adminId, action, reso
     params.push(resourceType);
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
   const offset = (page - 1) * limit;
 
   const [logsResult, countResult] = await Promise.all([
@@ -114,12 +121,9 @@ export async function getAuditLogs({ page = 1, limit = 50, adminId, action, reso
        ${whereClause}
        ORDER BY al.created_at DESC
        LIMIT $${paramIdx++} OFFSET $${paramIdx++}`,
-      [...params, limit, offset]
+      [...params, limit, offset],
     ),
-    query(
-      `SELECT COUNT(*) as count FROM audit_logs al ${whereClause}`,
-      params
-    ),
+    query(`SELECT COUNT(*) as count FROM audit_logs al ${whereClause}`, params),
   ]);
 
   const total = parseInt(countResult.rows[0].count);
