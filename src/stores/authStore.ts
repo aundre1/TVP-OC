@@ -12,7 +12,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   requires2FA: boolean;
-  tempUserId: number | null;
+  tempToken: string | null;
   error: string | null;
 }
 
@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       isLoading: true,
       requires2FA: false,
-      tempUserId: null,
+      tempToken: null,
       error: null,
 
       // Actions
@@ -51,10 +51,10 @@ export const useAuthStore = create<AuthStore>()(
         try {
           const response = await authApi.login(credentials);
 
-          if (response.requires2FA && response.tempUserId) {
+          if (response.requires2FA && response.tempToken) {
             set({
               requires2FA: true,
-              tempUserId: response.tempUserId,
+              tempToken: response.tempToken,
               isLoading: false,
             });
             return false; // Not fully logged in yet
@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthStore>()(
             user: response.user,
             isAuthenticated: true,
             requires2FA: false,
-            tempUserId: null,
+            tempToken: null,
             isLoading: false,
           });
           return true;
@@ -86,7 +86,7 @@ export const useAuthStore = create<AuthStore>()(
             user: response.user,
             isAuthenticated: true,
             requires2FA: false,
-            tempUserId: null,
+            tempToken: null,
             isLoading: false,
           });
           return true;
@@ -100,21 +100,21 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       verify2FA: async (code: string) => {
-        const { tempUserId } = get();
-        if (!tempUserId) {
+        const { tempToken } = get();
+        if (!tempToken) {
           set({ error: '2FA session expired' });
           return false;
         }
 
         set({ isLoading: true, error: null });
         try {
-          const response = await authApi.verify2FA({ userId: tempUserId, code });
+          const response = await authApi.verify2FA({ tempToken, code });
 
           set({
             user: response.user,
             isAuthenticated: true,
             requires2FA: false,
-            tempUserId: null,
+            tempToken: null,
             isLoading: false,
           });
           return true;
@@ -154,7 +154,7 @@ export const useAuthStore = create<AuthStore>()(
             user: null,
             isAuthenticated: false,
             requires2FA: false,
-            tempUserId: null,
+            tempToken: null,
             isLoading: false,
             error: null,
           });

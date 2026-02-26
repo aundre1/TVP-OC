@@ -3,15 +3,23 @@
 // 2 rows of 4 — symmetrical identity providers
 // ============================================
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/components/Toast';
+import { OAUTH_CONFIG } from '@/config/oauth';
 
 interface SocialLoginGridProps {
   mode?: 'login' | 'signup';
 }
+
+// Check if Google OAuth is properly configured
+const isGoogleConfigured: boolean = !!(
+  OAUTH_CONFIG.google.clientId &&
+  OAUTH_CONFIG.google.clientId !== 'your-client-id-here'
+);
 
 // ── Icon Components ──────────────────────────────────────────
 
@@ -105,7 +113,7 @@ interface Provider {
 
 const PROVIDERS: Provider[][] = [
   [
-    { id: 'google',    label: 'Google',    icon: <GoogleIcon />,    available: true,  bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-[#4285F4]/60' },
+    { id: 'google',    label: 'Google',    icon: <GoogleIcon />,    available: isGoogleConfigured,  bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-[#4285F4]/60' },
     { id: 'facebook',  label: 'Facebook',  icon: <FacebookIcon />,  available: false, bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-[#1877F2]/60' },
     { id: 'apple',     label: 'Apple',     icon: <AppleIcon />,     available: false, bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-white/30'     },
     { id: 'microsoft', label: 'Microsoft', icon: <MicrosoftIcon />, available: false, bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-[#00A4EF]/60' },
@@ -118,91 +126,141 @@ const PROVIDERS: Provider[][] = [
   ],
 ];
 
+// ── Google Login Hook (child component to isolate the hook call) ──
+
+function GoogleLoginHook({
+  onReady,
+  onSuccess,
+  onError,
+}: {
+  onReady: (loginFn: () => void) => void;
+  onSuccess: (accessToken: string) => void;
+  onError: () => void;
+}) {
+  const googleLogin = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      onSuccess(tokenResponse.access_token);
+    },
+    onError: () => {
+      onError();
+    },
+  });
+
+  // Pass the login function to the parent
+  useEffect(() => {
+    onReady(googleLogin);
+  }, [googleLogin, onReady]);
+
+  return null; // Renders nothing — just provides the hook
+}
+
 // ── Main Component ───────────────────────────────────────────
 
 export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps) {
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+  const [googleLoginFn, setGoogleLoginFn] = useState<(() => void) | null>(null);
   const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
+  const navigate = useNavigate();
   const toast = useToast();
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setLoadingProvider('google');
-      try {
-        const success = await loginWithGoogle(tokenResponse.access_token);
-        if (success) {
-          toast.success('Signed in with Google');
+  const handleGoogleReady = useCallback((loginFn: () => void) => {
+    setGoogleLoginFn(() => loginFn);
+  }, []);
+
+  const handleGoogleSuccess = useCallback(async (accessToken: string) => {
+    setLoadingProvider('google');
+    try {
+      const success = await loginWithGoogle(accessToken);
+      if (success) {
+        toast.success('Signed in with Google');
+        const user = useAuthStore.getState().user;
+        if (user && user.phoneVerified === false) {
+          navigate('/verify-phone');
         } else {
-          toast.error('Google sign-in failed. Please try again.');
+          navigate('/home');
         }
-      } catch {
+      } else {
         toast.error('Google sign-in failed. Please try again.');
-      } finally {
-        setLoadingProvider(null);
       }
-    },
-    onError: () => {
-      toast.error('Google sign-in cancelled or failed.');
+    } catch {
+      toast.error('Google sign-in failed. Please try again.');
+    } finally {
       setLoadingProvider(null);
-    },
-  });
+    }
+  }, [loginWithGoogle, navigate, toast]);
+
+  const handleGoogleError = useCallback(() => {
+    toast.error('Google sign-in cancelled or failed.');
+    setLoadingProvider(null);
+  }, [toast]);
 
   const handleProviderClick = (provider: Provider) => {
     if (!provider.available) return;
-    if (provider.id === 'google') {
+    if (provider.id === 'google' && googleLoginFn) {
       setLoadingProvider('google');
-      googleLogin();
+      googleLoginFn();
     }
   };
 
   return (
-    <div className="space-y-2">
-      {PROVIDERS.map((row, rowIdx) => (
-        <div key={rowIdx} className="grid grid-cols-4 gap-2">
-          {row.map((provider) => {
-            const isLoading = loadingProvider === provider.id;
-            const isDisabled = !provider.available || (loadingProvider !== null && loadingProvider !== provider.id);
+    <>
+      {/* Invisible hook component — only mounts when Google OAuth is configured */}
+      {isGoogleConfigured && (
+        <GoogleLoginHook
+          onReady={handleGoogleReady}
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+        />
+      )}
 
-            return (
-              <div key={provider.id} className="relative group">
-                <button
-                  type="button"
-                  onClick={() => handleProviderClick(provider)}
-                  disabled={isDisabled || isLoading}
-                  title={provider.available ? `${mode === 'signup' ? 'Sign up' : 'Sign in'} with ${provider.label}` : `${provider.label} — Coming soon`}
-                  className={`
-                    w-full h-11
-                    flex flex-col items-center justify-center gap-1
-                    rounded-xl border transition-all duration-200
-                    ${provider.bg} ${provider.border}
-                    ${!provider.available ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                    ${isLoading ? 'opacity-70' : ''}
-                    ${isDisabled && provider.available ? 'opacity-50' : ''}
-                  `}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-tvp-text-muted" />
-                  ) : (
-                    provider.icon
-                  )}
-                </button>
+      <div className="space-y-2">
+        {PROVIDERS.map((row, rowIdx) => (
+          <div key={rowIdx} className="grid grid-cols-4 gap-2">
+            {row.map((provider) => {
+              const isLoading = loadingProvider === provider.id;
+              const isDisabled = !provider.available || (loadingProvider !== null && loadingProvider !== provider.id);
 
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-tvp-bg-primary border border-tvp-border-subtle rounded-lg text-xs text-tvp-text-secondary whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                  {provider.available
-                    ? `${mode === 'signup' ? 'Sign up' : 'Sign in'} with ${provider.label}`
-                    : `${provider.label} — Coming soon`}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-tvp-border-subtle" />
+              return (
+                <div key={provider.id} className="relative group">
+                  <button
+                    type="button"
+                    onClick={() => handleProviderClick(provider)}
+                    disabled={isDisabled || isLoading}
+                    title={provider.available ? `${mode === 'signup' ? 'Sign up' : 'Sign in'} with ${provider.label}` : `${provider.label} — Coming soon`}
+                    className={`
+                      w-full h-11
+                      flex flex-col items-center justify-center gap-1
+                      rounded-xl border transition-all duration-200
+                      ${provider.bg} ${provider.border}
+                      ${!provider.available ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                      ${isLoading ? 'opacity-70' : ''}
+                      ${isDisabled && provider.available ? 'opacity-50' : ''}
+                    `}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-tvp-text-muted" />
+                    ) : (
+                      provider.icon
+                    )}
+                  </button>
+
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-tvp-bg-primary border border-tvp-border-subtle rounded-lg text-xs text-tvp-text-secondary whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    {provider.available
+                      ? `${mode === 'signup' ? 'Sign up' : 'Sign in'} with ${provider.label}`
+                      : `${provider.label} — Coming soon`}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-tvp-border-subtle" />
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      ))}
+              );
+            })}
+          </div>
+        ))}
 
-      <p className="text-center text-xs text-tvp-text-muted pt-1">
-        More sign-in options coming soon
-      </p>
-    </div>
+        <p className="text-center text-xs text-tvp-text-muted pt-1">
+          More sign-in options coming soon
+        </p>
+      </div>
+    </>
   );
 }

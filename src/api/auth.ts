@@ -8,14 +8,16 @@ import type { User, LoginCredentials, RegisterData, TwoFactorVerifyData } from '
 
 interface LoginResponse {
   user: User;
-  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
   requires2FA?: boolean;
-  tempUserId?: number;
+  tempToken?: string;
 }
 
 interface GoogleLoginResponse {
   user: User;
-  token: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 interface RegisterResponse {
@@ -41,21 +43,21 @@ interface TwoFactorStatusResponse {
 }
 
 export const authApi = {
-  // Login with username/password
+  // Login with email/password
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     // Mock mode for development
     if (DEV_CONFIG.useMockAuth) {
       return {
         user: DEV_CONFIG.mockUser,
-        token: 'mock-dev-token',
+        accessToken: 'mock-dev-token',
       };
     }
 
     const response = await post<LoginResponse>('/auth/login', credentials);
 
     // If no 2FA required and token provided, store it
-    if (!response.requires2FA && response.token) {
-      setAuthToken(response.token);
+    if (!response.requires2FA && response.accessToken) {
+      setAuthToken(response.accessToken);
     }
 
     return response;
@@ -74,14 +76,15 @@ export const authApi = {
       };
       return {
         user: mockGoogleUser,
-        token: 'mock-google-token',
+        accessToken: 'mock-google-token',
+        refreshToken: 'mock-google-refresh',
       };
     }
 
     const response = await post<GoogleLoginResponse>('/auth/google', { accessToken });
 
-    if (response.token) {
-      setAuthToken(response.token);
+    if (response.accessToken) {
+      setAuthToken(response.accessToken);
     }
 
     return response;
@@ -93,14 +96,14 @@ export const authApi = {
     if (DEV_CONFIG.useMockAuth) {
       return {
         user: DEV_CONFIG.mockUser,
-        token: 'mock-dev-token',
+        accessToken: 'mock-dev-token',
       };
     }
 
     const response = await post<LoginResponse>('/auth/login/2fa', data);
 
-    if (response.token) {
-      setAuthToken(response.token);
+    if (response.accessToken) {
+      setAuthToken(response.accessToken);
     }
 
     return response;
@@ -152,8 +155,8 @@ export const authApi = {
     try {
       // Attempt to fetch current user
       // If no token or unauthorized, this will fail gracefully and return null
-      const user = await get<User>('/auth/me');
-      return user;
+      const response = await get<{ success: boolean; user: User }>('/auth/me');
+      return response.user ?? null;
     } catch (error) {
       // Any error (401, timeout, network, etc.) returns null
       // This allows the app to show landing page instead of hanging

@@ -46,7 +46,7 @@ export default function RegisterPage() {
     }
 
     if (!isPhoneValid) return;
-    const result = await register({ username, email, password, phone, smsOptIn });
+    const result = await register({ name: username, email, password, phone, smsOptIn });
     if (result) {
       // Navigate to verification page with email and dev code
       navigate('/verify-email', {

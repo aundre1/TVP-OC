@@ -148,16 +148,16 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   requires2FA: boolean;
-  tempUserId?: number;
+  tempToken?: string;
 }
 
 export interface LoginCredentials {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface RegisterData {
-  username: string;
+  name: string;
   email: string;
   password: string;
   phone: string;
@@ -165,7 +165,7 @@ export interface RegisterData {
 }
 
 export interface TwoFactorVerifyData {
-  userId: number;
+  tempToken: string;
   code: string;
 }
 

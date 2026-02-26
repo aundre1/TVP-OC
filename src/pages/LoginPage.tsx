@@ -13,7 +13,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login, verify2FA, requires2FA, error, isLoading, clearError } = useAuth();
 
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +31,7 @@ export default function LoginPage() {
     e.preventDefault();
     clearError();
 
-    const success = await login({ username, password });
+    const success = await login({ email, password });
     if (success) {
       redirectAfterLogin();
     }
@@ -84,14 +84,14 @@ export default function LoginPage() {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-tvp-text-secondary mb-1.5">
-                    Username or Email
+                    Email
                   </label>
                   <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-3 bg-tvp-bg-tertiary border border-tvp-border-default rounded-xl text-tvp-text-primary placeholder:text-tvp-text-muted focus:border-tvp-accent-cyan focus:ring-2 focus:ring-tvp-accent-cyan/20 outline-none transition-all"
-                    placeholder="Enter your username"
+                    placeholder="Enter your email"
                     required
                     autoFocus
                   />

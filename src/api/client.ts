@@ -61,16 +61,20 @@ apiClient.interceptors.response.use(
       setAuthToken(null);
 
       // Only redirect if:
-      // 1. Not already on auth pages
-      // 2. Not a /auth/me request (initial check shouldn't redirect)
-      // 3. Not already on welcome/landing page
-      const isAuthPage = window.location.pathname.includes('/login') ||
-                        window.location.pathname.includes('/register') ||
-                        window.location.pathname.includes('/welcome') ||
-                        window.location.pathname === '/';
-      const isAuthMeRequest = error.config?.url?.includes('/auth/me');
+      // 1. Not already on auth pages or landing
+      // 2. Not any /auth/ request (login, me, refresh, google, etc.)
+      // 3. Prevents redirect loops when auth state is being resolved
+      const path = window.location.pathname;
+      const isAuthPage = path.includes('/login') ||
+                        path.includes('/register') ||
+                        path.includes('/welcome') ||
+                        path.includes('/forgot-password') ||
+                        path.includes('/reset-password') ||
+                        path.includes('/verify-email') ||
+                        path === '/';
+      const isAuthRequest = error.config?.url?.includes('/auth/');
 
-      if (!isAuthPage && !isAuthMeRequest) {
+      if (!isAuthPage && !isAuthRequest) {
         window.location.href = '/login';
       }
     }
