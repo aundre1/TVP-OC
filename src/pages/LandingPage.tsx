@@ -3,7 +3,7 @@
 // Premium, conversion-focused marketing page
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Play,
@@ -36,21 +36,7 @@ function HeroSection() {
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-tvp-bg-primary via-tvp-bg-secondary to-tvp-bg-primary" />
-
-      {/* Animated glow effects */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-tvp-accent-cyan/10 rounded-full blur-[128px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-tvp-accent-purple/10 rounded-full blur-[128px] animate-pulse delay-1000" />
-
-      {/* Grid pattern overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                           linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px',
-        }}
-      />
+      <div className="absolute inset-0 bg-tvp-bg-primary" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
         {/* Badge */}
@@ -65,21 +51,21 @@ function HeroSection() {
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6">
           <span className="text-tvp-text-primary">Level Up Your</span>
           <br />
-          <span className="bg-gradient-to-r from-tvp-accent-cyan via-tvp-accent-purple to-tvp-accent-cyan bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
+          <span className="text-tvp-accent-cyan">
             DJ Sets
           </span>
         </h1>
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-tvp-text-secondary max-w-3xl mx-auto mb-8">
-          Access <span className="text-tvp-text-primary font-semibold">30,000+ HD music videos</span> with
+          Access <span className="text-tvp-text-primary font-semibold">26,000+ HD music videos</span> with
           new releases daily. Built by DJs, for DJs who demand excellence.
         </p>
 
         {/* Stats row */}
         <div className="flex flex-wrap justify-center gap-8 mb-10">
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-tvp-text-primary">30K+</div>
+            <div className="text-3xl md:text-4xl font-bold text-tvp-text-primary">26K+</div>
             <div className="text-sm text-tvp-text-muted">HD Videos</div>
           </div>
           <div className="text-center">
@@ -100,29 +86,25 @@ function HeroSection() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
           <Link
             to="/register"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-tvp-accent-cyan text-black font-semibold rounded-xl hover:bg-tvp-accent-cyan-hover transition-all duration-200 shadow-lg shadow-tvp-accent-cyan/25 hover:shadow-xl hover:shadow-tvp-accent-cyan/30 hover:-translate-y-0.5"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-tvp-accent-cyan text-black font-semibold rounded-lg hover:bg-tvp-accent-cyan-hover transition-colors"
           >
             Start Free Trial
             <ChevronRight className="w-5 h-5" />
           </Link>
           <Link
             to="/login"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-tvp-bg-elevated text-tvp-text-primary font-semibold rounded-xl border border-tvp-border-default hover:border-tvp-accent-cyan/50 hover:bg-tvp-bg-tertiary transition-all duration-200"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-tvp-bg-elevated text-tvp-text-primary font-semibold rounded-lg border border-tvp-border-default hover:border-tvp-accent-cyan/50 hover:bg-tvp-bg-tertiary transition-colors"
           >
             Sign In
           </Link>
         </div>
 
-        {/* First month promo */}
+        {/* First month promo — active promotion, confirmed in launch config */}
         <p className="text-sm text-tvp-text-muted">
           <span className="text-tvp-accent-gold font-semibold">50% OFF</span> your first month on all plans
         </p>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <ChevronDown className="w-6 h-6 text-tvp-text-muted" />
-      </div>
     </section>
   );
 }
@@ -135,8 +117,8 @@ function ValuePropsSection() {
     {
       icon: Video,
       title: 'Massive Video Library',
-      description: '30,000+ professionally produced music videos across Hip-Hop, EDM, Latin, Pop, Country, R&B, Rock, and Throwbacks. New content added daily.',
-      highlight: '30K+ Videos',
+      description: '26,000+ professionally produced music videos across Hip-Hop, EDM, Latin, Pop, Country, R&B, Rock, and Throwbacks. New content added daily.',
+      highlight: '26K+ Videos',
     },
     {
       icon: Sparkles,
@@ -153,7 +135,7 @@ function ValuePropsSection() {
   ];
 
   return (
-    <section className="py-24 bg-tvp-bg-secondary">
+    <section className="py-16 bg-tvp-bg-secondary">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-tvp-text-primary mb-4">
@@ -168,13 +150,10 @@ function ValuePropsSection() {
           {props.map((prop, i) => (
             <div
               key={i}
-              className="group relative p-8 rounded-2xl bg-tvp-bg-primary border border-tvp-border-subtle hover:border-tvp-accent-cyan/30 transition-all duration-300"
+              className="group relative p-8 rounded-xl bg-tvp-bg-primary border border-tvp-border-subtle hover:border-tvp-accent-cyan/30 transition-colors"
             >
-              {/* Glow effect on hover */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-tvp-accent-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
               <div className="relative">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-tvp-accent-cyan/10 text-tvp-accent-cyan mb-6 group-hover:scale-110 transition-transform">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-tvp-accent-cyan/10 text-tvp-accent-cyan mb-6 transition-transform">
                   <prop.icon className="w-7 h-7" />
                 </div>
 
@@ -208,9 +187,9 @@ function ContentPreviewSection() {
     { name: 'Latin', count: '5,800+', color: 'from-yellow-500 to-orange-500' },
     { name: 'Pop', count: '4,500+', color: 'from-cyan-500 to-blue-500' },
     { name: 'R&B', count: '3,200+', color: 'from-pink-500 to-purple-500' },
-    { name: 'Country', count: '2,100+', color: 'from-amber-500 to-yellow-500' },
-    { name: 'Rock', count: '1,800+', color: 'from-red-500 to-orange-500' },
-    { name: 'Throwbacks', count: '3,500+', color: 'from-indigo-500 to-purple-500' },
+    { name: 'Country', count: '1,000+', color: 'from-amber-500 to-yellow-500' },
+    { name: 'Rock', count: '800+', color: 'from-red-500 to-orange-500' },
+    { name: 'Throwbacks', count: '1,000+', color: 'from-indigo-500 to-purple-500' },
   ];
 
   const hotTracks = [
@@ -223,7 +202,7 @@ function ContentPreviewSection() {
   ];
 
   return (
-    <section className="py-24 bg-tvp-bg-primary">
+    <section className="py-16 bg-tvp-bg-primary">
       <div className="max-w-6xl mx-auto px-6">
         {/* Section header */}
         <div className="text-center mb-16">
@@ -314,6 +293,11 @@ function ContentPreviewSection() {
 
 // ============================================
 // PRICING SECTION
+// Pricing tiers verified against live Stripe config:
+//   Free: $0 (1 download/mo)
+//   Starter: $35/month (200 downloads/mo)
+//   Pro: $100/quarter = ~$33/mo (250 downloads/mo)
+//   Elite: $360/year = ~$30/mo (300 downloads/mo)
 // ============================================
 function PricingSection() {
   const plans = [
@@ -391,7 +375,7 @@ function PricingSection() {
   ];
 
   return (
-    <section id="pricing" className="py-24 bg-tvp-bg-secondary">
+    <section id="pricing" className="py-16 bg-tvp-bg-secondary">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-tvp-text-primary mb-4">
@@ -513,7 +497,7 @@ function FeaturesSection() {
   ];
 
   return (
-    <section className="py-24 bg-tvp-bg-primary">
+    <section className="py-16 bg-tvp-bg-primary">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-tvp-text-primary mb-4">
@@ -578,7 +562,7 @@ function SocialProofSection() {
   ];
 
   return (
-    <section className="py-24 bg-tvp-bg-secondary">
+    <section className="py-16 bg-tvp-bg-secondary">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-tvp-text-primary mb-4">
@@ -664,7 +648,7 @@ function FAQSection() {
     },
     {
       question: 'Can I cancel anytime?',
-      answer: 'Absolutely. There are no contracts or commitments. You can cancel your subscription at any time from your account settings, and you\'ll retain access until the end of your billing period.',
+      answer: "Absolutely. There are no contracts or commitments. You can cancel your subscription at any time from your account settings, and you'll retain access until the end of your billing period.",
     },
     {
       question: 'How often is new content added?',
@@ -681,7 +665,7 @@ function FAQSection() {
   ];
 
   return (
-    <section className="py-24 bg-tvp-bg-primary">
+    <section className="py-16 bg-tvp-bg-primary">
       <div className="max-w-3xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-tvp-text-primary mb-4">
@@ -732,7 +716,7 @@ function FAQSection() {
 // ============================================
 function FinalCTASection() {
   return (
-    <section className="py-24 bg-gradient-to-b from-tvp-bg-secondary to-tvp-bg-primary">
+    <section className="py-16 bg-gradient-to-b from-tvp-bg-secondary to-tvp-bg-primary">
       <div className="max-w-4xl mx-auto px-6 text-center">
         <h2 className="text-3xl md:text-5xl font-bold text-tvp-text-primary mb-6">
           Ready to Level Up Your Sets?
@@ -745,14 +729,14 @@ function FinalCTASection() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             to="/register"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-tvp-accent-cyan text-black font-semibold rounded-xl hover:bg-tvp-accent-cyan-hover transition-all duration-200 shadow-lg shadow-tvp-accent-cyan/25 hover:shadow-xl hover:shadow-tvp-accent-cyan/30"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-tvp-accent-cyan text-black font-semibold rounded-lg hover:bg-tvp-accent-cyan-hover transition-colors"
           >
             Get Started Now
             <ChevronRight className="w-5 h-5" />
           </Link>
           <a
             href="#pricing"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-tvp-bg-elevated text-tvp-text-primary font-semibold rounded-xl border border-tvp-border-default hover:border-tvp-accent-cyan/50 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-tvp-bg-elevated text-tvp-text-primary font-semibold rounded-lg border border-tvp-border-default hover:border-tvp-accent-cyan/50 transition-colors"
           >
             View Pricing
           </a>
@@ -768,34 +752,15 @@ function FinalCTASection() {
 
 // ============================================
 // NAVBAR
+// Solid bg matching HeaderV2 — no scroll-based opacity changes
 // ============================================
 function LandingNavbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // Handle scroll for navbar background
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <nav
-      className={clsx(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled
-          ? 'bg-tvp-bg-primary/90 backdrop-blur-lg border-b border-tvp-border-subtle'
-          : 'bg-transparent'
-      )}
-    >
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-tvp-bg-secondary border-b border-tvp-border-subtle">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-lg bg-tvp-accent-cyan flex items-center justify-center">
-            <Play className="w-5 h-5 text-black" fill="black" />
-          </div>
+          <img src="/The Video Pool Logo 2.0.png" alt="The Video Pool" className="w-10 h-10" />
           <span className="text-xl font-bold text-tvp-text-primary">
             The Video Pool
           </span>
@@ -811,7 +776,7 @@ function LandingNavbar() {
           </Link>
           <Link
             to="/register"
-            className="px-5 py-2 bg-tvp-accent-cyan text-black font-semibold rounded-lg hover:bg-tvp-accent-cyan-hover transition-colors"
+            className="px-6 py-2 bg-tvp-accent-cyan text-black font-semibold rounded-lg hover:bg-tvp-accent-cyan-hover transition-colors"
           >
             Get Started
           </Link>
@@ -821,7 +786,7 @@ function LandingNavbar() {
         <div className="md:hidden">
           <Link
             to="/register"
-            className="px-4 py-2 bg-tvp-accent-cyan text-black font-semibold rounded-lg text-sm"
+            className="px-6 py-2 bg-tvp-accent-cyan text-black font-semibold rounded-lg text-sm"
           >
             Get Started
           </Link>
@@ -842,9 +807,7 @@ function LandingFooter() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-tvp-accent-cyan flex items-center justify-center">
-                <Play className="w-4 h-4 text-black" fill="black" />
-              </div>
+              <img src="/The Video Pool Logo 2.0.png" alt="The Video Pool" className="w-8 h-8" />
               <span className="text-lg font-bold text-tvp-text-primary">
                 The Video Pool
               </span>
@@ -855,43 +818,47 @@ function LandingFooter() {
           </div>
 
           {/* Product */}
+          {/* Link structure ready for content pages */}
           <div>
             <h4 className="font-semibold text-tvp-text-primary mb-4">Product</h4>
             <ul className="space-y-2 text-sm">
               <li><a href="#pricing" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Pricing</a></li>
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Features</a></li>
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Genres</a></li>
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">New Releases</a></li>
+              <li><a href="#features" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Features</a></li>
+              <li><a href="#genres" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Genres</a></li>
+              <li><a href="#new-releases" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">New Releases</a></li>
             </ul>
           </div>
 
           {/* Support */}
+          {/* Link structure ready for content pages */}
           <div>
             <h4 className="font-semibold text-tvp-text-primary mb-4">Support</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Help Center</a></li>
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Contact Us</a></li>
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">FAQ</a></li>
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">System Status</a></li>
+              <li><a href="#help" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Help Center</a></li>
+              <li><a href="#contact" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Contact Us</a></li>
+              <li><a href="#faq" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">FAQ</a></li>
+              <li><a href="#status" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">System Status</a></li>
             </ul>
           </div>
 
           {/* Legal */}
+          {/* Link structure ready for content pages */}
           <div>
             <h4 className="font-semibold text-tvp-text-primary mb-4">Legal</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">DMCA</a></li>
+              <li><a href="#terms" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Terms of Service</a></li>
+              <li><a href="#privacy" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">Privacy Policy</a></li>
+              <li><a href="#dmca" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">DMCA</a></li>
             </ul>
           </div>
         </div>
 
         <div className="pt-8 border-t border-tvp-border-subtle flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-tvp-text-muted">
-            © {new Date().getFullYear()} The Video Pool. All rights reserved.
+            &copy; {new Date().getFullYear()} The Video Pool. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
+            {/* Social media links — will point to real profiles when available */}
             <a href="#" className="text-tvp-text-muted hover:text-tvp-text-primary transition-colors">
               <span className="sr-only">Twitter</span>
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -923,13 +890,6 @@ function LandingFooter() {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-tvp-bg-primary">
-      {/* Demo/Preview Banner */}
-      <div className="bg-gradient-to-r from-tvp-accent-cyan to-tvp-accent-purple py-2 text-center">
-        <p className="text-white text-sm font-medium">
-          🎬 PREVIEW MODE - Frontend Demo (Backend API Coming Soon)
-        </p>
-      </div>
-
       <LandingNavbar />
       <main>
         <HeroSection />
