@@ -105,6 +105,173 @@ export async function checkDownloadLimit(userId) {
   }
 }
 
+// ===========================================
+// ATOMIC CHECK + RECORD (Race-condition safe)
+// ===========================================
+
+/**
+ * Atomically check download limit AND record a download in a single transaction.
+ * Uses SELECT ... FOR UPDATE to lock the user row, preventing concurrent
+ * requests from bypassing the quota.
+ *
+ * @param {number} userId - The user's ID
+ * @param {number} videoId - The video's ID
+ * @param {string} quality - Video quality (4k, 1080p, 720p, 480p)
+ * @param {string} version - Version type (clean, explicit, extended, etc.)
+ * @returns {Object} - { canDownload, remaining, limit, resetDate, reason, download }
+ */
+export async function checkAndRecordDownload(userId, videoId, quality, version) {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Lock the user row to prevent concurrent bypass
+    const userResult = await client.query(`
+      SELECT
+        u.id,
+        u.membership_type,
+        u.status AS membership_status,
+        u.downloads_this_month AS downloads_used,
+        u.downloads_reset_monthly AS download_limit_reset_date,
+        m.monthly_download_limit AS tier_limit
+      FROM users u
+      LEFT JOIN memberships m ON m.slug = u.membership_type::text
+      WHERE u.id = $1
+      FOR UPDATE OF u
+    `, [userId]);
+
+    if (userResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return {
+        canDownload: false,
+        remaining: 0,
+        limit: 0,
+        resetDate: null,
+        reason: 'User not found',
+        download: null,
+      };
+    }
+
+    const user = userResult.rows[0];
+
+    // Check membership status
+    if (user.membership_status !== 'active' && user.membership_status !== 'trial') {
+      await client.query('ROLLBACK');
+      return {
+        canDownload: false,
+        remaining: 0,
+        limit: user.tier_limit || 0,
+        resetDate: user.download_limit_reset_date,
+        reason: 'Membership not active',
+        download: null,
+      };
+    }
+
+    const effectiveLimit = user.tier_limit;
+
+    // NULL limit means unlimited — skip quota checks
+    if (effectiveLimit === null) {
+      // Record download (unlimited user)
+      const download = await _insertDownload(client, userId, videoId, quality, version);
+      await client.query('COMMIT');
+      return {
+        canDownload: true,
+        remaining: null,
+        limit: null,
+        resetDate: null,
+        reason: null,
+        download,
+      };
+    }
+
+    // Check if monthly reset is needed
+    const now = new Date();
+    const resetDate = user.download_limit_reset_date
+      ? new Date(user.download_limit_reset_date)
+      : null;
+    let downloadsUsed = user.downloads_used || 0;
+
+    if (resetDate && now >= resetDate) {
+      const nextResetDate = getNextResetDate();
+      await client.query(`
+        UPDATE users
+        SET downloads_this_month = 0, downloads_reset_monthly = $1
+        WHERE id = $2
+      `, [nextResetDate, userId]);
+      downloadsUsed = 0;
+    }
+
+    const remaining = Math.max(0, effectiveLimit - downloadsUsed);
+
+    if (remaining <= 0) {
+      await client.query('ROLLBACK');
+      return {
+        canDownload: false,
+        remaining: 0,
+        limit: effectiveLimit,
+        resetDate: resetDate || getNextResetDate(),
+        reason: 'Download limit reached',
+        download: null,
+      };
+    }
+
+    // Limit OK — record the download atomically
+    const download = await _insertDownload(client, userId, videoId, quality, version);
+
+    await client.query('COMMIT');
+
+    return {
+      canDownload: true,
+      remaining: remaining - 1,
+      limit: effectiveLimit,
+      resetDate: resetDate || getNextResetDate(),
+      reason: null,
+      download,
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error in checkAndRecordDownload:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Internal helper: insert download record + increment counters.
+ * Must be called within an existing transaction (with client).
+ */
+async function _insertDownload(client, userId, videoId, quality, version) {
+  const insertResult = await client.query(`
+    INSERT INTO downloads (user_id, video_id, version_type, quality)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *
+  `, [userId, videoId, version, quality]);
+
+  await client.query(`
+    UPDATE users
+    SET downloads_this_month = COALESCE(downloads_this_month, 0) + 1,
+        total_downloads = COALESCE(total_downloads, 0) + 1
+    WHERE id = $1
+  `, [userId]);
+
+  await client.query(`
+    UPDATE videos
+    SET download_count = COALESCE(download_count, 0) + 1
+    WHERE id = $1
+  `, [videoId]);
+
+  return {
+    id: insertResult.rows[0].id,
+    userId,
+    videoId,
+    quality,
+    version,
+    downloadedAt: insertResult.rows[0].downloaded_at,
+  };
+}
+
 /**
  * Get the next monthly reset date (1st of next month)
  */
@@ -387,6 +554,7 @@ export async function hasUserDownloaded(userId, videoId) {
 
 export default {
   checkDownloadLimit,
+  checkAndRecordDownload,
   recordDownload,
   generateSignedUrl,
   getUserDownloadHistory,

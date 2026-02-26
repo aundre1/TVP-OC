@@ -217,19 +217,36 @@ export const authRateLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
 /**
  * Middleware: Require admin with 2FA enabled
  * For high-sensitivity admin operations. Must be used after requireAuth.
- * NOTE: Requires two_factor_enabled to be included in JWT payload (post-launch sprint item).
+ * Checks the two_factor_enabled flag on the user record in DB.
  */
-export const requireAdmin2FA = (req, res, next) => {
+export const requireAdmin2FA = async (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ success: false, error: 'Authentication required', code: 'AUTH_REQUIRED' });
   }
   if (req.user.role !== 'admin') {
     return res.status(403).json({ success: false, error: 'Admin access required', code: 'ADMIN_REQUIRED' });
   }
-  // Once JWT includes twoFactorEnabled, enforce it here
-  // if (!req.user.twoFactorEnabled) {
-  //   return res.status(403).json({ success: false, error: 'Admin accounts must have 2FA enabled', code: '2FA_REQUIRED' });
-  // }
+
+  // Check DB for 2FA status (JWT may not have it yet)
+  try {
+    const { default: db } = await import('../db/index.js');
+    const result = await db.query(
+      'SELECT two_factor_enabled FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    if (result.rows.length > 0 && !result.rows[0].two_factor_enabled) {
+      return res.status(403).json({
+        success: false,
+        error: 'Admin accounts must have 2FA enabled for this operation. Please enable 2FA in your account settings.',
+        code: '2FA_REQUIRED',
+      });
+    }
+  } catch (err) {
+    console.error('[AUTH] Error checking 2FA status:', err.message);
+    // Fail open for now — if DB is unreachable, don't block admin.
+    // In a stricter environment, you'd fail closed here.
+  }
+
   next();
 };
 

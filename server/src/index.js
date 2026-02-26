@@ -45,6 +45,7 @@ import { getDetailedHealth } from './services/healthService.js';
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { csrfProtection } from './middleware/csrfProtection.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -94,6 +95,9 @@ app.use('/api', limiter);
 app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// CSRF protection (origin validation for state-changing requests)
+app.use('/api', csrfProtection);
 
 // ===========================================
 // HEALTH CHECK

@@ -67,6 +67,14 @@ router.post('/stripe', async (req, res) => {
 
     res.status(200).json({ received: true });
   } catch (error) {
+    // If the error is an unknown price ID, return 200 so Stripe stops retrying.
+    // Log it as critical so we can investigate, but don't let it cascade into
+    // infinite webhook retries from Stripe.
+    if (error.message && error.message.includes('Unknown Stripe price ID')) {
+      console.error(`[WEBHOOK CRITICAL] ${error.message} — returning 200 to prevent Stripe retry loop. Investigate immediately.`);
+      return res.status(200).json({ received: true, warning: 'Unknown price ID — logged for investigation' });
+    }
+
     console.error(`Error handling webhook ${event.type}:`, error);
     res.status(500).json({ error: 'Webhook handler error' });
   }

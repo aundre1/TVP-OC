@@ -2,7 +2,7 @@
 // THE VIDEO POOL - AUTH API
 // ============================================
 
-import { get, post, setAuthToken } from './client';
+import { get, post, setAuthToken, setRefreshToken } from './client';
 import { DEV_CONFIG } from '@/config/dev';
 import type { User, LoginCredentials, RegisterData, TwoFactorVerifyData } from '@/types';
 
@@ -58,6 +58,9 @@ export const authApi = {
     // If no 2FA required and token provided, store it
     if (!response.requires2FA && response.accessToken) {
       setAuthToken(response.accessToken);
+      if (response.refreshToken) {
+        setRefreshToken(response.refreshToken);
+      }
     }
 
     return response;
@@ -85,6 +88,9 @@ export const authApi = {
 
     if (response.accessToken) {
       setAuthToken(response.accessToken);
+      if (response.refreshToken) {
+        setRefreshToken(response.refreshToken);
+      }
     }
 
     return response;
@@ -104,6 +110,9 @@ export const authApi = {
 
     if (response.accessToken) {
       setAuthToken(response.accessToken);
+      if (response.refreshToken) {
+        setRefreshToken(response.refreshToken);
+      }
     }
 
     return response;
@@ -137,6 +146,7 @@ export const authApi = {
       await post('/auth/logout');
     } finally {
       setAuthToken(null);
+      setRefreshToken(null);
     }
   },
 

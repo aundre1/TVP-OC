@@ -5,9 +5,10 @@
 
 import { Router } from 'express';
 import { query } from '../db/config.js';
-import { requireAuth, requireAdmin } from '../middleware/auth.js';
+import { requireAuth, requireAdmin, requireAdmin2FA } from '../middleware/auth.js';
 import { Errors, asyncHandler } from '../middleware/errorHandler.js';
 import { body, validationResult } from 'express-validator';
+import { logAuditEvent, getAuditLogs } from '../services/auditService.js';
 
 const router = Router();
 
@@ -178,8 +179,9 @@ router.get('/users/:id', asyncHandler(async (req, res) => {
 
 // ===========================================
 // PUT /admin/users/:id - Update user
+// Requires 2FA for role/membership changes
 // ===========================================
-router.put('/users/:id', [
+router.put('/users/:id', requireAdmin2FA, [
   body('role').optional().isIn(['user', 'admin']),
   body('membershipType').optional().isIn(['free', 'starter', 'pro', 'elite']),
   body('membershipStatus').optional().isIn(['active', 'suspended', 'cancelled']),
@@ -230,6 +232,17 @@ router.put('/users/:id', [
     throw Errors.notFound('User not found');
   }
 
+  // Audit log
+  logAuditEvent({
+    adminId: req.user.id,
+    action: 'user.update',
+    resourceType: 'user',
+    resourceId: userId,
+    details: { changes: { role, membershipType, membershipStatus } },
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent'),
+  });
+
   res.json({
     message: 'User updated successfully',
     user: result.rows[0],
@@ -278,8 +291,9 @@ router.get('/videos', asyncHandler(async (req, res) => {
 
 // ===========================================
 // POST /admin/videos/bulk-upload - Bulk video upload
+// Requires 2FA for bulk operations
 // ===========================================
-router.post('/videos/bulk-upload', asyncHandler(async (req, res) => {
+router.post('/videos/bulk-upload', requireAdmin2FA, asyncHandler(async (req, res) => {
   const { videos } = req.body;
 
   if (!Array.isArray(videos) || videos.length === 0) {
@@ -333,6 +347,17 @@ router.post('/videos/bulk-upload', asyncHandler(async (req, res) => {
   const successful = results.filter(r => r.success).length;
   const failed = results.filter(r => !r.success).length;
 
+  // Audit log
+  logAuditEvent({
+    adminId: req.user.id,
+    action: 'video.bulk_upload',
+    resourceType: 'video',
+    resourceId: null,
+    details: { total: videos.length, successful, failed },
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent'),
+  });
+
   res.json({
     results,
     summary: {
@@ -345,8 +370,9 @@ router.post('/videos/bulk-upload', asyncHandler(async (req, res) => {
 
 // ===========================================
 // DELETE /admin/videos/:id - Delete video
+// Requires 2FA for destructive operations
 // ===========================================
-router.delete('/videos/:id', asyncHandler(async (req, res) => {
+router.delete('/videos/:id', requireAdmin2FA, asyncHandler(async (req, res) => {
   const videoId = parseInt(req.params.id);
 
   const result = await query(
@@ -357,6 +383,17 @@ router.delete('/videos/:id', asyncHandler(async (req, res) => {
   if (result.rows.length === 0) {
     throw Errors.notFound('Video not found');
   }
+
+  // Audit log
+  logAuditEvent({
+    adminId: req.user.id,
+    action: 'video.delete',
+    resourceType: 'video',
+    resourceId: videoId,
+    details: { title: result.rows[0].title },
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent'),
+  });
 
   res.json({
     message: 'Video deleted successfully',
@@ -433,6 +470,25 @@ router.get('/analytics', asyncHandler(async (req, res) => {
     topVideos: topVideosResult.rows,
     membershipDistribution: membershipResult.rows,
   });
+}));
+
+// ===========================================
+// GET /admin/audit-logs - View audit trail
+// ===========================================
+router.get('/audit-logs', asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+  const { adminId, action, resourceType } = req.query;
+
+  const result = await getAuditLogs({
+    page,
+    limit,
+    adminId: adminId ? parseInt(adminId) : undefined,
+    action,
+    resourceType,
+  });
+
+  res.json(result);
 }));
 
 export default router;

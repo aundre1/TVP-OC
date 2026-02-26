@@ -37,6 +37,19 @@ export const getAuthToken = (): string | null => {
   return authToken;
 };
 
+// Refresh token storage
+export const setRefreshToken = (token: string | null) => {
+  if (token) {
+    localStorage.setItem('tvp_refresh_token', token);
+  } else {
+    localStorage.removeItem('tvp_refresh_token');
+  }
+};
+
+export const getRefreshToken = (): string | null => {
+  return localStorage.getItem('tvp_refresh_token');
+};
+
 // Request interceptor - add auth token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -49,21 +62,98 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle errors globally
+// ===========================================
+// TOKEN AUTO-REFRESH LOGIC
+// ===========================================
+
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token!);
+    }
+  });
+  failedQueue = [];
+};
+
+// Response interceptor - handle errors globally + token auto-refresh
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiError>) => {
-    // originalRequest available for retry logic if needed: error.config
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401) {
-      // Clear token
+    // Handle 401 Unauthorized with token refresh
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      // Don't try to refresh for auth endpoints themselves
+      const isAuthRequest = originalRequest.url?.includes('/auth/');
+      const refreshToken = getRefreshToken();
+
+      if (!isAuthRequest && refreshToken) {
+        if (isRefreshing) {
+          // Queue this request until the refresh completes
+          return new Promise((resolve, reject) => {
+            failedQueue.push({
+              resolve: (token: string) => {
+                if (originalRequest.headers) {
+                  originalRequest.headers.Authorization = `Bearer ${token}`;
+                }
+                resolve(apiClient(originalRequest));
+              },
+              reject,
+            });
+          });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          // Call refresh endpoint
+          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+            refreshToken,
+          });
+
+          const newAccessToken = response.data.accessToken;
+          setAuthToken(newAccessToken);
+
+          // Process queued requests with new token
+          processQueue(null, newAccessToken);
+
+          // Retry the original request
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          }
+          return apiClient(originalRequest);
+        } catch (refreshError) {
+          // Refresh failed — clear everything and redirect to login
+          processQueue(refreshError, null);
+          setAuthToken(null);
+          setRefreshToken(null);
+
+          const path = window.location.pathname;
+          const isAuthPage = path.includes('/login') ||
+                            path.includes('/register') ||
+                            path.includes('/welcome') ||
+                            path === '/';
+          if (!isAuthPage) {
+            window.location.href = '/login';
+          }
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      // No refresh token available — clear auth and redirect
       setAuthToken(null);
 
-      // Only redirect if:
-      // 1. Not already on auth pages or landing
-      // 2. Not any /auth/ request (login, me, refresh, google, etc.)
-      // 3. Prevents redirect loops when auth state is being resolved
       const path = window.location.pathname;
       const isAuthPage = path.includes('/login') ||
                         path.includes('/register') ||
@@ -72,9 +162,9 @@ apiClient.interceptors.response.use(
                         path.includes('/reset-password') ||
                         path.includes('/verify-email') ||
                         path === '/';
-      const isAuthRequest = error.config?.url?.includes('/auth/');
+      const isAuthRequestFallback = error.config?.url?.includes('/auth/');
 
-      if (!isAuthPage && !isAuthRequest) {
+      if (!isAuthPage && !isAuthRequestFallback) {
         window.location.href = '/login';
       }
     }

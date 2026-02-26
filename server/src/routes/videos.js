@@ -290,34 +290,28 @@ router.post('/:id/download',
         });
       }
 
-      // Check download limit
-      const limitStatus = await downloadService.checkDownloadLimit(userId);
-      if (!limitStatus.canDownload) {
+      // Check download limit AND record atomically (prevents race condition)
+      const limitResult = await downloadService.checkAndRecordDownload(userId, videoId, quality, version);
+      if (!limitResult.canDownload) {
         return res.status(403).json({
           error: 'Download limit reached',
-          limit: limitStatus.limit,
-          used: limitStatus.limit - limitStatus.remaining,
-          remaining: limitStatus.remaining,
-          resetDate: limitStatus.resetDate,
+          limit: limitResult.limit,
+          used: limitResult.limit - limitResult.remaining,
+          remaining: limitResult.remaining,
+          resetDate: limitResult.resetDate,
           upgradeUrl: '/membership',
         });
       }
 
-      // Record the download FIRST — ensures the quota is decremented before URL is issued
-      await downloadService.recordDownload(userId, videoId, quality, version);
-
       // Generate signed URL
       const downloadInfo = await downloadService.generateSignedUrl(videoId, quality, version);
-
-      // Get updated remaining downloads
-      const updatedStatus = await downloadService.checkDownloadLimit(userId);
 
       res.json({
         downloadUrl: downloadInfo.downloadUrl,
         expiresIn: downloadInfo.expiresIn,
         fileName: downloadInfo.fileName,
         fileSize: downloadInfo.fileSize,
-        remainingDownloads: updatedStatus.remaining
+        remainingDownloads: limitResult.remaining
       });
     } catch (error) {
       next(error);

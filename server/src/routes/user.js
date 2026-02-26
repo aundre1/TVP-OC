@@ -648,4 +648,165 @@ router.get('/favorites/check/:videoId',
   }
 );
 
+// ===========================================
+// GDPR: ACCOUNT DELETION
+// ===========================================
+
+/**
+ * DELETE /api/user/account
+ * Delete current user's account and all associated data.
+ * Requires password confirmation for security.
+ */
+router.delete('/account',
+  [
+    body('password').notEmpty().withMessage('Password is required to confirm account deletion'),
+    body('reason').optional().trim().isLength({ max: 500 }),
+  ],
+  handleValidationErrors,
+  async (req, res, next) => {
+    const client = await pool.connect();
+
+    try {
+      const userId = req.user.id;
+      const { password, reason } = req.body;
+
+      // Verify password
+      const userResult = await client.query(
+        'SELECT id, password_hash, email, stripe_customer_id, stripe_subscription_id FROM users WHERE id = $1',
+        [userId]
+      );
+
+      if (userResult.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const user = userResult.rows[0];
+
+      // Verify password using bcrypt
+      const { default: bcrypt } = await import('bcrypt');
+      const passwordValid = await bcrypt.compare(password, user.password_hash);
+      if (!passwordValid) {
+        return res.status(401).json({ error: 'Invalid password' });
+      }
+
+      await client.query('BEGIN');
+
+      // Cancel Stripe subscription if active
+      if (user.stripe_subscription_id) {
+        try {
+          const Stripe = (await import('stripe')).default;
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+          await stripe.subscriptions.cancel(user.stripe_subscription_id);
+        } catch (stripeErr) {
+          console.error('[GDPR] Failed to cancel Stripe subscription:', stripeErr.message);
+          // Continue with deletion — subscription will lapse naturally
+        }
+      }
+
+      // Log the deletion request
+      await client.query(
+        `INSERT INTO account_deletion_requests (user_id, reason, status, completed_at)
+         VALUES ($1, $2, 'completed', NOW())`,
+        [userId, reason || null]
+      );
+
+      // Delete all user data in correct order (foreign key constraints)
+      await client.query('DELETE FROM downloads WHERE user_id = $1', [userId]);
+      await client.query('DELETE FROM favorites WHERE user_id = $1', [userId]);
+
+      // Delete user's playlists and their items
+      const playlistIds = await client.query(
+        'SELECT id FROM user_sets WHERE user_id = $1',
+        [userId]
+      );
+      if (playlistIds.rows.length > 0) {
+        const ids = playlistIds.rows.map(r => r.id);
+        await client.query(
+          `DELETE FROM user_set_items WHERE set_id = ANY($1)`,
+          [ids]
+        );
+        await client.query('DELETE FROM user_sets WHERE user_id = $1', [userId]);
+      }
+
+      // Delete sessions
+      await client.query('DELETE FROM sessions WHERE user_id = $1', [userId]);
+
+      // Delete support tickets
+      await client.query('DELETE FROM support_tickets WHERE user_id = $1', [userId]);
+
+      // Delete the user record itself
+      await client.query('DELETE FROM users WHERE id = $1', [userId]);
+
+      await client.query('COMMIT');
+
+      console.log(`[GDPR] Account deleted: user ${userId} (${user.email})`);
+
+      res.json({
+        success: true,
+        message: 'Your account and all associated data have been permanently deleted.',
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('[GDPR] Account deletion failed:', error);
+      next(error);
+    } finally {
+      client.release();
+    }
+  }
+);
+
+/**
+ * GET /api/user/data-export
+ * GDPR: Export all user data in JSON format.
+ */
+router.get('/data-export',
+  async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+
+      // Gather all user data
+      const [userData, downloads, favorites, playlists] = await Promise.all([
+        pool.query(
+          `SELECT id, name, email, membership_type, status, created_at, last_login,
+                  email_verified, phone, phone_verified, two_factor_enabled
+           FROM users WHERE id = $1`,
+          [userId]
+        ),
+        pool.query(
+          `SELECT d.video_id, d.version_type, d.quality, d.downloaded_at,
+                  v.title, v.artist
+           FROM downloads d
+           JOIN videos v ON v.id = d.video_id
+           WHERE d.user_id = $1
+           ORDER BY d.downloaded_at DESC`,
+          [userId]
+        ),
+        pool.query(
+          `SELECT f.video_id, f.created_at, v.title, v.artist
+           FROM favorites f
+           JOIN videos v ON v.id = f.video_id
+           WHERE f.user_id = $1`,
+          [userId]
+        ),
+        pool.query(
+          `SELECT us.id, us.name, us.description, us.created_at
+           FROM user_sets us
+           WHERE us.user_id = $1`,
+          [userId]
+        ),
+      ]);
+
+      res.json({
+        exportDate: new Date().toISOString(),
+        user: userData.rows[0] || null,
+        downloads: downloads.rows,
+        favorites: favorites.rows,
+        playlists: playlists.rows,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default router;
