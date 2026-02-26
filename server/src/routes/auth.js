@@ -660,8 +660,8 @@ router.get(
   requireAuth,
   asyncHandler(async (req, res) => {
     const result = await db.query(
-      `SELECT id, email, name, role, membership_type, membership_expires,
-              email_verified, two_factor_enabled, created_at, last_login
+      `SELECT id, email, name, role, membership_type, membership_expires_at,
+              email_verified, phone_verified, two_factor_enabled, created_at, last_login
        FROM users WHERE id = $1`,
       [req.user.id]
     );
@@ -680,8 +680,9 @@ router.get(
         name: user.name,
         role: user.role,
         membershipType: user.membership_type,
-        membershipExpires: user.membership_expires,
+        membershipExpires: user.membership_expires_at,
         emailVerified: user.email_verified,
+        phoneVerified: user.phone_verified || false,
         twoFactorEnabled: user.two_factor_enabled,
         createdAt: user.created_at,
         lastLogin: user.last_login,
