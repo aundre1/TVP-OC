@@ -545,4 +545,51 @@ router.get(
   }),
 );
 
+// ===========================================
+// POST /admin/run-migrations - Run pending DB migrations
+// One-time use endpoint for safe, idempotent migration runs
+// ===========================================
+router.post(
+  "/run-migrations",
+  requireAdmin2FA,
+  asyncHandler(async (req, res) => {
+    const { readdir, readFile } = await import("fs/promises");
+    const { join, dirname } = await import("path");
+    const { fileURLToPath } = await import("url");
+
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const migrationsDir = join(__dirname, "../db/migrations");
+
+    // Ensure tracking table exists
+    await query(`
+      CREATE TABLE IF NOT EXISTS migrations (
+        id SERIAL PRIMARY KEY,
+        filename VARCHAR(255) UNIQUE NOT NULL,
+        applied_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    const files = (await readdir(migrationsDir))
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
+
+    const applied = await query("SELECT filename FROM migrations");
+    const appliedSet = new Set(applied.rows.map((r) => r.filename));
+
+    const results = [];
+    for (const file of files) {
+      if (appliedSet.has(file)) {
+        results.push({ file, status: "already_applied" });
+        continue;
+      }
+      const sql = await readFile(join(migrationsDir, file), "utf8");
+      await query(sql);
+      await query("INSERT INTO migrations (filename) VALUES ($1)", [file]);
+      results.push({ file, status: "applied" });
+    }
+
+    res.json({ success: true, results });
+  }),
+);
+
 export default router;
