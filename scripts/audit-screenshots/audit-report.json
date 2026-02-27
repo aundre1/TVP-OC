@@ -1,0 +1,156 @@
+{
+  "timestamp": "2026-02-27T14:41:56.971Z",
+  "url": "https://dev.thevideopool.com",
+  "summary": {
+    "passed": 26,
+    "failed": 0,
+    "warnings": 3
+  },
+  "results": [
+    {
+      "status": "PASS",
+      "label": "Landing page loads",
+      "detail": "The Video Pool - Professional Video DJ Platform"
+    },
+    {
+      "status": "PASS",
+      "label": "Hero heading present",
+      "detail": "Level Up YourDJ Sets"
+    },
+    {
+      "status": "PASS",
+      "label": "Auth CTAs visible",
+      "detail": "found 11"
+    },
+    {
+      "status": "PASS",
+      "label": "Email input present",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "label": "Password input present",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "label": "Submit button present",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "label": "Social login grid (8 icon buttons)",
+      "detail": "9 SVG buttons"
+    },
+    {
+      "status": "PASS",
+      "label": "Social grid renders",
+      "detail": "8 buttons in grid"
+    },
+    {
+      "status": "PASS",
+      "label": "\"or continue with\" divider present",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "label": "Login redirect successful",
+      "detail": "→ /home"
+    },
+    {
+      "status": "PASS",
+      "label": "Images found on page",
+      "detail": "76 total"
+    },
+    {
+      "status": "PASS",
+      "label": "Thumbnails loading",
+      "detail": "76/76 loaded"
+    },
+    {
+      "status": "PASS",
+      "label": "Wasabi thumbnails",
+      "detail": "39 from Wasabi"
+    },
+    {
+      "status": "PASS",
+      "label": "Broken images",
+      "detail": "0 broken"
+    },
+    {
+      "status": "WARN",
+      "label": "Placeholder images",
+      "detail": "36 placeholders"
+    },
+    {
+      "status": "PASS",
+      "label": "Video cards rendered",
+      "detail": "160 elements"
+    },
+    {
+      "status": "WARN",
+      "label": "Video catalog API",
+      "detail": "Status 401 (check auth session)"
+    },
+    {
+      "status": "WARN",
+      "label": "Video catalog requires auth",
+      "detail": "Expected — home page loads catalog correctly"
+    },
+    {
+      "status": "PASS",
+      "label": "Terms of Service",
+      "detail": "Terms of Service"
+    },
+    {
+      "status": "PASS",
+      "label": "Privacy Policy",
+      "detail": "Privacy Policy"
+    },
+    {
+      "status": "PASS",
+      "label": "Contact Page",
+      "detail": "Contact Us"
+    },
+    {
+      "status": "PASS",
+      "label": "Membership page — no JS errors",
+      "detail": "clean"
+    },
+    {
+      "status": "PASS",
+      "label": "Membership page renders",
+      "detail": "Choose Your Plan"
+    },
+    {
+      "status": "PASS",
+      "label": "Pricing plans (4 tiers visible)",
+      "detail": "30 price elements"
+    },
+    {
+      "status": "PASS",
+      "label": "Plan cards rendered",
+      "detail": "4 card elements"
+    },
+    {
+      "status": "PASS",
+      "label": "Admin page loads",
+      "detail": "Admin Dashboard"
+    },
+    {
+      "status": "PASS",
+      "label": "Admin tabs rendered",
+      "detail": "Overview/Users/Videos tabs: 3/3 found"
+    },
+    {
+      "status": "PASS",
+      "label": "Search works",
+      "detail": "\"Drake\" → 75 results shown"
+    },
+    {
+      "status": "PASS",
+      "label": "Settings page",
+      "detail": "Settings"
+    }
+  ]
+}
