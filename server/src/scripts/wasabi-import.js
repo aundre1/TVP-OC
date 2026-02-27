@@ -385,12 +385,13 @@ async function upsertVersion(client, { videoId, versionType, fileUrl, quality, p
   const safeQuality = VALID_QUALITIES.has(quality)         ? quality     : '1080p';
 
   await client.query(
-    `INSERT INTO video_versions (video_id, version_type, file_url, quality, file_format, is_active, encoding_status)
-     VALUES ($1, $2, $3, $4, 'mp4', true, 'complete')
+    `INSERT INTO video_versions (video_id, version_type, file_url, quality, file_format, preview_url, is_active, encoding_status)
+     VALUES ($1, $2, $3, $4, 'mp4', $5, true, 'complete')
      ON CONFLICT (video_id, version_type, quality) DO UPDATE SET
        file_url   = EXCLUDED.file_url,
+       preview_url = EXCLUDED.preview_url,
        updated_at = NOW()`,
-    [videoId, safeType, fileUrl, safeQuality]
+    [videoId, safeType, fileUrl, safeQuality, prevUrl || null]
   );
 }
 
