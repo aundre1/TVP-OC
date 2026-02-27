@@ -760,7 +760,7 @@ function LandingNavbar() {
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img src="/The Video Pool Logo 2.0.png" alt="The Video Pool" className="w-10 h-10" />
+          <img src="/logo.png" alt="The Video Pool" className="w-10 h-10" />
           <span className="text-xl font-bold text-tvp-text-primary">
             The Video Pool
           </span>
@@ -807,7 +807,7 @@ function LandingFooter() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <img src="/The Video Pool Logo 2.0.png" alt="The Video Pool" className="w-8 h-8" />
+              <img src="/logo.png" alt="The Video Pool" className="w-8 h-8" />
               <span className="text-lg font-bold text-tvp-text-primary">
                 The Video Pool
               </span>

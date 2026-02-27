@@ -76,7 +76,7 @@ export default function Header() {
         {/* Logo */}
         <Link to="/" className="flex items-center flex-shrink-0 group">
           <img
-            src="/The Video Pool Logo 2.0.png"
+            src="/logo.png"
             alt="The Video Pool"
             className="h-10 w-auto object-contain animate-logo-glow group-hover:animate-none group-hover:drop-shadow-[0_0_15px_var(--accent-cyan-glow)] transition-all"
           />

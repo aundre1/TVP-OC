@@ -146,7 +146,7 @@ export default function ResetPasswordPage() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5">
             <img
-              src="/images/logo.png"
+              src="/logo.png"
               alt="The Video Pool"
               className="h-12 w-auto object-contain"
             />

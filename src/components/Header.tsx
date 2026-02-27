@@ -60,7 +60,7 @@ export default function Header() {
       {/* Logo */}
       <Link to="/" className="flex items-center flex-shrink-0 group">
         <img
-          src="/images/logo.png"
+          src="/logo.png"
           alt="The Video Pool"
           className="h-10 lg:h-12 w-auto object-contain group-hover:drop-shadow-[0_0_12px_rgba(0,212,255,0.4)] transition-all"
         />
