@@ -34,6 +34,9 @@ const AdminPage = lazy(() => import('@/pages/AdminPage'));
 const InsightsPage = lazy(() => import('@/pages/InsightsPage'));
 const SharedSetPage = lazy(() => import('@/pages/SharedSetPage'));
 const OG500Page = lazy(() => import('@/pages/OG500Page'));
+const TermsPage = lazy(() => import('@/pages/TermsPage'));
+const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
+const ContactPage = lazy(() => import('@/pages/ContactPage'));
 
 // Loading spinner
 function LoadingScreen() {
@@ -185,6 +188,11 @@ export default function App() {
           {/* Public shared set page (no auth required) */}
           <Route path="/og500" element={<OG500Page />} />
           <Route path="/set/:shareId" element={<SharedSetPage />} />
+
+          {/* Public legal + contact pages */}
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/contact" element={<ContactPage />} />
 
           {/* Main app routes (protected) */}
           <Route

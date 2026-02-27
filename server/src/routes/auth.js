@@ -316,6 +316,7 @@ router.post(
         email: user.email,
         name: user.name,
         role: user.role,
+        isAdmin: user.role === 'admin',
         membershipType: user.membership_type,
         phoneVerified: user.phone_verified || false,
       },
@@ -679,6 +680,7 @@ router.get(
         email: user.email,
         name: user.name,
         role: user.role,
+        isAdmin: user.role === 'admin',
         membershipType: user.membership_type,
         membershipExpires: user.membership_expires_at,
         emailVerified: user.email_verified,
@@ -1249,4 +1251,143 @@ router.post(
   })
 );
 
+// ===========================================
+// FACEBOOK OAUTH
+// ===========================================
+
+/**
+ * POST /facebook
+ * Authenticate with Facebook OAuth access token
+ * Validates via Facebook Graph API, finds or creates user
+ */
+router.post(
+  '/facebook',
+  authRateLimit(10, 60 * 60 * 1000),
+  asyncHandler(async (req, res) => {
+    const { accessToken: fbAccessToken } = req.body;
+
+    if (!fbAccessToken) {
+      throw Errors.badRequest('Facebook access token is required');
+    }
+
+    const appSecret = process.env.FACEBOOK_APP_SECRET;
+    const appId = process.env.FACEBOOK_APP_ID;
+
+    if (!appSecret || !appId) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[AUTH] FACEBOOK_APP_SECRET or FACEBOOK_APP_ID not set — Facebook OAuth disabled in production');
+        throw Errors.badRequest('Facebook sign-in is temporarily unavailable. Please use email/password login.');
+      }
+    }
+
+    // Verify token was issued for THIS application (prevents cross-app token reuse)
+    if (appId && appSecret) {
+      const debugRes = await fetch(
+        `https://graph.facebook.com/debug_token?input_token=${fbAccessToken}&access_token=${appId}|${appSecret}`
+      );
+      if (!debugRes.ok) {
+        throw Errors.unauthorized('Could not verify Facebook token. Please try again.', 'FACEBOOK_TOKEN_VERIFY_FAILED');
+      }
+      const debugData = await debugRes.json();
+      if (!debugData.data?.is_valid) {
+        throw Errors.unauthorized('Invalid Facebook token. Please try again.', 'INVALID_FACEBOOK_TOKEN');
+      }
+      if (debugData.data.app_id !== appId) {
+        throw Errors.unauthorized('Facebook token not issued for this application', 'INVALID_FACEBOOK_TOKEN');
+      }
+    }
+
+    // Fetch user profile from Facebook Graph API
+    const profileRes = await fetch(
+      `https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token=${fbAccessToken}`
+    );
+
+    if (!profileRes.ok) {
+      throw Errors.unauthorized('Invalid Facebook token. Please try again.', 'INVALID_FACEBOOK_TOKEN');
+    }
+
+    const profile = await profileRes.json();
+    const { id: facebookId, name, email, picture } = profile;
+    const avatarUrl = picture?.data?.url || null;
+
+    if (!email) {
+      throw Errors.badRequest(
+        'Your Facebook account does not have a public email address. Please use email/password registration instead.'
+      );
+    }
+
+    // Find existing user by facebook_id or email
+    let userResult = await db.query(
+      `SELECT id, email, name, role, membership_type, facebook_id
+       FROM users WHERE facebook_id = $1 OR email = $2
+       LIMIT 1`,
+      [facebookId, email]
+    );
+
+    let user;
+
+    if (userResult.rows.length === 0) {
+      // Create new user — Facebook-authenticated users skip password & email verify
+      const newUser = await db.query(
+        `INSERT INTO users
+           (email, name, facebook_id, avatar_url, email_verified, password_hash)
+         VALUES ($1, $2, $3, $4, true, '')
+         RETURNING id, email, name, role, membership_type`,
+        [email, name || email.split('@')[0], facebookId, avatarUrl]
+      );
+      user = newUser.rows[0];
+
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail(email, user.name).catch(() => {});
+    } else {
+      user = userResult.rows[0];
+
+      // Link facebook_id if not already linked
+      if (!user.facebook_id) {
+        await db.query(
+          `UPDATE users SET facebook_id = $1, avatar_url = COALESCE(avatar_url, $2), email_verified = true
+           WHERE id = $3`,
+          [facebookId, avatarUrl, user.id]
+        );
+      }
+    }
+
+    // Generate tokens
+    const jwtAccessToken = generateToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Create session
+    const sessionData = createSessionData(user, req);
+    await db.query(
+      `INSERT INTO sessions (user_id, session_id, refresh_token_hash, user_agent, ip_address, expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        user.id,
+        sessionData.sessionId,
+        hashResetToken(refreshToken),
+        sessionData.userAgent,
+        sessionData.ipAddress,
+        sessionData.expiresAt,
+      ]
+    );
+
+    await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
+
+    res.json({
+      success: true,
+      message: 'Facebook authentication successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        membershipType: user.membership_type,
+      },
+      accessToken: jwtAccessToken,
+      refreshToken,
+    });
+  })
+);
+
 export default router;
+

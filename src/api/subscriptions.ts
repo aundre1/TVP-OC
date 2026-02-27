@@ -100,7 +100,39 @@ export const subscriptionsApi = {
         downloadsRemaining: 2,
       };
     }
-    return get<MembershipStatus>('/memberships/status');
+    // Server returns flat shape: { membershipType, membershipName, downloadLimit, downloadsUsed, ... }
+    // Frontend expects: { currentMembership: Membership, subscriptionStatus, ... }
+    const raw = await get<{
+      membershipType: string;
+      membershipName: string;
+      membershipStatus: string;
+      downloadLimit: number | null;
+      downloadsUsed: number;
+      downloadsRemaining: number | null;
+      features: string[];
+      hasActiveSubscription: boolean;
+      resetDate: string;
+    }>('/memberships/status');
+
+    const currentMembership: Membership = {
+      id: 0,
+      name: raw.membershipName || raw.membershipType || 'Free',
+      slug: (raw.membershipType === 'free' || !raw.membershipType ? 'free' : 'paid') as 'free' | 'paid',
+      price: 0,
+      quarterlyPrice: 0,
+      annualPrice: 0,
+      downloadLimit: raw.downloadLimit,
+      features: raw.features || [],
+    };
+
+    return {
+      currentMembership,
+      subscriptionStatus: raw.hasActiveSubscription ? 'active' : 'trialing',
+      periodEnd: raw.resetDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      cancelAtPeriodEnd: false,
+      downloadsUsed: raw.downloadsUsed || 0,
+      downloadsRemaining: raw.downloadsRemaining ?? 'unlimited',
+    };
   },
 
   // Create checkout session for subscription

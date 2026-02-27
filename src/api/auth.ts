@@ -20,6 +20,12 @@ interface GoogleLoginResponse {
   refreshToken: string;
 }
 
+interface FacebookLoginResponse {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+}
+
 interface RegisterResponse {
   message: string;
   verificationSent: boolean;
@@ -85,6 +91,34 @@ export const authApi = {
     }
 
     const response = await post<GoogleLoginResponse>('/auth/google', { accessToken });
+
+    if (response.accessToken) {
+      setAuthToken(response.accessToken);
+      if (response.refreshToken) {
+        setRefreshToken(response.refreshToken);
+      }
+    }
+
+    return response;
+  },
+
+  // Login with Facebook OAuth
+  async loginWithFacebook(accessToken: string): Promise<FacebookLoginResponse> {
+    if (DEV_CONFIG.useMockAuth) {
+      const mockFacebookUser: User = {
+        ...DEV_CONFIG.mockUser,
+        id: 1002,
+        username: 'FacebookUser',
+        email: 'facebookuser@example.com',
+      };
+      return {
+        user: mockFacebookUser,
+        accessToken: 'mock-facebook-token',
+        refreshToken: 'mock-facebook-refresh',
+      };
+    }
+
+    const response = await post<FacebookLoginResponse>('/auth/facebook', { accessToken });
 
     if (response.accessToken) {
       setAuthToken(response.accessToken);

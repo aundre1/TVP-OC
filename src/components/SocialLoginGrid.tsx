@@ -3,13 +3,21 @@
 // 2 rows of 4 — symmetrical identity providers
 // ============================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/components/Toast';
 import { OAUTH_CONFIG } from '@/config/oauth';
+
+// Extend window for Facebook SDK
+declare global {
+  interface Window {
+    FB: any;
+    fbAsyncInit: () => void;
+  }
+}
 
 interface SocialLoginGridProps {
   mode?: 'login' | 'signup';
@@ -19,6 +27,12 @@ interface SocialLoginGridProps {
 const isGoogleConfigured: boolean = !!(
   OAUTH_CONFIG.google.clientId &&
   OAUTH_CONFIG.google.clientId !== 'your-client-id-here'
+);
+
+// Check if Facebook OAuth is properly configured
+const isFacebookConfigured: boolean = !!(
+  OAUTH_CONFIG.facebook.appId &&
+  OAUTH_CONFIG.facebook.appId !== 'your-facebook-app-id-here'
 );
 
 // ── Icon Components ──────────────────────────────────────────
@@ -113,10 +127,10 @@ interface Provider {
 
 const PROVIDERS: Provider[][] = [
   [
-    { id: 'google',    label: 'Google',    icon: <GoogleIcon />,    available: isGoogleConfigured,  bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-[#4285F4]/60' },
-    { id: 'facebook',  label: 'Facebook',  icon: <FacebookIcon />,  available: false, bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-[#1877F2]/60' },
-    { id: 'apple',     label: 'Apple',     icon: <AppleIcon />,     available: false, bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-white/30'     },
-    { id: 'microsoft', label: 'Microsoft', icon: <MicrosoftIcon />, available: false, bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-[#00A4EF]/60' },
+    { id: 'google',    label: 'Google',    icon: <GoogleIcon />,    available: isGoogleConfigured,   bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#4285F4]/60' },
+    { id: 'facebook',  label: 'Facebook',  icon: <FacebookIcon />,  available: isFacebookConfigured, bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#1877F2]/60' },
+    { id: 'apple',     label: 'Apple',     icon: <AppleIcon />,     available: false,                bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-white/30'     },
+    { id: 'microsoft', label: 'Microsoft', icon: <MicrosoftIcon />, available: false,                bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#00A4EF]/60' },
   ],
   [
     { id: 'spotify',   label: 'Spotify',   icon: <SpotifyIcon />,   available: false, bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-[#1DB954]/60' },
@@ -125,6 +139,70 @@ const PROVIDERS: Provider[][] = [
     { id: 'tiktok',    label: 'TikTok',    icon: <TikTokIcon />,    available: false, bg: 'bg-white/5 hover:bg-white/10',            border: 'border-white/10 hover:border-white/30'     },
   ],
 ];
+
+// ── Facebook Login Hook ───────────────────────────────────────
+
+function FacebookLoginHook({
+  appId,
+  onReady,
+  onSuccess,
+  onError,
+}: {
+  appId: string;
+  onReady: (loginFn: () => void) => void;
+  onSuccess: (accessToken: string) => void;
+  onError: () => void;
+}) {
+  const onReadyRef = useRef(onReady);
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onReadyRef.current = onReady;
+    onSuccessRef.current = onSuccess;
+    onErrorRef.current = onError;
+  });
+
+  useEffect(() => {
+    if (!appId) return;
+
+    const initAndRegister = () => {
+      if (window.FB) {
+        window.FB.init({ appId, cookie: true, xfbml: false, version: 'v19.0' });
+      }
+      onReadyRef.current(() => {
+        window.FB.login(
+          (response: any) => {
+            if (response.status === 'connected' && response.authResponse?.accessToken) {
+              onSuccessRef.current(response.authResponse.accessToken);
+            } else {
+              onErrorRef.current();
+            }
+          },
+          { scope: 'public_profile,email' }
+        );
+      });
+    };
+
+    if (window.FB) {
+      initAndRegister();
+      return;
+    }
+
+    window.fbAsyncInit = initAndRegister;
+
+    if (!document.getElementById('facebook-jssdk')) {
+      const script = document.createElement('script');
+      script.id = 'facebook-jssdk';
+      script.src = 'https://connect.facebook.net/en_US/sdk.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  }, [appId]);
+
+  return null;
+}
 
 // ── Google Login Hook (child component to isolate the hook call) ──
 
@@ -159,10 +237,23 @@ function GoogleLoginHook({
 export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps) {
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [googleLoginFn, setGoogleLoginFn] = useState<(() => void) | null>(null);
+  const [facebookLoginFn, setFacebookLoginFn] = useState<(() => void) | null>(null);
   const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
+  const loginWithFacebook = useAuthStore((state) => state.loginWithFacebook);
   const navigate = useNavigate();
   const toast = useToast();
 
+  // ── Redirect helper ───────────────────────────────────────
+  const redirectAfterOAuth = useCallback(() => {
+    const user = useAuthStore.getState().user;
+    if (user && user.phoneVerified === false) {
+      navigate('/verify-phone');
+    } else {
+      navigate('/home');
+    }
+  }, [navigate]);
+
+  // ── Google handlers ───────────────────────────────────────
   const handleGoogleReady = useCallback((loginFn: () => void) => {
     setGoogleLoginFn(() => loginFn);
   }, []);
@@ -173,12 +264,7 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
       const success = await loginWithGoogle(accessToken);
       if (success) {
         toast.success('Signed in with Google');
-        const user = useAuthStore.getState().user;
-        if (user && user.phoneVerified === false) {
-          navigate('/verify-phone');
-        } else {
-          navigate('/home');
-        }
+        redirectAfterOAuth();
       } else {
         toast.error('Google sign-in failed. Please try again.');
       }
@@ -187,10 +273,37 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
     } finally {
       setLoadingProvider(null);
     }
-  }, [loginWithGoogle, navigate, toast]);
+  }, [loginWithGoogle, redirectAfterOAuth, toast]);
 
   const handleGoogleError = useCallback(() => {
     toast.error('Google sign-in is unavailable. Please use email/password to log in.');
+    setLoadingProvider(null);
+  }, [toast]);
+
+  // ── Facebook handlers ─────────────────────────────────────
+  const handleFacebookReady = useCallback((loginFn: () => void) => {
+    setFacebookLoginFn(() => loginFn);
+  }, []);
+
+  const handleFacebookSuccess = useCallback(async (accessToken: string) => {
+    setLoadingProvider('facebook');
+    try {
+      const success = await loginWithFacebook(accessToken);
+      if (success) {
+        toast.success('Signed in with Facebook');
+        redirectAfterOAuth();
+      } else {
+        toast.error('Facebook sign-in failed. Please try again.');
+      }
+    } catch {
+      toast.error('Facebook sign-in failed. Please try again.');
+    } finally {
+      setLoadingProvider(null);
+    }
+  }, [loginWithFacebook, redirectAfterOAuth, toast]);
+
+  const handleFacebookError = useCallback(() => {
+    toast.error('Facebook sign-in is unavailable. Please use email/password to log in.');
     setLoadingProvider(null);
   }, [toast]);
 
@@ -199,17 +312,28 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
     if (provider.id === 'google' && googleLoginFn) {
       setLoadingProvider('google');
       googleLoginFn();
+    } else if (provider.id === 'facebook' && facebookLoginFn) {
+      setLoadingProvider('facebook');
+      facebookLoginFn();
     }
   };
 
   return (
     <>
-      {/* Invisible hook component — only mounts when Google OAuth is configured */}
+      {/* Invisible hook components — only mount when configured */}
       {isGoogleConfigured && (
         <GoogleLoginHook
           onReady={handleGoogleReady}
           onSuccess={handleGoogleSuccess}
           onError={handleGoogleError}
+        />
+      )}
+      {isFacebookConfigured && (
+        <FacebookLoginHook
+          appId={OAUTH_CONFIG.facebook.appId}
+          onReady={handleFacebookReady}
+          onSuccess={handleFacebookSuccess}
+          onError={handleFacebookError}
         />
       )}
 
