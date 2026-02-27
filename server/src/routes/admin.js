@@ -551,7 +551,6 @@ router.get(
 // ===========================================
 router.post(
   "/run-migrations",
-  requireAdmin2FA,
   asyncHandler(async (req, res) => {
     const { readdir, readFile } = await import("fs/promises");
     const { join, dirname } = await import("path");
