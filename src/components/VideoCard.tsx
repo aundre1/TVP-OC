@@ -24,6 +24,7 @@ export default function VideoCard({ video, showStats = true, size = 'md', isFavo
 
   const [isHovered, setIsHovered] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [imgSrc, setImgSrc] = useState(video.thumbnailUrl || '/placeholder-video.jpg');
 
   const sizeClasses = {
     sm: 'w-36',
@@ -65,10 +66,11 @@ export default function VideoCard({ video, showStats = true, size = 'md', isFavo
       {/* Thumbnail */}
       <div className="relative aspect-video rounded-lg overflow-hidden bg-tvp-bg-tertiary">
         <img
-          src={video.thumbnailUrl || '/placeholder-video.jpg'}
+          src={imgSrc}
           alt={video.title}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
+          onError={() => setImgSrc(`https://picsum.photos/seed/${video.id}/320/180`)}
         />
 
         {/* Hover Overlay */}

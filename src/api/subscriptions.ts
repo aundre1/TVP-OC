@@ -6,6 +6,35 @@ import { get, post } from './client';
 import { DEV_CONFIG } from '@/config/dev';
 import type { Membership, MembershipStatus, CheckoutSession } from '@/types';
 
+// Convert API features object → human-readable string array for the UI
+function adaptFeatures(features: Record<string, unknown> | string[] | null, slug: string): string[] {
+  if (!features) return [];
+  if (Array.isArray(features)) return features;
+  if (typeof features !== 'object') return [];
+
+  const lines: string[] = [];
+  const f = features as Record<string, unknown>;
+
+  if (typeof f.monthlyDownloads === 'number') {
+    lines.push(`${f.monthlyDownloads} download${f.monthlyDownloads === 1 ? '' : 's'}/month`);
+  } else if (f.monthlyDownloads === null) {
+    lines.push('Unlimited downloads');
+  }
+  if (f.maxQuality) lines.push(`${String(f.maxQuality).toUpperCase()} quality`);
+  if (f.streaming) lines.push('Streaming access');
+  if (f.preview) lines.push('Video previews');
+  if (typeof f.favorites === 'number') lines.push(`${f.favorites} favorites`);
+  if (f.favorites === null) lines.push('Unlimited favorites');
+  if (f.historyDays) lines.push(`${f.historyDays}-day history`);
+  if (f.earlyAccess) lines.push('Early access to new content');
+  if (f.batchDownload || f.bulkDownload) lines.push('Batch downloads');
+  if (f.exclusiveContent) lines.push('Exclusive content');
+  if (f.prioritySupport) lines.push('Priority support');
+  if (f.twentyFourSevenSupport) lines.push('24/7 support');
+
+  return lines;
+}
+
 interface BillingHistory {
   invoices: Array<{
     id: string;
@@ -77,7 +106,28 @@ export const subscriptionsApi = {
     if (DEV_CONFIG.useMockAuth) {
       return mockMemberships;
     }
-    return get<Membership[]>('/memberships');
+    const raw = await get<Array<{
+      id: number;
+      name: string;
+      slug: string;
+      priceMonthly: number;
+      priceAnnual: number;
+      downloadLimit: number | null;
+      features: Record<string, unknown> | string[];
+      isPopular: boolean;
+    }>>('/memberships');
+
+    return raw.map(m => ({
+      id: m.id,
+      name: m.name,
+      slug: (m.slug === 'free' ? 'free' : 'paid') as 'free' | 'paid',
+      price: m.priceMonthly || 0,
+      quarterlyPrice: m.priceMonthly ? +(m.priceMonthly * 3 * 0.95).toFixed(2) : 0,
+      annualPrice: m.priceAnnual || (m.priceMonthly ? +(m.priceMonthly * 12 * 0.8).toFixed(2) : 0),
+      downloadLimit: m.downloadLimit,
+      features: adaptFeatures(m.features, m.slug),
+      isPopular: m.isPopular || m.slug === 'pro',
+    }));
   },
 
   // Get specific membership details

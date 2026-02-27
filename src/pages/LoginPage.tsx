@@ -20,7 +20,8 @@ export default function LoginPage() {
 
   const redirectAfterLogin = () => {
     const user = useAuthStore.getState().user;
-    if (user && user.phoneVerified === false) {
+    // Admins skip phone verification; regular users get prompted if not verified
+    if (user && !user.isAdmin && user.phoneVerified === false) {
       navigate('/verify-phone');
     } else {
       navigate('/');
