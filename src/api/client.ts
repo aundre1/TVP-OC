@@ -12,55 +12,38 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://tvp-oc-production.
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000, // 10 second timeout for production backend
-  withCredentials: true, // Include cookies for session auth
+  withCredentials: true, // Include HttpOnly cookies automatically
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Token storage (for JWT auth)
-let authToken: string | null = null;
+// DEPRECATED: Token storage functions removed
+// Tokens are now stored in HttpOnly cookies only (set by backend)
+// Browser automatically includes cookies in requests via withCredentials: true
+// No Authorization header needed — security improved via XSS prevention
 
 export const setAuthToken = (token: string | null) => {
-  authToken = token;
-  if (token) {
-    localStorage.setItem('tvp_token', token);
-  } else {
-    localStorage.removeItem('tvp_token');
-  }
+  // No-op for backwards compatibility during migration
+  // Tokens are now managed exclusively via HttpOnly cookies
 };
 
 export const getAuthToken = (): string | null => {
-  if (!authToken) {
-    authToken = localStorage.getItem('tvp_token');
-  }
-  return authToken;
+  // No-op for backwards compatibility during migration
+  // Return null — tokens are in cookies, not accessible to JavaScript
+  return null;
 };
 
-// Refresh token storage
 export const setRefreshToken = (token: string | null) => {
-  if (token) {
-    localStorage.setItem('tvp_refresh_token', token);
-  } else {
-    localStorage.removeItem('tvp_refresh_token');
-  }
+  // No-op for backwards compatibility during migration
+  // Tokens are now managed exclusively via HttpOnly cookies
 };
 
 export const getRefreshToken = (): string | null => {
-  return localStorage.getItem('tvp_refresh_token');
+  // No-op for backwards compatibility during migration
+  // Return null — tokens are in cookies, not accessible to JavaScript
+  return null;
 };
-
-// Request interceptor - add auth token
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = getAuthToken();
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // ===========================================
 // TOKEN AUTO-REFRESH LOGIC
@@ -68,16 +51,16 @@ apiClient.interceptors.request.use(
 
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (token: string) => void;
+  resolve: () => void;
   reject: (error: unknown) => void;
 }> = [];
 
-const processQueue = (error: unknown, token: string | null = null) => {
+const processQueue = (error: unknown) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token!);
+      prom.resolve();
     }
   });
   failedQueue = [];
@@ -89,23 +72,17 @@ apiClient.interceptors.response.use(
   async (error: AxiosError<ApiError>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // Handle 401 Unauthorized with token refresh
+    // Handle 401 Unauthorized with token refresh (using HttpOnly cookies)
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       // Don't try to refresh for auth endpoints themselves
       const isAuthRequest = originalRequest.url?.includes('/auth/');
-      const refreshToken = getRefreshToken();
 
-      if (!isAuthRequest && refreshToken) {
+      if (!isAuthRequest) {
         if (isRefreshing) {
           // Queue this request until the refresh completes
           return new Promise((resolve, reject) => {
             failedQueue.push({
-              resolve: (token: string) => {
-                if (originalRequest.headers) {
-                  originalRequest.headers.Authorization = `Bearer ${token}`;
-                }
-                resolve(apiClient(originalRequest));
-              },
+              resolve: () => resolve(apiClient(originalRequest)),
               reject,
             });
           });
@@ -115,27 +92,22 @@ apiClient.interceptors.response.use(
         isRefreshing = true;
 
         try {
-          // Call refresh endpoint
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-            refreshToken,
-          });
+          // Call refresh endpoint (backend reads tvp_refresh_token from cookies)
+          // No need to send refreshToken in body — it's in the HttpOnly cookie
+          await axios.post(
+            `${API_BASE_URL}/auth/refresh`,
+            {},
+            { withCredentials: true }
+          );
 
-          const newAccessToken = response.data.accessToken;
-          setAuthToken(newAccessToken);
+          // New access token is automatically set in tvp_token cookie by backend
+          processQueue(null);
 
-          // Process queued requests with new token
-          processQueue(null, newAccessToken);
-
-          // Retry the original request
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          }
+          // Retry the original request with new cookie
           return apiClient(originalRequest);
         } catch (refreshError) {
-          // Refresh failed — clear everything and redirect to login
-          processQueue(refreshError, null);
-          setAuthToken(null);
-          setRefreshToken(null);
+          // Refresh failed — redirect to login
+          processQueue(refreshError);
 
           const path = window.location.pathname;
           const isAuthPage = path.includes('/login') ||
@@ -151,9 +123,7 @@ apiClient.interceptors.response.use(
         }
       }
 
-      // No refresh token available — clear auth and redirect
-      setAuthToken(null);
-
+      // Auth endpoint returning 401 — redirect to login
       const path = window.location.pathname;
       const isAuthPage = path.includes('/login') ||
                         path.includes('/register') ||
@@ -162,9 +132,8 @@ apiClient.interceptors.response.use(
                         path.includes('/reset-password') ||
                         path.includes('/verify-email') ||
                         path === '/';
-      const isAuthRequestFallback = error.config?.url?.includes('/auth/');
 
-      if (!isAuthPage && !isAuthRequestFallback) {
+      if (!isAuthPage) {
         window.location.href = '/login';
       }
     }

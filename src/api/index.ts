@@ -2,7 +2,7 @@
 // THE VIDEO POOL - API EXPORTS
 // ============================================
 
-export { default as apiClient, get, post, put, del, setAuthToken, getAuthToken, downloadFile } from './client';
+export { default as apiClient, get, post, put, del, downloadFile } from './client';
 export { authApi } from './auth';
 export { videosApi } from './videos';
 export { downloadsApi } from './downloads';

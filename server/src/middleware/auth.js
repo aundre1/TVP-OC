@@ -9,21 +9,19 @@ import jwt from "jsonwebtoken";
 const rateLimitStores = new Map();
 
 /**
- * Extract JWT token from Authorization header
- * Supports: "Bearer <token>" format
+ * Extract JWT token from request.
+ * Priority: Authorization header (server-to-server) then HttpOnly cookie (browser clients).
  */
 export const extractToken = req => {
+  // Prefer Authorization header (server-to-server calls, API tests)
   const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return null;
-  }
-
-  // Check for Bearer token format
-  if (authHeader.startsWith("Bearer ")) {
+  if (authHeader && authHeader.startsWith('Bearer ')) {
     return authHeader.slice(7);
   }
-
+  // Fallback to HttpOnly cookie (browser clients with secure cookies)
+  if (req.cookies && req.cookies.tvp_token) {
+    return req.cookies.tvp_token;
+  }
   return null;
 };
 

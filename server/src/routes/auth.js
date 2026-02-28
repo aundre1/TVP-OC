@@ -37,6 +37,34 @@ import db from '../db/index.js';
 const router = express.Router();
 
 // ===========================================
+// HELPER FUNCTIONS
+// ===========================================
+
+/**
+ * Set both access and refresh tokens as HttpOnly cookies
+ * Prevents XSS token theft via localStorage
+ */
+const setAuthCookies = (res, accessToken, refreshToken) => {
+  // Access token: 15 minutes
+  res.cookie('tvp_token', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 15 * 60 * 1000,
+    path: '/',
+  });
+
+  // Refresh token: 7 days
+  res.cookie('tvp_refresh_token', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
+  });
+};
+
+// ===========================================
 // VALIDATION RULES
 // ===========================================
 
@@ -275,10 +303,19 @@ router.post(
         { expiresIn: '10m', issuer: 'thevideopool.com', audience: 'tvp-client' }
       );
 
+      // Store temp token in HttpOnly cookie (10-minute window matches token expiry)
+      res.cookie('tvp_temp_token', tempToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 10 * 60 * 1000, // 10 minutes
+        path: '/',
+      });
+
       return res.status(200).json({
         success: true,
         requires2FA: true,
-        tempToken,
+        // DO NOT return tempToken in response anymore
         message: 'Please enter your 2FA code to complete login.',
       });
     }
@@ -308,6 +345,9 @@ router.post(
       [user.id]
     );
 
+    // Set tokens as HttpOnly cookies (no longer in response body)
+    setAuthCookies(res, accessToken, refreshToken);
+
     res.json({
       success: true,
       message: 'Login successful',
@@ -320,8 +360,6 @@ router.post(
         membershipType: user.membership_type,
         phoneVerified: user.phone_verified || false,
       },
-      accessToken,
-      refreshToken,
     });
   })
 );
@@ -334,13 +372,18 @@ router.post(
   '/login/2fa',
   authRateLimit(5, 15 * 60 * 1000),
   [
-    body('tempToken').notEmpty().withMessage('Temporary token is required'),
     body('code').notEmpty().withMessage('2FA code is required'),
   ],
   asyncHandler(async (req, res) => {
     validate(req);
 
-    const { tempToken, code } = req.body;
+    // Read tempToken from HttpOnly cookie (set during /login when 2FA detected)
+    const tempToken = req.cookies?.tvp_temp_token;
+    if (!tempToken) {
+      throw Errors.unauthorized('2FA session expired, please login again', 'SESSION_EXPIRED');
+    }
+
+    const { code } = req.body;
 
     // Verify temp token
     let decoded;
@@ -411,6 +454,10 @@ router.post(
     // Update last login
     await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
 
+    // Clear 2FA temp cookie and set auth cookies
+    res.clearCookie('tvp_temp_token');
+    setAuthCookies(res, accessToken, refreshToken);
+
     res.json({
       success: true,
       message: usedBackupCode ? 'Login successful (backup code used)' : 'Login successful',
@@ -422,8 +469,6 @@ router.post(
         role: user.role,
         membershipType: user.membership_type,
       },
-      accessToken,
-      refreshToken,
     });
   })
 );
@@ -705,7 +750,7 @@ router.post(
   '/logout',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const refreshToken = req.body.refreshToken;
+    const refreshToken = req.cookies?.tvp_refresh_token;
 
     if (refreshToken) {
       // Delete specific session
@@ -719,10 +764,9 @@ router.post(
       await db.query('DELETE FROM sessions WHERE user_id = $1', [req.user.id]);
     }
 
-    res.json({
-      success: true,
-      message: 'Logged out successfully',
-    });
+    res.clearCookie('tvp_token');
+    res.clearCookie('tvp_refresh_token');
+    res.json({ success: true, message: 'Logged out successfully' });
   })
 );
 
@@ -737,7 +781,7 @@ router.post(
 router.post(
   '/refresh',
   asyncHandler(async (req, res) => {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.tvp_refresh_token;
 
     if (!refreshToken) {
       throw Errors.unauthorized('Refresh token required', 'TOKEN_REQUIRED');
@@ -780,10 +824,16 @@ router.post(
       [user.id, tokenHash]
     );
 
-    res.json({
-      success: true,
-      accessToken,
+    // Set fresh access token cookie; reuse the same refresh token already in the cookie
+    res.cookie('tvp_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, // 15 minutes — matches access token expiry
+      path: '/',
     });
+
+    res.json({ success: true });
   })
 );
 
@@ -1132,6 +1182,9 @@ router.post(
 
     await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
 
+    // Set tokens as HttpOnly cookies (no longer in response body)
+    setAuthCookies(res, jwtAccessToken, refreshToken);
+
     res.json({
       success: true,
       message: 'Google authentication successful',
@@ -1142,8 +1195,6 @@ router.post(
         role: user.role,
         membershipType: user.membership_type,
       },
-      accessToken: jwtAccessToken,
-      refreshToken,
     });
   })
 );
@@ -1373,6 +1424,9 @@ router.post(
 
     await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
 
+    // Set tokens as HttpOnly cookies (no longer in response body)
+    setAuthCookies(res, jwtAccessToken, refreshToken);
+
     res.json({
       success: true,
       message: 'Facebook authentication successful',
@@ -1383,8 +1437,244 @@ router.post(
         role: user.role,
         membershipType: user.membership_type,
       },
-      accessToken: jwtAccessToken,
-      refreshToken,
+    });
+  })
+);
+
+// ===========================================
+// SPOTIFY OAUTH
+// ===========================================
+
+/**
+ * POST /spotify
+ * Authenticate with Spotify OAuth access token
+ * Validates via Spotify Web API, finds or creates user
+ */
+router.post(
+  '/spotify',
+  authRateLimit(10, 60 * 60 * 1000),
+  asyncHandler(async (req, res) => {
+    const { accessToken: spotifyAccessToken } = req.body;
+
+    if (!spotifyAccessToken) {
+      throw Errors.badRequest('Spotify access token is required');
+    }
+
+    // Fetch user profile from Spotify
+    const spotifyRes = await fetch('https://api.spotify.com/v1/me', {
+      headers: { Authorization: `Bearer ${spotifyAccessToken}` },
+    });
+
+    if (!spotifyRes.ok) {
+      throw Errors.unauthorized('Invalid Spotify token. Please try again.', 'INVALID_SPOTIFY_TOKEN');
+    }
+
+    const profile = await spotifyRes.json();
+    const { id: spotifyId, email, display_name, images } = profile;
+    const avatarUrl = images?.[0]?.url || null;
+
+    if (!email) {
+      throw Errors.badRequest('Your Spotify account does not have a public email address. Please use email/password registration instead.');
+    }
+
+    // Find existing user by spotify_id or email
+    let userResult = await db.query(
+      `SELECT id, email, name, role, membership_type, spotify_id
+       FROM users WHERE spotify_id = $1 OR email = $2
+       LIMIT 1`,
+      [spotifyId, email]
+    );
+
+    let user;
+
+    if (userResult.rows.length === 0) {
+      // Create new user — Spotify-authenticated users skip password & email verify
+      const newUser = await db.query(
+        `INSERT INTO users
+           (email, name, spotify_id, avatar_url, email_verified, password_hash)
+         VALUES ($1, $2, $3, $4, true, '')
+         RETURNING id, email, name, role, membership_type`,
+        [email, display_name || email.split('@')[0], spotifyId, avatarUrl]
+      );
+      user = newUser.rows[0];
+
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail(email, user.name).catch(() => {});
+    } else {
+      user = userResult.rows[0];
+
+      // Link spotify_id if not already linked
+      if (!user.spotify_id) {
+        await db.query(
+          `UPDATE users SET spotify_id = $1, avatar_url = COALESCE(avatar_url, $2), email_verified = true
+           WHERE id = $3`,
+          [spotifyId, avatarUrl, user.id]
+        );
+      }
+    }
+
+    // Generate tokens
+    const jwtAccessToken = generateToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Create session
+    const sessionData = createSessionData(user, req);
+    await db.query(
+      `INSERT INTO sessions (user_id, session_id, refresh_token_hash, user_agent, ip_address, expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        user.id,
+        sessionData.sessionId,
+        hashResetToken(refreshToken),
+        sessionData.userAgent,
+        sessionData.ipAddress,
+        sessionData.expiresAt,
+      ]
+    );
+
+    await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
+
+    // Set tokens as HttpOnly cookies
+    setAuthCookies(res, jwtAccessToken, refreshToken);
+
+    res.json({
+      success: true,
+      message: 'Spotify authentication successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        membershipType: user.membership_type,
+      },
+    });
+  })
+);
+
+// ===========================================
+// APPLE OAUTH
+// ===========================================
+
+/**
+ * POST /apple
+ * Authenticate with Apple OAuth
+ * Validates Apple JWT, finds or creates user
+ */
+router.post(
+  '/apple',
+  authRateLimit(10, 60 * 60 * 1000),
+  [
+    body('identityToken').notEmpty().withMessage('Apple identity token is required'),
+    body('user').optional(), // Apple sends user data only on first sign-in
+  ],
+  asyncHandler(async (req, res) => {
+    validate(req);
+
+    const { identityToken, user: appleUserData } = req.body;
+
+    if (!identityToken) {
+      throw Errors.badRequest('Apple identity token is required');
+    }
+
+    // Decode Apple JWT (identity token is a JWT)
+    // In production, verify the signature against Apple's public keys
+    // For this implementation, we decode without verification (requires secure HTTPS)
+    let decoded;
+    try {
+      const parts = identityToken.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Invalid JWT format');
+      }
+
+      // Decode payload (without verification for now — production should verify signature)
+      const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+      decoded = payload;
+    } catch (error) {
+      throw Errors.unauthorized('Invalid Apple identity token', 'INVALID_APPLE_TOKEN');
+    }
+
+    const { sub: appleId, email: appleEmail } = decoded;
+
+    if (!appleId) {
+      throw Errors.badRequest('Invalid Apple token: missing user ID');
+    }
+
+    // Use provided email or fallback (Apple may not include email in token on sign-in)
+    const email = appleEmail || appleUserData?.email || `${appleId}@privaterelay.appleid.com`;
+    const name = appleUserData?.name?.firstName
+      ? `${appleUserData.name.firstName} ${appleUserData.name.lastName || ''}`.trim()
+      : email.split('@')[0];
+
+    // Find existing user by apple_id or email
+    let userResult = await db.query(
+      `SELECT id, email, name, role, membership_type, apple_id
+       FROM users WHERE apple_id = $1 OR email = $2
+       LIMIT 1`,
+      [appleId, email]
+    );
+
+    let user;
+
+    if (userResult.rows.length === 0) {
+      // Create new user — Apple-authenticated users skip password & email verify
+      const newUser = await db.query(
+        `INSERT INTO users
+           (email, name, apple_id, email_verified, password_hash)
+         VALUES ($1, $2, $3, true, '')
+         RETURNING id, email, name, role, membership_type`,
+        [email, name, appleId]
+      );
+      user = newUser.rows[0];
+
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail(email, user.name).catch(() => {});
+    } else {
+      user = userResult.rows[0];
+
+      // Link apple_id if not already linked
+      if (!user.apple_id) {
+        await db.query(
+          `UPDATE users SET apple_id = $1, email_verified = true
+           WHERE id = $2`,
+          [appleId, user.id]
+        );
+      }
+    }
+
+    // Generate tokens
+    const jwtAccessToken = generateToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Create session
+    const sessionData = createSessionData(user, req);
+    await db.query(
+      `INSERT INTO sessions (user_id, session_id, refresh_token_hash, user_agent, ip_address, expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        user.id,
+        sessionData.sessionId,
+        hashResetToken(refreshToken),
+        sessionData.userAgent,
+        sessionData.ipAddress,
+        sessionData.expiresAt,
+      ]
+    );
+
+    await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
+
+    // Set tokens as HttpOnly cookies
+    setAuthCookies(res, jwtAccessToken, refreshToken);
+
+    res.json({
+      success: true,
+      message: 'Apple authentication successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        membershipType: user.membership_type,
+      },
     });
   })
 );

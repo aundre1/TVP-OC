@@ -52,10 +52,11 @@ export const useAuthStore = create<AuthStore>()(
         try {
           const response = await authApi.login(credentials);
 
-          if (response.requires2FA && response.tempToken) {
+          // tempToken is now stored as HttpOnly cookie by backend
+          if (response.requires2FA) {
             set({
               requires2FA: true,
-              tempToken: response.tempToken,
+              // tempToken is in httpOnly cookie (tvp_temp_token), not in store
               isLoading: false,
             });
             return false; // Not fully logged in yet
@@ -125,15 +126,10 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       verify2FA: async (code: string) => {
-        const { tempToken } = get();
-        if (!tempToken) {
-          set({ error: '2FA session expired' });
-          return false;
-        }
-
+        // tempToken is now in HttpOnly cookie (tvp_temp_token), backend reads it automatically
         set({ isLoading: true, error: null });
         try {
-          const response = await authApi.verify2FA({ tempToken, code });
+          const response = await authApi.verify2FA({ code });
 
           set({
             user: response.user,

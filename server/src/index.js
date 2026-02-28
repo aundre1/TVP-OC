@@ -7,6 +7,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
 // Load environment variables
@@ -89,6 +90,9 @@ app.use(
 
 // Request logging
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+
+// Parse cookies from request headers
+app.use(cookieParser());
 
 // Rate limiting
 const limiter = rateLimit({

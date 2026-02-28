@@ -2,28 +2,45 @@
 // THE VIDEO POOL - AUTH API
 // ============================================
 
-import { get, post, setAuthToken, setRefreshToken } from './client';
+import { get, post } from './client';
 import { DEV_CONFIG } from '@/config/dev';
 import type { User, LoginCredentials, RegisterData, TwoFactorVerifyData } from '@/types';
 
 interface LoginResponse {
-  user: User;
-  accessToken?: string;
-  refreshToken?: string;
+  user?: User;
+  success: boolean;
+  message: string;
   requires2FA?: boolean;
-  tempToken?: string;
+  // accessToken and refreshToken are now HttpOnly cookies (tvp_token, tvp_refresh_token)
+  // tempToken is also an HttpOnly cookie (tvp_temp_token) when 2FA required
 }
 
 interface GoogleLoginResponse {
   user: User;
-  accessToken: string;
-  refreshToken: string;
+  success: boolean;
+  message: string;
+  // accessToken and refreshToken are now HttpOnly cookies (tvp_token, tvp_refresh_token)
 }
 
 interface FacebookLoginResponse {
   user: User;
-  accessToken: string;
-  refreshToken: string;
+  success: boolean;
+  message: string;
+  // accessToken and refreshToken are now HttpOnly cookies (tvp_token, tvp_refresh_token)
+}
+
+interface SpotifyLoginResponse {
+  user: User;
+  success: boolean;
+  message: string;
+  // accessToken and refreshToken are now HttpOnly cookies (tvp_token, tvp_refresh_token)
+}
+
+interface AppleLoginResponse {
+  user: User;
+  success: boolean;
+  message: string;
+  // accessToken and refreshToken are now HttpOnly cookies (tvp_token, tvp_refresh_token)
 }
 
 interface RegisterResponse {
@@ -54,29 +71,25 @@ export const authApi = {
     // Mock mode for development
     if (DEV_CONFIG.useMockAuth) {
       return {
+        success: true,
+        message: 'Login successful (mock)',
         user: DEV_CONFIG.mockUser,
-        accessToken: 'mock-dev-token',
+        // No accessToken in response — tokens now in HttpOnly cookies only
       };
     }
 
     const response = await post<LoginResponse>('/auth/login', credentials);
 
-    // If no 2FA required and token provided, store it
-    if (!response.requires2FA && response.accessToken) {
-      setAuthToken(response.accessToken);
-      if (response.refreshToken) {
-        setRefreshToken(response.refreshToken);
-      }
-    }
+    // Tokens are now set as HttpOnly cookies by backend
+    // No need to call setAuthToken/setRefreshToken
 
     return response;
   },
 
   // Login with Google OAuth
   async loginWithGoogle(accessToken: string): Promise<GoogleLoginResponse> {
-    // Mock mode for development - decode access token to create mock user
+    // Mock mode for development
     if (DEV_CONFIG.useMockAuth) {
-      // In mock mode, create a Google user with some mock data
       const mockGoogleUser: User = {
         ...DEV_CONFIG.mockUser,
         id: 1001,
@@ -85,19 +98,15 @@ export const authApi = {
       };
       return {
         user: mockGoogleUser,
-        accessToken: 'mock-google-token',
-        refreshToken: 'mock-google-refresh',
+        success: true,
+        message: 'Google authentication successful (mock)',
+        // No accessToken in response — tokens now in HttpOnly cookies only
       };
     }
 
     const response = await post<GoogleLoginResponse>('/auth/google', { accessToken });
 
-    if (response.accessToken) {
-      setAuthToken(response.accessToken);
-      if (response.refreshToken) {
-        setRefreshToken(response.refreshToken);
-      }
-    }
+    // Tokens are now set as HttpOnly cookies by backend
 
     return response;
   },
@@ -113,19 +122,15 @@ export const authApi = {
       };
       return {
         user: mockFacebookUser,
-        accessToken: 'mock-facebook-token',
-        refreshToken: 'mock-facebook-refresh',
+        success: true,
+        message: 'Facebook authentication successful (mock)',
+        // No accessToken in response — tokens now in HttpOnly cookies only
       };
     }
 
     const response = await post<FacebookLoginResponse>('/auth/facebook', { accessToken });
 
-    if (response.accessToken) {
-      setAuthToken(response.accessToken);
-      if (response.refreshToken) {
-        setRefreshToken(response.refreshToken);
-      }
-    }
+    // Tokens are now set as HttpOnly cookies by backend
 
     return response;
   },
@@ -135,19 +140,16 @@ export const authApi = {
     // Mock mode for development
     if (DEV_CONFIG.useMockAuth) {
       return {
+        success: true,
+        message: 'Login successful (mock)',
         user: DEV_CONFIG.mockUser,
-        accessToken: 'mock-dev-token',
+        // No accessToken in response — tokens now in HttpOnly cookies only
       };
     }
 
     const response = await post<LoginResponse>('/auth/login/2fa', data);
 
-    if (response.accessToken) {
-      setAuthToken(response.accessToken);
-      if (response.refreshToken) {
-        setRefreshToken(response.refreshToken);
-      }
-    }
+    // Tokens are now set as HttpOnly cookies by backend
 
     return response;
   },
@@ -172,15 +174,16 @@ export const authApi = {
   async logout(): Promise<void> {
     // Mock mode for development
     if (DEV_CONFIG.useMockAuth) {
-      setAuthToken(null);
+      // No token handling needed — cookies are cleared by browser defaults
       return;
     }
 
     try {
       await post('/auth/logout');
-    } finally {
-      setAuthToken(null);
-      setRefreshToken(null);
+      // Backend clears tvp_token and tvp_refresh_token cookies
+    } catch (error) {
+      // Even if logout fails, redirect to login (handled by app)
+      throw error;
     }
   },
 
@@ -189,7 +192,6 @@ export const authApi = {
     // Mock mode for development
     if (DEV_CONFIG.useMockAuth) {
       // If skipAutoLogin is true, return null to show landing page
-      // User must explicitly login to get authenticated
       if (DEV_CONFIG.skipAutoLogin) {
         return null;
       }
@@ -197,14 +199,15 @@ export const authApi = {
     }
 
     try {
-      // Attempt to fetch current user
-      // If no token or unauthorized, this will fail gracefully and return null
+      // GET /auth/me reads tvp_token from HttpOnly cookie automatically
+      // If cookie exists and is valid, returns current user
+      // If cookie missing or invalid, returns 401 (caught below)
       const response = await get<{ success: boolean; user: User }>('/auth/me');
       return response.user ?? null;
     } catch (error) {
-      // Any error (401, timeout, network, etc.) returns null
-      // This allows the app to show landing page instead of hanging
-      // The error is expected on first load when there's no token
+      // 401 (no valid token) returns null
+      // This allows app to show landing page instead of hanging
+      // Expected on first load when no session cookie exists
       return null;
     }
   },
@@ -326,6 +329,55 @@ export const authApi = {
       return { message: 'Phone verified (mock)' };
     }
     return post<{ message: string }>('/auth/verify-phone-code', { code });
+  },
+
+  // Login with Spotify OAuth
+  async loginWithSpotify(accessToken: string): Promise<SpotifyLoginResponse> {
+    if (DEV_CONFIG.useMockAuth) {
+      const mockSpotifyUser: User = {
+        ...DEV_CONFIG.mockUser,
+        id: 1003,
+        username: 'SpotifyUser',
+        email: 'spotifyuser@example.com',
+      };
+      return {
+        user: mockSpotifyUser,
+        success: true,
+        message: 'Spotify authentication successful (mock)',
+      };
+    }
+
+    const response = await post<SpotifyLoginResponse>('/auth/spotify', { accessToken });
+
+    // Tokens are now set as HttpOnly cookies by backend
+
+    return response;
+  },
+
+  // Login with Apple OAuth
+  async loginWithApple(identityToken: string, user?: any): Promise<AppleLoginResponse> {
+    if (DEV_CONFIG.useMockAuth) {
+      const mockAppleUser: User = {
+        ...DEV_CONFIG.mockUser,
+        id: 1004,
+        username: 'AppleUser',
+        email: 'appleuser@example.com',
+      };
+      return {
+        user: mockAppleUser,
+        success: true,
+        message: 'Apple authentication successful (mock)',
+      };
+    }
+
+    const response = await post<AppleLoginResponse>('/auth/apple', {
+      identityToken,
+      user,
+    });
+
+    // Tokens are now set as HttpOnly cookies by backend
+
+    return response;
   },
 };
 

@@ -165,7 +165,8 @@ export interface RegisterData {
 }
 
 export interface TwoFactorVerifyData {
-  tempToken: string;
+  // tempToken is now stored as HttpOnly cookie (tvp_temp_token) by backend
+  // Frontend only needs to send the 2FA code
   code: string;
 }
 

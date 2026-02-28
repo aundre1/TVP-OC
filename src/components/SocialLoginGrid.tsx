@@ -209,7 +209,6 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
   }, []);
 
   const handleGoogleSuccess = useCallback(async (accessToken: string) => {
-    setLoadingProvider('google');
     try {
       const success = await loginWithGoogle(accessToken);
       if (success) {
@@ -259,10 +258,19 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
 
   const handleProviderClick = (provider: Provider) => {
     if (!provider.available) return;
-    if (provider.id === 'google' && googleLoginFn) {
+
+    if (provider.id === 'google') {
+      if (!googleLoginFn) {
+        toast.info('Initializing Google Sign In...');
+        return;
+      }
       setLoadingProvider('google');
       googleLoginFn();
-    } else if (provider.id === 'facebook' && facebookLoginFn) {
+    } else if (provider.id === 'facebook') {
+      if (!facebookLoginFn) {
+        toast.info('Initializing Facebook Sign In...');
+        return;
+      }
       setLoadingProvider('facebook');
       facebookLoginFn();
     }

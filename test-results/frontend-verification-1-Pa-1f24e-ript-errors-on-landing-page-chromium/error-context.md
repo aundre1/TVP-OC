@@ -1,0 +1,449 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Video Pool The Video Pool" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Video Pool" [ref=e7]
+        - generic [ref=e8]: The Video Pool
+      - generic [ref=e9]:
+        - link "Pricing" [ref=e10] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "Sign In" [ref=e11] [cursor=pointer]:
+          - /url: /login
+        - link "Get Started" [ref=e12] [cursor=pointer]:
+          - /url: /register
+  - main [ref=e13]:
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - img [ref=e18]
+        - generic [ref=e20]: "The #1 DJ Video Pool"
+      - heading "Level Up Your DJ Sets" [level=1] [ref=e21]:
+        - text: Level Up Your
+        - text: DJ Sets
+      - paragraph [ref=e22]: Access 26,000+ HD music videos with new releases daily. Built by DJs, for DJs who demand excellence.
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]: 26K+
+          - generic [ref=e26]: HD Videos
+        - generic [ref=e27]:
+          - generic [ref=e28]: 8+
+          - generic [ref=e29]: Genres
+        - generic [ref=e30]:
+          - generic [ref=e31]: Daily
+          - generic [ref=e32]: New Releases
+        - generic [ref=e33]:
+          - generic [ref=e34]: 4K
+          - generic [ref=e35]: Quality Available
+      - generic [ref=e36]:
+        - link "Start Free Trial" [ref=e37] [cursor=pointer]:
+          - /url: /register
+          - text: Start Free Trial
+          - img [ref=e38]
+        - link "Sign In" [ref=e40] [cursor=pointer]:
+          - /url: /login
+      - paragraph [ref=e41]: 50% OFF your first month on all plans
+    - generic [ref=e43]:
+      - generic [ref=e44]:
+        - heading "Everything You Need to Rock Any Venue" [level=2] [ref=e45]
+        - paragraph [ref=e46]: From intimate lounges to massive festivals, we've got the videos that move crowds.
+      - generic [ref=e47]:
+        - generic [ref=e49]:
+          - img [ref=e51]
+          - generic [ref=e54]: 26K+ Videos
+          - heading "Massive Video Library" [level=3] [ref=e55]
+          - paragraph [ref=e56]: 26,000+ professionally produced music videos across Hip-Hop, EDM, Latin, Pop, Country, R&B, Rock, and Throwbacks. New content added daily.
+        - generic [ref=e58]:
+          - img [ref=e60]
+          - generic [ref=e62]: Up to 4K
+          - heading "Premium Quality" [level=3] [ref=e63]
+          - paragraph [ref=e64]: Crystal-clear HD and 4K video quality. Multiple format options including clean edits, extended versions, and quick hits.
+        - generic [ref=e66]:
+          - img [ref=e68]
+          - generic [ref=e70]: Set Builder
+          - heading "DJ-Built Tools" [level=3] [ref=e71]
+          - paragraph [ref=e72]: Smart Set Builder with BPM/Key matching, advanced search filters, and instant downloads. Built by DJs who understand your workflow.
+    - generic [ref=e74]:
+      - generic [ref=e75]:
+        - heading "Explore Our Library" [level=2] [ref=e76]
+        - paragraph [ref=e77]: From chart-toppers to underground hits, we've got every vibe covered.
+      - generic [ref=e78]:
+        - generic [ref=e81] [cursor=pointer]:
+          - heading "Hip-Hop" [level=3] [ref=e82]
+          - paragraph [ref=e83]: 8,500+ videos
+        - generic [ref=e86] [cursor=pointer]:
+          - heading "EDM" [level=3] [ref=e87]
+          - paragraph [ref=e88]: 6,200+ videos
+        - generic [ref=e91] [cursor=pointer]:
+          - heading "Latin" [level=3] [ref=e92]
+          - paragraph [ref=e93]: 5,800+ videos
+        - generic [ref=e96] [cursor=pointer]:
+          - heading "Pop" [level=3] [ref=e97]
+          - paragraph [ref=e98]: 4,500+ videos
+        - generic [ref=e101] [cursor=pointer]:
+          - heading "R&B" [level=3] [ref=e102]
+          - paragraph [ref=e103]: 3,200+ videos
+        - generic [ref=e106] [cursor=pointer]:
+          - heading "Country" [level=3] [ref=e107]
+          - paragraph [ref=e108]: 1,000+ videos
+        - generic [ref=e111] [cursor=pointer]:
+          - heading "Rock" [level=3] [ref=e112]
+          - paragraph [ref=e113]: 800+ videos
+        - generic [ref=e116] [cursor=pointer]:
+          - heading "Throwbacks" [level=3] [ref=e117]
+          - paragraph [ref=e118]: 1,000+ videos
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - img [ref=e121]
+          - heading "Hot This Week" [level=3] [ref=e124]
+        - generic [ref=e125]:
+          - generic [ref=e126]:
+            - img [ref=e128]
+            - generic [ref=e130]:
+              - generic [ref=e131]:
+                - generic [ref=e132]: Die With A Smile
+                - generic [ref=e133]: HOT
+              - generic [ref=e134]: Lady Gaga & Bruno Mars
+          - generic [ref=e135]:
+            - img [ref=e137]
+            - generic [ref=e139]:
+              - generic [ref=e140]:
+                - generic [ref=e141]: APT.
+                - generic [ref=e142]: NEW
+              - generic [ref=e143]: ROSÉ & Bruno Mars
+          - generic [ref=e144]:
+            - img [ref=e146]
+            - generic [ref=e148]:
+              - generic [ref=e149]:
+                - generic [ref=e150]: Espresso
+                - generic [ref=e151]: HOT
+              - generic [ref=e152]: Sabrina Carpenter
+          - generic [ref=e153]:
+            - img [ref=e155]
+            - generic [ref=e157]:
+              - generic [ref=e158]:
+                - generic [ref=e159]: Birds of a Feather
+                - generic [ref=e160]: NEW
+              - generic [ref=e161]: Billie Eilish
+          - generic [ref=e162]:
+            - img [ref=e164]
+            - generic [ref=e166]:
+              - generic [ref=e167]:
+                - generic [ref=e168]: Not Like Us
+                - generic [ref=e169]: HOT
+              - generic [ref=e170]: Kendrick Lamar
+          - generic [ref=e171]:
+            - img [ref=e173]
+            - generic [ref=e175]:
+              - generic [ref=e176]:
+                - generic [ref=e177]: A Bar Song
+                - generic [ref=e178]: NEW
+              - generic [ref=e179]: Shaboozey
+        - link "Sign up to browse all videos" [ref=e181] [cursor=pointer]:
+          - /url: /register
+          - text: Sign up to browse all videos
+          - img [ref=e182]
+    - generic [ref=e185]:
+      - generic [ref=e186]:
+        - heading "Choose Your Plan" [level=2] [ref=e187]
+        - paragraph [ref=e188]: Trusted by 11,000+ DJs worldwide. No contracts. Cancel anytime.
+      - generic [ref=e189]:
+        - generic [ref=e190]:
+          - generic [ref=e191]:
+            - heading "Free" [level=3] [ref=e192]
+            - paragraph [ref=e193]: 1 downloads/month
+            - generic [ref=e195]: $0
+          - list [ref=e197]:
+            - listitem [ref=e198]:
+              - img [ref=e199]
+              - generic [ref=e201]: 1 download per month
+            - listitem [ref=e202]:
+              - img [ref=e203]
+              - generic [ref=e205]: Browse full catalog
+            - listitem [ref=e206]:
+              - img [ref=e207]
+              - generic [ref=e209]: Set Builder access
+            - listitem [ref=e210]:
+              - img [ref=e211]
+              - generic [ref=e213]: Up to 1080p quality
+          - link "Get Started" [ref=e214] [cursor=pointer]:
+            - /url: /register
+        - generic [ref=e215]:
+          - generic [ref=e216]:
+            - heading "Starter" [level=3] [ref=e217]
+            - paragraph [ref=e218]: 200 downloads/month
+            - generic [ref=e219]:
+              - generic [ref=e220]: $35
+              - generic [ref=e221]: /month
+          - list [ref=e223]:
+            - listitem [ref=e224]:
+              - img [ref=e225]
+              - generic [ref=e227]: 200 downloads per month
+            - listitem [ref=e228]:
+              - img [ref=e229]
+              - generic [ref=e231]: Full HD & all versions
+            - listitem [ref=e232]:
+              - img [ref=e233]
+              - generic [ref=e235]: All genres access
+            - listitem [ref=e236]:
+              - img [ref=e237]
+              - generic [ref=e239]: Priority support
+          - link "Get Started" [ref=e240] [cursor=pointer]:
+            - /url: /register
+        - generic [ref=e241]:
+          - generic [ref=e242]: Popular
+          - generic [ref=e243]:
+            - heading "Pro" [level=3] [ref=e244]
+            - paragraph [ref=e245]: 250 downloads/month
+            - generic [ref=e246]:
+              - generic [ref=e247]: $100
+              - generic [ref=e248]: /quarter
+            - paragraph [ref=e249]: $33/mo
+          - list [ref=e251]:
+            - listitem [ref=e252]:
+              - img [ref=e253]
+              - generic [ref=e255]: 250 downloads per month
+            - listitem [ref=e256]:
+              - img [ref=e257]
+              - generic [ref=e259]: All quality versions
+            - listitem [ref=e260]:
+              - img [ref=e261]
+              - generic [ref=e263]: Batch downloads
+            - listitem [ref=e264]:
+              - img [ref=e265]
+              - generic [ref=e267]: Early access to new releases
+            - listitem [ref=e268]:
+              - img [ref=e269]
+              - generic [ref=e271]: Set Builder Pro
+          - link "Start Free Trial" [ref=e272] [cursor=pointer]:
+            - /url: /register
+          - paragraph [ref=e273]: 7-day free trial
+        - generic [ref=e274]:
+          - generic [ref=e275]:
+            - heading "Elite" [level=3] [ref=e276]
+            - paragraph [ref=e277]: 300 downloads/month
+            - generic [ref=e278]:
+              - generic [ref=e279]: $360
+              - generic [ref=e280]: /year
+            - paragraph [ref=e281]: $30/mo
+          - list [ref=e283]:
+            - listitem [ref=e284]:
+              - img [ref=e285]
+              - generic [ref=e287]: 300 downloads per month
+            - listitem [ref=e288]:
+              - img [ref=e289]
+              - generic [ref=e291]: All quality versions
+            - listitem [ref=e292]:
+              - img [ref=e293]
+              - generic [ref=e295]: Bulk downloads
+            - listitem [ref=e296]:
+              - img [ref=e297]
+              - generic [ref=e299]: Early access + exclusive content
+            - listitem [ref=e300]:
+              - img [ref=e301]
+              - generic [ref=e303]: 24/7 priority support
+            - listitem [ref=e304]:
+              - img [ref=e305]
+              - generic [ref=e307]: Song request priority
+          - link "Start Free Trial" [ref=e308] [cursor=pointer]:
+            - /url: /register
+          - paragraph [ref=e309]: 7-day free trial
+      - paragraph [ref=e310]: All plans include instant access. No approval process required.
+    - generic [ref=e312]:
+      - generic [ref=e313]:
+        - heading "Built for Professional DJs" [level=2] [ref=e314]
+        - paragraph [ref=e315]: Every feature designed to streamline your workflow and elevate your performances.
+      - generic [ref=e316]:
+        - generic [ref=e317]:
+          - img [ref=e320]
+          - generic [ref=e325]:
+            - heading "BPM & Key Matching" [level=3] [ref=e326]
+            - paragraph [ref=e327]: Our Set Builder analyzes BPM and musical key to help you create seamless mixes.
+        - generic [ref=e328]:
+          - img [ref=e331]
+          - generic [ref=e334]:
+            - heading "Instant Downloads" [level=3] [ref=e335]
+            - paragraph [ref=e336]: No waiting. Download your videos instantly in your preferred quality and format.
+        - generic [ref=e337]:
+          - img [ref=e340]
+          - generic [ref=e343]:
+            - heading "Multiple Versions" [level=3] [ref=e344]
+            - paragraph [ref=e345]: Clean edits, explicit versions, intros, outros, and quick hits for every track.
+        - generic [ref=e346]:
+          - img [ref=e349]
+          - generic [ref=e351]:
+            - heading "Software Compatible" [level=3] [ref=e352]
+            - paragraph [ref=e353]: Works with Serato Video, VirtualDJ, rekordbox, and all major DJ software.
+        - generic [ref=e354]:
+          - img [ref=e357]
+          - generic [ref=e360]:
+            - heading "Global Content" [level=3] [ref=e361]
+            - paragraph [ref=e362]: International hits from around the world - Latin, K-Pop, Afrobeats, and more.
+        - generic [ref=e363]:
+          - img [ref=e366]
+          - generic [ref=e368]:
+            - heading "High-Quality Audio" [level=3] [ref=e369]
+            - paragraph [ref=e370]: Premium 320kbps audio paired with stunning HD and 4K video quality.
+    - generic [ref=e372]:
+      - generic [ref=e373]:
+        - heading "Trusted by DJs Worldwide" [level=2] [ref=e374]
+        - paragraph [ref=e375]: Join thousands of professional DJs who've elevated their performances.
+      - generic [ref=e376]:
+        - generic [ref=e377]:
+          - img [ref=e378]
+          - generic [ref=e383]: 11,000+
+          - generic [ref=e384]: DJs Worldwide
+        - generic [ref=e385]:
+          - img [ref=e386]
+          - generic [ref=e389]: 1M+
+          - generic [ref=e390]: Downloads
+        - generic [ref=e391]:
+          - img [ref=e392]
+          - generic [ref=e395]: 50+
+          - generic [ref=e396]: Countries
+        - generic [ref=e397]:
+          - img [ref=e398]
+          - generic [ref=e401]: "4.9"
+          - generic [ref=e402]: User Rating
+      - generic [ref=e403]:
+        - generic [ref=e404]:
+          - generic [ref=e405]:
+            - img [ref=e406]
+            - img [ref=e408]
+            - img [ref=e410]
+            - img [ref=e412]
+            - img [ref=e414]
+          - paragraph [ref=e416]: "\"The Video Pool has completely transformed my sets. The quality is unmatched.\""
+          - generic [ref=e417]:
+            - generic [ref=e419]: D
+            - generic [ref=e420]:
+              - generic [ref=e421]: DJ Mike
+              - generic [ref=e422]: Club DJ, Las Vegas
+        - generic [ref=e423]:
+          - generic [ref=e424]:
+            - img [ref=e425]
+            - img [ref=e427]
+            - img [ref=e429]
+            - img [ref=e431]
+            - img [ref=e433]
+          - paragraph [ref=e435]: "\"Finally, a video pool that understands what DJs actually need. The Set Builder is a game-changer.\""
+          - generic [ref=e436]:
+            - generic [ref=e438]: D
+            - generic [ref=e439]:
+              - generic [ref=e440]: DJ Sarah
+              - generic [ref=e441]: Mobile DJ, Miami
+        - generic [ref=e442]:
+          - generic [ref=e443]:
+            - img [ref=e444]
+            - img [ref=e446]
+            - img [ref=e448]
+            - img [ref=e450]
+            - img [ref=e452]
+          - paragraph [ref=e454]: "\"Best investment I've made for my DJ business. The library is massive and always up to date.\""
+          - generic [ref=e455]:
+            - generic [ref=e457]: D
+            - generic [ref=e458]:
+              - generic [ref=e459]: DJ Marcus
+              - generic [ref=e460]: Wedding DJ, Chicago
+    - generic [ref=e462]:
+      - generic [ref=e463]:
+        - heading "Frequently Asked Questions" [level=2] [ref=e464]
+        - paragraph [ref=e465]: Got questions? We've got answers.
+      - generic [ref=e466]:
+        - button "What video formats do you offer?" [ref=e468] [cursor=pointer]:
+          - generic [ref=e469]: What video formats do you offer?
+          - img [ref=e470]
+        - button "What DJ software is compatible?" [ref=e473] [cursor=pointer]:
+          - generic [ref=e474]: What DJ software is compatible?
+          - img [ref=e475]
+        - button "Can I cancel anytime?" [ref=e478] [cursor=pointer]:
+          - generic [ref=e479]: Can I cancel anytime?
+          - img [ref=e480]
+        - button "How often is new content added?" [ref=e483] [cursor=pointer]:
+          - generic [ref=e484]: How often is new content added?
+          - img [ref=e485]
+        - button "Do you offer clean/radio edits?" [ref=e488] [cursor=pointer]:
+          - generic [ref=e489]: Do you offer clean/radio edits?
+          - img [ref=e490]
+        - button "Is there an approval process to join?" [ref=e493] [cursor=pointer]:
+          - generic [ref=e494]: Is there an approval process to join?
+          - img [ref=e495]
+    - generic [ref=e498]:
+      - heading "Ready to Level Up Your Sets?" [level=2] [ref=e499]
+      - paragraph [ref=e500]: Join thousands of DJs who trust The Video Pool for their music video needs. Start with 50% off your first month.
+      - generic [ref=e501]:
+        - link "Get Started Now" [ref=e502] [cursor=pointer]:
+          - /url: /register
+          - text: Get Started Now
+          - img [ref=e503]
+        - link "View Pricing" [ref=e505] [cursor=pointer]:
+          - /url: "#pricing"
+      - paragraph [ref=e506]: No credit card required to browse. Cancel anytime.
+  - contentinfo [ref=e507]:
+    - generic [ref=e508]:
+      - generic [ref=e509]:
+        - generic [ref=e510]:
+          - generic [ref=e511]:
+            - img "The Video Pool" [ref=e512]
+            - generic [ref=e513]: The Video Pool
+          - paragraph [ref=e514]: The premier DJ video pool for professionals who demand excellence.
+        - generic [ref=e515]:
+          - heading "Product" [level=4] [ref=e516]
+          - list [ref=e517]:
+            - listitem [ref=e518]:
+              - link "Pricing" [ref=e519] [cursor=pointer]:
+                - /url: "#pricing"
+            - listitem [ref=e520]:
+              - link "Features" [ref=e521] [cursor=pointer]:
+                - /url: "#features"
+            - listitem [ref=e522]:
+              - link "Genres" [ref=e523] [cursor=pointer]:
+                - /url: "#genres"
+            - listitem [ref=e524]:
+              - link "New Releases" [ref=e525] [cursor=pointer]:
+                - /url: "#new-releases"
+        - generic [ref=e526]:
+          - heading "Support" [level=4] [ref=e527]
+          - list [ref=e528]:
+            - listitem [ref=e529]:
+              - link "Help Center" [ref=e530] [cursor=pointer]:
+                - /url: "#help"
+            - listitem [ref=e531]:
+              - link "Contact Us" [ref=e532] [cursor=pointer]:
+                - /url: "#contact"
+            - listitem [ref=e533]:
+              - link "FAQ" [ref=e534] [cursor=pointer]:
+                - /url: "#faq"
+            - listitem [ref=e535]:
+              - link "System Status" [ref=e536] [cursor=pointer]:
+                - /url: "#status"
+        - generic [ref=e537]:
+          - heading "Legal" [level=4] [ref=e538]
+          - list [ref=e539]:
+            - listitem [ref=e540]:
+              - link "Terms of Service" [ref=e541] [cursor=pointer]:
+                - /url: "#terms"
+            - listitem [ref=e542]:
+              - link "Privacy Policy" [ref=e543] [cursor=pointer]:
+                - /url: "#privacy"
+            - listitem [ref=e544]:
+              - link "DMCA" [ref=e545] [cursor=pointer]:
+                - /url: "#dmca"
+      - generic [ref=e546]:
+        - paragraph [ref=e547]: © 2026 The Video Pool. All rights reserved.
+        - generic [ref=e548]:
+          - link "Twitter" [ref=e549] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e550]: Twitter
+            - img [ref=e551]
+          - link "Instagram" [ref=e553] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e554]: Instagram
+            - img [ref=e555]
+          - link "YouTube" [ref=e557] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e558]: YouTube
+            - img [ref=e559]
+```

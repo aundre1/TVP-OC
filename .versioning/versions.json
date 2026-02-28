@@ -1,0 +1,47 @@
+{
+  "project": "The Video Pool",
+  "project_url": "git@github.com:aundre1/TVP-OC.git",
+  "current_version": "V1.0.0",
+  "current_live_at": "2026-02-27T00:00:00Z",
+  "last_rollback": null,
+  "last_rollback_at": null,
+  "all_versions": [
+    {
+      "tag": "V1.0.0",
+      "created_at": "2026-02-27T00:00:00Z",
+      "deployed_at": "2026-02-27T00:00:00Z",
+      "git_commit": "baseline",
+      "vercel_deployment_id": "manual-capture-required",
+      "railway_build_id": "manual-capture-required",
+      "status": "live",
+      "notes": "Baseline version - capture deployment IDs manually from Vercel/Railway dashboards"
+    }
+  ],
+  "deployment_platforms": {
+    "frontend": {
+      "platform": "Vercel",
+      "project_name": "tvp-redesign-2026",
+      "project_id": "prj_tvp_redesign",
+      "live_deployment_id": "manual-capture-required",
+      "dashboard": "https://vercel.com/dashboard"
+    },
+    "backend": {
+      "platform": "Railway",
+      "service_name": "tvp-oc-production",
+      "service_id": "svc_tvp_production",
+      "live_build_id": "manual-capture-required",
+      "dashboard": "https://railway.app/dashboard"
+    },
+    "database": {
+      "platform": "Supabase",
+      "project_ref": "jvgsmiqsqtqgfagghoiv",
+      "project_name": "The Video Pool",
+      "dashboard": "https://app.supabase.com/projects"
+    }
+  },
+  "metadata": {
+    "created_at": "2026-02-27T00:00:00Z",
+    "version_schema": "1.0.0",
+    "notes": "Both git-based and artifact-based rollbacks supported. See VERSIONING_ARCHITECTURE.md for details."
+  }
+}
