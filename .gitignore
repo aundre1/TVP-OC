@@ -1,12 +1,18 @@
 .vercel
 
 # 🔐 Secret Files - NEVER COMMIT
-.env.secrets.local
-.env.secrets
+.env
 .env.local
 .env.production.local
+.env.secrets.local
+.env.secrets
+.env.generated
 *.secrets.json
 secrets/
 .railway.secrets
 railway.env
-.env.generated
+
+# Keep example files (safe to commit)
+!.env.example
+!.env.frontend.example
+!.env.backend.example
