@@ -221,3 +221,4 @@ server.on("error", err => {
 });
 
 export default app;
+// CORS fix
