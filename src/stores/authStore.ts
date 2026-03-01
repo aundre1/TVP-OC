@@ -25,6 +25,7 @@ interface AuthActions {
   login: (credentials: LoginCredentials) => Promise<boolean>;
   loginWithGoogle: (accessToken: string) => Promise<boolean>;
   loginWithFacebook: (accessToken: string) => Promise<boolean>;
+  loginWithApple: (identityToken: string) => Promise<boolean>;
   verify2FA: (code: string) => Promise<boolean>;
   register: (data: RegisterData) => Promise<RegisterResult | null>;
   logout: () => Promise<void>;
@@ -117,6 +118,29 @@ export const useAuthStore = create<AuthStore>()(
           return true;
         } catch (error: any) {
           const message = error.response?.data?.error || 'Facebook sign-in is temporarily unavailable. Please use email/password.';
+          set({
+            error: message,
+            isLoading: false,
+          });
+          return false;
+        }
+      },
+
+      loginWithApple: async (identityToken: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await authApi.loginWithApple(identityToken);
+
+          set({
+            user: response.user,
+            isAuthenticated: true,
+            requires2FA: false,
+            tempToken: null,
+            isLoading: false,
+          });
+          return true;
+        } catch (error: any) {
+          const message = error.response?.data?.error || 'Apple sign-in is temporarily unavailable. Please use email/password.';
           set({
             error: message,
             isLoading: false,

@@ -35,6 +35,16 @@ const isFacebookConfigured: boolean = !!(
   OAUTH_CONFIG.facebook.appId !== 'your-facebook-app-id-here'
 );
 
+// Check if Apple OAuth is properly configured
+const isAppleConfigured: boolean = !!(
+  OAUTH_CONFIG.apple.teamId &&
+  OAUTH_CONFIG.apple.teamId !== 'your-team-id-here' &&
+  OAUTH_CONFIG.apple.bundleId &&
+  OAUTH_CONFIG.apple.bundleId !== 'your-bundle-id-here' &&
+  OAUTH_CONFIG.apple.keyId &&
+  OAUTH_CONFIG.apple.keyId !== 'your-key-id-here'
+);
+
 // ── Icon Components ──────────────────────────────────────────
 
 function GoogleIcon() {
@@ -86,7 +96,7 @@ interface Provider {
 const PROVIDERS: Provider[] = [
   { id: 'google',    label: 'Google',    icon: <GoogleIcon />,    available: isGoogleConfigured,   bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#4285F4]/60' },
   { id: 'facebook',  label: 'Facebook',  icon: <FacebookIcon />,  available: isFacebookConfigured, bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#1877F2]/60' },
-  { id: 'apple',     label: 'Apple',     icon: <AppleIcon />,     available: false,                bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-white/30'     },
+  { id: 'apple',     label: 'Apple',     icon: <AppleIcon />,     available: isAppleConfigured,    bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-white/30'     },
   { id: 'spotify',   label: 'Spotify',   icon: <SpotifyIcon />,   available: false,                bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#1DB954]/60' },
 ];
 
@@ -190,6 +200,7 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
   const [facebookLoginFn, setFacebookLoginFn] = useState<(() => void) | null>(null);
   const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
   const loginWithFacebook = useAuthStore((state) => state.loginWithFacebook);
+  const loginWithApple = useAuthStore((state) => state.loginWithApple);
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -256,6 +267,58 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
     setLoadingProvider(null);
   }, [toast]);
 
+  // ── Apple handlers ────────────────────────────────────────
+  const handleAppleClick = useCallback(async () => {
+    if (!isAppleConfigured) {
+      toast.error('Apple Sign In is not configured. Please use email/password.');
+      return;
+    }
+
+    setLoadingProvider('apple');
+    try {
+      // Check if AppleID is available on the window
+      if (window.AppleID && window.AppleID.auth) {
+        window.AppleID.auth.init({
+          clientId: OAUTH_CONFIG.apple.bundleId,
+          teamId: OAUTH_CONFIG.apple.teamId,
+          keyId: OAUTH_CONFIG.apple.keyId,
+          redirectURI: `${window.location.origin}/auth/apple/callback`,
+          usePopup: true,
+        });
+
+        window.AppleID.auth.signIn().then(async (response: any) => {
+          try {
+            const success = await loginWithApple(response.authorization.id_token);
+            if (success) {
+              toast.success('Signed in with Apple');
+              const user = useAuthStore.getState().user;
+              if (user && user.phoneVerified === false) {
+                navigate('/verify-phone');
+              } else {
+                navigate('/home');
+              }
+            } else {
+              toast.error('Apple sign-in failed. Please try again.');
+            }
+          } catch (error: any) {
+            toast.error('Apple sign-in failed. Please try again.');
+          } finally {
+            setLoadingProvider(null);
+          }
+        }).catch(() => {
+          toast.error('Apple sign-in was cancelled. Please try again.');
+          setLoadingProvider(null);
+        });
+      } else {
+        toast.error('Apple SDK not loaded. Please refresh and try again.');
+        setLoadingProvider(null);
+      }
+    } catch (error: any) {
+      toast.error('Apple sign-in is unavailable. Please use email/password to log in.');
+      setLoadingProvider(null);
+    }
+  }, [loginWithApple, navigate, toast, isAppleConfigured]);
+
   const handleProviderClick = (provider: Provider) => {
     if (!provider.available) return;
 
@@ -273,6 +336,8 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
       }
       setLoadingProvider('facebook');
       facebookLoginFn();
+    } else if (provider.id === 'apple') {
+      handleAppleClick();
     }
   };
 

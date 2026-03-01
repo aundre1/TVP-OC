@@ -135,6 +135,31 @@ export const authApi = {
     return response;
   },
 
+  // Login with Apple Sign In
+  async loginWithApple(identityToken: string): Promise<AppleLoginResponse> {
+    // Mock mode for development
+    if (DEV_CONFIG.useMockAuth) {
+      const mockAppleUser: User = {
+        ...DEV_CONFIG.mockUser,
+        id: 1003,
+        username: 'AppleUser',
+        email: 'appleuser@privaterelay.appleid.com',
+      };
+      return {
+        user: mockAppleUser,
+        success: true,
+        message: 'Apple authentication successful (mock)',
+        // No accessToken in response — tokens now in HttpOnly cookies only
+      };
+    }
+
+    const response = await post<AppleLoginResponse>('/auth/apple', { identityToken });
+
+    // Tokens are now set as HttpOnly cookies by backend
+
+    return response;
+  },
+
   // Complete 2FA verification during login
   async verify2FA(data: TwoFactorVerifyData): Promise<LoginResponse> {
     // Mock mode for development
