@@ -231,7 +231,7 @@ const server = app.listen(PORT, "0.0.0.0", () => {
   // Auto-run pending migrations after server is listening (network warm)
   (async () => {
     try {
-      const { pool: dbPool } = await import("./db/pool.js");
+      const { pool: dbPool } = await import("./db/index.js");
       await dbPool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS spotify_id VARCHAR(255)");
       await dbPool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_id VARCHAR(255)");
       await dbPool.query("CREATE UNIQUE INDEX IF NOT EXISTS users_spotify_id_idx ON users(spotify_id) WHERE spotify_id IS NOT NULL");
