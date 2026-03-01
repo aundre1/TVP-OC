@@ -228,19 +228,19 @@ const server = app.listen(PORT, "0.0.0.0", () => {
   `);
   console.log("[STARTUP] ✓ Backend ready to accept requests");
 
-  // Auto-run pending migrations after server is listening (network warm)
-  (async () => {
+  // Auto-run migration 019 after 5s (pool fully warm, IPv4 connections established)
+  setTimeout(async () => {
     try {
-      const { pool: dbPool } = await import("./db/index.js");
-      await dbPool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS spotify_id VARCHAR(255)");
-      await dbPool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_id VARCHAR(255)");
-      await dbPool.query("CREATE UNIQUE INDEX IF NOT EXISTS users_spotify_id_idx ON users(spotify_id) WHERE spotify_id IS NOT NULL");
-      await dbPool.query("CREATE UNIQUE INDEX IF NOT EXISTS users_apple_id_idx ON users(apple_id) WHERE apple_id IS NOT NULL");
+      const { query: dbQuery } = await import("./db/index.js");
+      await dbQuery("ALTER TABLE users ADD COLUMN IF NOT EXISTS spotify_id VARCHAR(255)");
+      await dbQuery("ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_id VARCHAR(255)");
+      await dbQuery("CREATE UNIQUE INDEX IF NOT EXISTS users_spotify_id_idx ON users(spotify_id) WHERE spotify_id IS NOT NULL");
+      await dbQuery("CREATE UNIQUE INDEX IF NOT EXISTS users_apple_id_idx ON users(apple_id) WHERE apple_id IS NOT NULL");
       console.log("[STARTUP] ✓ Migration 019 applied (spotify_id, apple_id columns)");
     } catch (err) {
       console.warn("[STARTUP] Migration 019 skipped:", err.message);
     }
-  })();
+  }, 5000);
 });
 
 server.on("error", err => {
