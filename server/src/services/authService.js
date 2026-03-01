@@ -2,7 +2,7 @@
 // THE VIDEO POOL - Authentication Service
 // ===========================================
 
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
 import crypto from 'crypto';
