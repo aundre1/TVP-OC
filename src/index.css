@@ -74,8 +74,13 @@ html.light body,
 
 html {
   scroll-behavior: smooth;
-  background: #0a0a0f;
+  background: var(--bg-primary);
   color-scheme: dark;
+}
+
+/* Light theme support for html element */
+html.light {
+  color-scheme: light;
 }
 
 body {
