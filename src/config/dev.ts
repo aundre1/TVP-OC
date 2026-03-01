@@ -8,7 +8,7 @@ import type { User } from '@/types';
 // Set to false when backend server is running
 export const DEV_CONFIG = {
   // Use mock data instead of real API calls
-  useMockAuth: true,  // DEMO MODE: Show dashboard for Steve
+  useMockAuth: false,  // FIXED: Production ready - use real auth
 
   // Skip auto-login to test landing page (set to true to see landing page)
   // When true: shows landing page, user must click "login" to authenticate
