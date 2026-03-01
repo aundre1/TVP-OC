@@ -40,8 +40,8 @@ const isFacebookConfigured: boolean = !!(
 const isAppleConfigured: boolean = !!(
   OAUTH_CONFIG.apple.teamId &&
   OAUTH_CONFIG.apple.teamId !== 'your-team-id-here' &&
-  OAUTH_CONFIG.apple.bundleId &&
-  OAUTH_CONFIG.apple.bundleId !== 'your-bundle-id-here' &&
+  OAUTH_CONFIG.apple.serviceId &&
+  OAUTH_CONFIG.apple.serviceId !== 'your-service-id-here' &&
   OAUTH_CONFIG.apple.keyId &&
   OAUTH_CONFIG.apple.keyId !== 'your-key-id-here'
 );
@@ -287,7 +287,7 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
       // Check if AppleID is available on the window
       if (window.AppleID && window.AppleID.auth) {
         window.AppleID.auth.init({
-          clientId: OAUTH_CONFIG.apple.bundleId,
+          clientId: OAUTH_CONFIG.apple.serviceId, // Services ID for web (not iOS bundle ID)
           teamId: OAUTH_CONFIG.apple.teamId,
           keyId: OAUTH_CONFIG.apple.keyId,
           redirectURI: `${window.location.origin}/auth/apple/callback`,
