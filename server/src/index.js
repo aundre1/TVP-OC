@@ -10,6 +10,11 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
+// Force IPv4 DNS resolution — Railway containers cannot reach IPv6 addresses
+// (Supabase direct connection DNS returns IPv6 first, causing ENETUNREACH)
+import { setDefaultResultOrder } from "dns";
+setDefaultResultOrder("ipv4first");
+
 // Load environment variables
 dotenv.config();
 
