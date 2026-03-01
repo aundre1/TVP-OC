@@ -11,11 +11,12 @@ import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/components/Toast';
 import { OAUTH_CONFIG } from '@/config/oauth';
 
-// Extend window for Facebook SDK
+// Extend window for Facebook SDK and Apple Sign In
 declare global {
   interface Window {
     FB: any;
     fbAsyncInit: () => void;
+    AppleID: any;
   }
 }
 
