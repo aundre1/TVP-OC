@@ -105,13 +105,16 @@ async function main() {
     log(passwordInput > 0 ? 'PASS' : 'FAIL', 'Password input present');
     log(submitBtn > 0 ? 'PASS' : 'FAIL', 'Submit button present');
 
-    // Social login grid — buttons are icon-only (SVG), no visible text
-    // Count by checking the grid container and button count
-    const socialButtons = await page.locator('button svg').count();
-    const hasGoogleIcon = await page.locator('svg circle, svg path').count();
-    const socialGrid = await page.locator('[class*="grid"] button, [class*="social"] button').count();
-    log(socialButtons >= 8 ? 'PASS' : 'WARN', 'Social login grid (8 icon buttons)', `${socialButtons} SVG buttons`);
-    log(socialGrid >= 8 ? 'PASS' : 'WARN', 'Social grid renders', `${socialGrid} buttons in grid`);
+    // Social login grid — 4 buttons (Google, Facebook, Apple, Spotify)
+    // Google, Facebook, Apple should be enabled; Spotify should be disabled
+    const socialGridContainer = await page.locator('.grid.grid-cols-4').count();
+    const socialButtons = await page.locator('.grid.grid-cols-4 button').count();
+    const enabledButtons = await page.locator('.grid.grid-cols-4 button:not([disabled])').count();
+    const disabledButtons = await page.locator('.grid.grid-cols-4 button[disabled]').count();
+
+    log(socialGridContainer > 0 ? 'PASS' : 'WARN', 'Social login grid container', socialGridContainer > 0 ? 'found' : 'not found');
+    log(socialButtons === 4 ? 'PASS' : 'WARN', 'Social login buttons (4 providers)', `${socialButtons} buttons`);
+    log(enabledButtons >= 3 ? 'PASS' : 'WARN', 'Active OAuth providers (3+ enabled)', `${enabledButtons} enabled, ${disabledButtons} disabled`);
 
     // "or continue with" divider confirms social section is present
     const dividerText = await page.locator(':has-text("or continue with")').count();
