@@ -32,6 +32,19 @@ if (
   );
 }
 
+// Google OAuth configuration check
+if (!process.env.GOOGLE_CLIENT_ID) {
+  console.warn(
+    "[OAuth] GOOGLE_CLIENT_ID not set — Google sign-in will be unavailable. Set GOOGLE_CLIENT_ID environment variable to enable.",
+  );
+} else {
+  const clientIdLength = process.env.GOOGLE_CLIENT_ID.length;
+  const isValidFormat = process.env.GOOGLE_CLIENT_ID.includes('.apps.googleusercontent.com');
+  console.log(
+    `[OAuth] Google OAuth configured (Client ID length: ${clientIdLength}, Valid format: ${isValidFormat ? '✓' : '✗'})`,
+  );
+}
+
 // Import routes
 import authRoutes from "./routes/auth.js";
 import videoRoutes from "./routes/videos.js";

@@ -30,6 +30,15 @@ const hasValidGoogleClientId =
   OAUTH_CONFIG.google.clientId &&
   OAUTH_CONFIG.google.clientId !== 'your-client-id-here';
 
+// Log OAuth configuration status for debugging
+if (typeof window !== 'undefined') {
+  console.log(
+    `[OAuth] Google OAuth ${hasValidGoogleClientId ? '✓ ENABLED' : '✗ DISABLED'} (Client ID: ${
+      hasValidGoogleClientId ? `${OAUTH_CONFIG.google.clientId.substring(0, 20)}...` : 'NOT SET'
+    })`,
+  );
+}
+
 const AppContent = (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
