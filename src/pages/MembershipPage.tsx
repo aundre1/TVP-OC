@@ -7,12 +7,16 @@ import { useMemberships, useMembershipStatus, useCreateCheckout, useCustomerPort
 
 const TIER_ICONS = {
   free: Star,
-  paid: Crown,
+  starter: Zap,
+  pro: Crown,
+  elite: Star,
 };
 
 const TIER_COLORS = {
   free: 'text-tvp-text-muted',
-  paid: 'text-tvp-accent-cyan',
+  starter: 'text-tvp-accent-cyan',
+  pro: 'text-tvp-accent-cyan',
+  elite: 'text-yellow-500',
 };
 
 export default function MembershipPage() {
@@ -72,7 +76,7 @@ export default function MembershipPage() {
           const Icon = TIER_ICONS[membership.slug as keyof typeof TIER_ICONS] || Star;
           const color = TIER_COLORS[membership.slug as keyof typeof TIER_COLORS] || 'text-tvp-text-muted';
           const isCurrentPlan = status?.currentMembership.slug === membership.slug;
-          const isPopular = membership.isPopular || membership.slug === 'paid';
+          const isPopular = membership.isPopular || membership.slug === 'pro';
 
           return (
             <div

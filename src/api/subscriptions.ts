@@ -120,7 +120,7 @@ export const subscriptionsApi = {
     return raw.map(m => ({
       id: m.id,
       name: m.name,
-      slug: (m.slug === 'free' ? 'free' : 'paid') as 'free' | 'paid',
+      slug: m.slug as 'free' | 'starter' | 'pro' | 'elite',
       price: m.priceMonthly || 0,
       quarterlyPrice: m.priceMonthly ? +(m.priceMonthly * 3 * 0.95).toFixed(2) : 0,
       annualPrice: m.priceAnnual || (m.priceMonthly ? +(m.priceMonthly * 12 * 0.8).toFixed(2) : 0),

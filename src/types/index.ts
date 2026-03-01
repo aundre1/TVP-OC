@@ -285,7 +285,7 @@ export type BillingInterval = 'month' | 'quarter' | 'year';
 export interface Membership {
   id: number;
   name: string;
-  slug: 'free' | 'paid';
+  slug: 'free' | 'starter' | 'pro' | 'elite';
   price: number;
   quarterlyPrice: number;
   annualPrice: number;
