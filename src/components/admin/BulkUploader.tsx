@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAppStore } from '@/stores/appStore';
+import { post } from '@/api/client';
 
 // Types
 interface UploadFile {
@@ -294,7 +295,7 @@ export default function BulkUploader() {
     showToast('success', 'Metadata refreshed for all files');
   };
 
-  // Upload all
+  // Upload all — sends metadata to backend; video files must already be in S3
   const uploadAll = async () => {
     const readyFiles = files.filter(f => f.status === 'ready');
     if (readyFiles.length === 0) {
@@ -304,28 +305,57 @@ export default function BulkUploader() {
 
     setIsUploading(true);
 
-    for (const file of readyFiles) {
-      // Update status to uploading
-      setFiles(prev => prev.map(f =>
-        f.id === file.id ? { ...f, status: 'uploading' as const } : f
-      ));
+    // Mark all ready files as uploading
+    setFiles(prev => prev.map(f =>
+      f.status === 'ready' ? { ...f, status: 'uploading' as const, progress: 30 } : f
+    ));
 
-      // Simulate upload progress
-      for (let progress = 0; progress <= 100; progress += 10) {
-        await new Promise(r => setTimeout(r, 100));
-        setFiles(prev => prev.map(f =>
-          f.id === file.id ? { ...f, progress } : f
-        ));
+    try {
+      const videosPayload = readyFiles.map(f => ({
+        title: f.metadata.title,
+        artist: f.metadata.artist,
+        genre: f.metadata.genre,
+        subgenre: f.metadata.subgenre || undefined,
+        bpm: f.metadata.bpm ?? undefined,
+        key: f.metadata.key || undefined,
+        duration: f.metadata.duration,
+        year: f.metadata.year,
+      }));
+
+      const response = await post<{
+        results: Array<{ success: boolean; title: string; artist: string; error?: string }>;
+        summary: { total: number; successful: number; failed: number };
+      }>('/admin/videos/bulk-upload', { videos: videosPayload });
+
+      // Map results back to files by title+artist
+      setFiles(prev => prev.map(f => {
+        if (f.status !== 'uploading') return f;
+        const result = response.results.find(
+          r => r.title === f.metadata.title && r.artist === f.metadata.artist
+        );
+        if (result?.success) {
+          return { ...f, status: 'complete' as const, progress: 100 };
+        }
+        return { ...f, status: 'error' as const, progress: 0, error: result?.error ?? 'Upload failed' };
+      }));
+
+      if (response.summary.successful > 0) {
+        showToast('success', `Registered ${response.summary.successful} video${response.summary.successful > 1 ? 's' : ''} in catalog`);
       }
-
-      // Mark as complete
+      if (response.summary.failed > 0) {
+        showToast('error', `${response.summary.failed} video${response.summary.failed > 1 ? 's' : ''} failed to register`);
+      }
+    } catch (err: unknown) {
+      const msg = (err as any)?.response?.data?.error ?? 'Upload failed — check console';
+      showToast('error', msg);
       setFiles(prev => prev.map(f =>
-        f.id === file.id ? { ...f, status: 'complete' as const } : f
+        f.status === 'uploading'
+          ? { ...f, status: 'error' as const, progress: 0, error: msg }
+          : f
       ));
+    } finally {
+      setIsUploading(false);
     }
-
-    setIsUploading(false);
-    showToast('success', `Uploaded ${readyFiles.length} video${readyFiles.length > 1 ? 's' : ''}`);
   };
 
   // Format file size

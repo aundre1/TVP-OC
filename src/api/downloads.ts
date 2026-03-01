@@ -45,7 +45,27 @@ export const downloadsApi = {
 
   // Initiate download for a video version
   async downloadVideo(videoId: number, versionType: string = 'hd'): Promise<DownloadResponse> {
-    return post<DownloadResponse>(`/videos/${videoId}/download`, { version: versionType });
+    // Map frontend version types to server's version/quality schema
+    const versionMap: Record<string, { version: string; quality: string }> = {
+      hd:       { version: 'clean',    quality: '1080p' },
+      '4k':     { version: 'clean',    quality: '4k' },
+      audio:    { version: 'audio',    quality: '720p' },
+      clean:    { version: 'clean',    quality: '1080p' },
+      explicit: { version: 'explicit', quality: '1080p' },
+      extended: { version: 'extended', quality: '1080p' },
+      intro:    { version: 'intro',    quality: '1080p' },
+      outro:    { version: 'outro',    quality: '1080p' },
+      quickhit: { version: 'quickhit', quality: '1080p' },
+    };
+    const mapped = versionMap[versionType] ?? { version: 'clean', quality: '1080p' };
+    const raw = await post<Record<string, unknown>>(`/videos/${videoId}/download`, mapped);
+    // Server returns downloadUrl; DownloadResponse expects signedUrl — normalise both
+    return {
+      signedUrl: (raw.signedUrl ?? raw.downloadUrl ?? '') as string,
+      expiresIn: (raw.expiresIn ?? 3600) as number,
+      remainingDownloads: (raw.remainingDownloads ?? 0) as number,
+      downloadId: (raw.downloadId ?? 0) as number,
+    };
   },
 
   // Get download URL (signed URL)

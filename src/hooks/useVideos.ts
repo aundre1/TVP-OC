@@ -96,6 +96,17 @@ export function useNewReleases(limit: number = 20) {
   });
 }
 
+// Fetch presigned preview URL for a video (1-hour expiry, lazy-loaded)
+export function usePreviewUrl(id: number | undefined) {
+  return useQuery({
+    queryKey: ['preview-url', id],
+    queryFn: () => videosApi.getPreviewUrl(id!),
+    enabled: !!id,
+    staleTime: 50 * 60 * 1000, // 50 min — URL expires in 1 hr
+    retry: false,               // Don't retry if preview doesn't exist
+  });
+}
+
 // Fetch categories
 export function useCategories() {
   return useQuery({

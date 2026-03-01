@@ -7,6 +7,14 @@ import { persist } from 'zustand/middleware';
 import { authApi } from '@/api/auth';
 import type { User, LoginCredentials, RegisterData } from '@/types';
 
+// Extracts a user-facing error message from either backend format:
+//   Our backend:   { error: "Invalid credentials", code: "INVALID_CREDENTIALS" }
+//   Steve's backend: { message: "Invalid credentials" }
+const extractError = (err: unknown, fallback: string): string => {
+  const data = (err as any)?.response?.data;
+  return data?.error ?? data?.message ?? fallback;
+};
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -71,9 +79,9 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
           return true;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({
-            error: error.response?.data?.error || 'Login failed',
+            error: extractError(error, 'Login failed'),
             isLoading: false,
           });
           return false;
@@ -93,10 +101,9 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
           return true;
-        } catch (error: any) {
-          const message = error.response?.data?.error || 'Google sign-in is temporarily unavailable. Please use email/password.';
+        } catch (error: unknown) {
           set({
-            error: message,
+            error: extractError(error, 'Google sign-in is temporarily unavailable. Please use email/password.'),
             isLoading: false,
           });
           return false;
@@ -116,10 +123,9 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
           return true;
-        } catch (error: any) {
-          const message = error.response?.data?.error || 'Facebook sign-in is temporarily unavailable. Please use email/password.';
+        } catch (error: unknown) {
           set({
-            error: message,
+            error: extractError(error, 'Facebook sign-in is temporarily unavailable. Please use email/password.'),
             isLoading: false,
           });
           return false;
@@ -139,10 +145,9 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
           return true;
-        } catch (error: any) {
-          const message = error.response?.data?.error || 'Apple sign-in is temporarily unavailable. Please use email/password.';
+        } catch (error: unknown) {
           set({
-            error: message,
+            error: extractError(error, 'Apple sign-in is temporarily unavailable. Please use email/password.'),
             isLoading: false,
           });
           return false;
@@ -163,9 +168,9 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
           return true;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({
-            error: error.response?.data?.error || 'Invalid 2FA code',
+            error: extractError(error, 'Invalid 2FA code'),
             isLoading: false,
           });
           return false;
@@ -181,9 +186,9 @@ export const useAuthStore = create<AuthStore>()(
             success: true,
             _devCode: response._devCode,
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({
-            error: error.response?.data?.error || 'Registration failed',
+            error: extractError(error, 'Registration failed'),
             isLoading: false,
           });
           return null;

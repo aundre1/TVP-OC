@@ -1,11 +1,14 @@
 // ============================================
 // THE VIDEO POOL - API RESPONSE ADAPTERS
 // Maps server response format to frontend types
+// Supports two backend formats:
+//   - OUR format: { tracks/videos: [{ ...fields, versions: [...] }] }
+//   - STEVE format: { videos: [{ videoUrl, resolution, thumbnailUrl, ... }] }
 // ============================================
 
 import type { Track, Video, VideoQuality, VideoVersion, VersionType } from '@/types';
 
-// Server video version shape
+// Server video version shape (our Railway backend)
 interface ServerVersion {
   id: number;
   versionType: string;
@@ -15,7 +18,7 @@ interface ServerVersion {
   previewUrl?: string;
 }
 
-// Server track shape (from /api/videos)
+// Server track shape (our Railway backend — /api/videos)
 interface ServerTrack {
   id: number;
   title: string;
@@ -36,13 +39,143 @@ interface ServerTrack {
   versions?: ServerVersion[];
 }
 
-// Server paginated response
+// Server paginated response (our Railway backend)
 export interface ServerTracksResponse {
   tracks: ServerTrack[];
   total: number;
   page: number;
   limit?: number;
   totalPages: number;
+}
+
+// ============================================
+// STEVE FORMAT — www.thevideopool.com backend
+// Flat video objects with direct CDN URLs
+// ============================================
+
+export interface SteveVideo {
+  id: number;
+  title: string;
+  artist?: string;          // may not exist in all responses
+  duration?: number;        // seconds
+  resolution?: string;      // "1920x1080", "1280x720", "3840x2160", etc.
+  genre?: string;
+  bpm?: number;
+  key?: string;             // musical key (e.g. "Am", "C")
+  videoUrl?: string;        // BunnyCDN direct URL
+  thumbnailUrl?: string;    // BunnyCDN thumbnail URL
+  audioUrl?: string;        // BunnyCDN audio extract
+  releaseDate?: string;
+  year?: number;
+  label?: string;
+  downloadCount?: number;
+  isNew?: boolean;
+  isHot?: boolean;
+  createdAt?: string;
+  audioExtractedAt?: string;
+}
+
+// Parse "1920x1080" → "1080p", "3840x2160" → "4K", "1280x720" → "720p"
+function parseResolution(resolution?: string): '720p' | '1080p' | '4K' {
+  if (!resolution) return '720p';
+  const height = parseInt(resolution.split('x')[1] ?? '0', 10);
+  if (height >= 2160) return '4K';
+  if (height >= 1080) return '1080p';
+  return '720p';
+}
+
+// Detect Steve's format: flat object with videoUrl but no versions array
+function isSteveFormat(obj: Record<string, unknown>): boolean {
+  return typeof obj.videoUrl === 'string' && !Array.isArray(obj.versions);
+}
+
+// Extract artist from Steve's video — uses artist field if present,
+// otherwise attempts "Artist - Title" heuristic split
+function extractArtist(s: SteveVideo): string {
+  if (s.artist) return s.artist;
+  const dashIdx = s.title.indexOf(' - ');
+  if (dashIdx > 0 && dashIdx < 50) {
+    return s.title.substring(0, dashIdx).trim();
+  }
+  return '';
+}
+
+// Convert Steve's flat video to the frontend Track interface
+export function adaptSteveVideo(s: SteveVideo): Track {
+  const quality = parseResolution(s.resolution);
+  const artist = extractArtist(s);
+  return {
+    id: s.id,
+    title: s.title,
+    artist,
+    bpm: s.bpm ?? 0,
+    key: s.key ?? '',
+    camelotKey: undefined,
+    duration: s.duration ?? 0,
+    quality,
+    genre: s.genre ?? '',
+    subgenre: undefined,
+    label: s.label,
+    isNew: s.isNew ?? false,
+    isHot: s.isHot ?? false,
+    downloads: s.downloadCount ?? 0,
+    addedDate: s.createdAt ?? s.releaseDate,
+    thumbnailUrl: s.thumbnailUrl,
+    versions: ['Clean'], // Steve has one file per video; split versions unknown
+  };
+}
+
+// Convert Steve's flat video to the frontend Video interface
+// Synthesizes a versions[] array from the flat videoUrl + resolution fields
+export function adaptSteveVideoToVideo(s: SteveVideo): Video {
+  const quality = parseResolution(s.resolution);
+  const artist = extractArtist(s);
+
+  const syntheticVersions: VideoVersion[] = [];
+  if (s.videoUrl) {
+    syntheticVersions.push({
+      id: s.id * 100,
+      type: 'clean',
+      quality,
+      fileSize: 0,
+      format: 'mp4',
+      url: s.videoUrl,
+      previewUrl: undefined,
+    });
+  }
+  if (s.audioUrl) {
+    syntheticVersions.push({
+      id: s.id * 100 + 1,
+      type: 'clean',
+      quality: '720p',
+      fileSize: 0,
+      format: 'mp3',
+      url: s.audioUrl,
+      previewUrl: undefined,
+    });
+  }
+
+  return {
+    id: s.id,
+    title: s.title,
+    artist,
+    thumbnailUrl: s.thumbnailUrl || `https://picsum.photos/320/180?random=${s.id}`,
+    previewUrl: undefined,
+    streamUrl: s.videoUrl,
+    duration: s.duration ?? 0,
+    bpm: s.bpm,
+    key: s.key,
+    genre: s.genre ?? '',
+    subGenre: undefined,
+    quality,
+    releaseDate: s.releaseDate ?? s.createdAt ?? new Date().toISOString(),
+    downloadCount: s.downloadCount ?? 0,
+    isExclusive: false,
+    isTrending: s.isHot ?? false,
+    isNew: s.isNew ?? false,
+    tags: [s.genre].filter(Boolean) as string[],
+    versions: syntheticVersions,
+  };
 }
 
 // Map server version type string to frontend VersionType
@@ -104,13 +237,22 @@ export function adaptTrack(s: ServerTrack): Track {
 }
 
 // Extract tracks array from either a paginated response or a plain array
+// Handles both our Railway format and Steve's flat format automatically
 export function extractTracks(data: unknown): Track[] {
   if (!data) return [];
-  if (Array.isArray(data)) return (data as ServerTrack[]).map(adaptTrack);
+  if (Array.isArray(data)) {
+    const first = data[0] as Record<string, unknown> | undefined;
+    if (first && isSteveFormat(first)) return (data as SteveVideo[]).map(adaptSteveVideo);
+    return (data as ServerTrack[]).map(adaptTrack);
+  }
   const obj = data as Record<string, unknown>;
-  if (Array.isArray(obj.tracks)) return (obj.tracks as ServerTrack[]).map(adaptTrack);
-  if (Array.isArray(obj.videos)) return (obj.videos as ServerTrack[]).map(adaptTrack);
-  return [];
+  const arr = Array.isArray(obj.tracks) ? obj.tracks
+    : Array.isArray(obj.videos) ? obj.videos
+    : [];
+  if (arr.length === 0) return [];
+  const first = arr[0] as Record<string, unknown>;
+  if (isSteveFormat(first)) return (arr as SteveVideo[]).map(adaptSteveVideo);
+  return (arr as ServerTrack[]).map(adaptTrack);
 }
 
 // Map quality string to Video's allowed quality values
@@ -179,16 +321,26 @@ export function adaptServerTrackToVideo(s: ServerTrack): Video {
 }
 
 // Extract Video[] from server response (for pages that use the Video type)
+// Handles both our Railway format and Steve's flat format automatically
 export function extractVideos(data: unknown): Video[] {
   if (!data) return [];
-  if (Array.isArray(data)) return (data as ServerTrack[]).map(adaptServerTrackToVideo);
+  if (Array.isArray(data)) {
+    const first = data[0] as Record<string, unknown> | undefined;
+    if (first && isSteveFormat(first)) return (data as SteveVideo[]).map(adaptSteveVideoToVideo);
+    return (data as ServerTrack[]).map(adaptServerTrackToVideo);
+  }
   const obj = data as Record<string, unknown>;
-  if (Array.isArray(obj.tracks)) return (obj.tracks as ServerTrack[]).map(adaptServerTrackToVideo);
-  if (Array.isArray(obj.videos)) return (obj.videos as ServerTrack[]).map(adaptServerTrackToVideo);
-  return [];
+  const arr = Array.isArray(obj.tracks) ? obj.tracks
+    : Array.isArray(obj.videos) ? obj.videos
+    : [];
+  if (arr.length === 0) return [];
+  const first = arr[0] as Record<string, unknown>;
+  if (isSteveFormat(first)) return (arr as SteveVideo[]).map(adaptSteveVideoToVideo);
+  return (arr as ServerTrack[]).map(adaptServerTrackToVideo);
 }
 
 // Extract paginated response info
+// Handles both our Railway format and Steve's flat format automatically
 export function extractPaginatedTracks(data: unknown): {
   tracks: Track[];
   total: number;
@@ -197,14 +349,23 @@ export function extractPaginatedTracks(data: unknown): {
 } {
   if (!data) return { tracks: [], total: 0, page: 1, totalPages: 0 };
   if (Array.isArray(data)) {
-    const tracks = (data as ServerTrack[]).map(adaptTrack);
+    const first = data[0] as Record<string, unknown> | undefined;
+    const tracks = first && isSteveFormat(first)
+      ? (data as SteveVideo[]).map(adaptSteveVideo)
+      : (data as ServerTrack[]).map(adaptTrack);
     return { tracks, total: tracks.length, page: 1, totalPages: 1 };
   }
   const obj = data as Record<string, unknown>;
-  const raw = (Array.isArray(obj.tracks) ? obj.tracks : Array.isArray(obj.videos) ? obj.videos : []) as ServerTrack[];
+  const raw = Array.isArray(obj.tracks) ? obj.tracks
+    : Array.isArray(obj.videos) ? obj.videos
+    : [];
+  const first = raw[0] as Record<string, unknown> | undefined;
+  const tracks = first && isSteveFormat(first)
+    ? (raw as SteveVideo[]).map(adaptSteveVideo)
+    : (raw as ServerTrack[]).map(adaptTrack);
   return {
-    tracks: raw.map(adaptTrack),
-    total: (obj.total as number) ?? raw.length,
+    tracks,
+    total: (obj.total as number) ?? tracks.length,
     page: (obj.page as number) ?? 1,
     totalPages: (obj.totalPages as number) ?? 1,
   };

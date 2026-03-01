@@ -261,12 +261,16 @@ export const videosApi = {
     };
   },
 
-  // Get video preview URL
+  // Get video preview URL (presigned Wasabi URL, 1-hour expiry)
   async getPreviewUrl(id: number): Promise<{ previewUrl: string; duration: number }> {
     if (DEV_CONFIG.useMockAuth) {
       return { previewUrl: '', duration: 180 };
     }
-    return get<{ previewUrl: string; duration: number }>(`/videos/${id}/preview`);
+    const response = await get<{ url?: string; previewUrl?: string; expires?: number }>(`/videos/${id}/preview-url`);
+    return {
+      previewUrl: response.url ?? response.previewUrl ?? '',
+      duration: 180,
+    };
   },
 
   // Get categories

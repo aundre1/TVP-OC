@@ -88,7 +88,8 @@ export function useDownload() {
         // Trigger actual download
         const link = document.createElement('a');
         link.href = response.signedUrl;
-        link.download = `${video.artist} - ${video.title}.mp4`;
+        const ext = versionType === 'audio' ? '.mp3' : '.mp4';
+        link.download = `${video.artist} - ${video.title}${ext}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Download, Heart, Share2, Plus, Music, Clock, Disc, Tag, Calendar, Check, Link2 } from 'lucide-react';
-import { useVideo, useRelatedVideos } from '@/hooks/useVideos';
+import { useVideo, useRelatedVideos, usePreviewUrl } from '@/hooks/useVideos';
 import { useDownload } from '@/hooks/useDownloads';
 import { useAppStore } from '@/stores/appStore';
 import VideoCard from '@/components/VideoCard';
@@ -16,6 +16,7 @@ export default function VideoPage() {
 
   const { data: video, isLoading, error } = useVideo(videoId);
   const { data: relatedVideos } = useRelatedVideos(videoId);
+  const { data: previewData } = usePreviewUrl(videoId);
   const downloadMutation = useDownload();
   const { addToSet, showToast } = useAppStore();
 
@@ -117,7 +118,7 @@ export default function VideoPage() {
       {/* Video Player */}
       <div className="relative aspect-video rounded-2xl overflow-hidden bg-black mb-6">
         <video
-          src={video.previewUrl || video.streamUrl}
+          src={previewData?.previewUrl || video.previewUrl || video.streamUrl}
           poster={video.thumbnailUrl}
           controls
           className="w-full h-full object-contain"
@@ -303,7 +304,7 @@ export default function VideoPage() {
             <Download className="w-5 h-5 text-tvp-text-muted group-hover:text-tvp-accent-cyan" />
           </button>
           <button
-            onClick={() => downloadMutation.mutate({ video, versionType: 'mp3' })}
+            onClick={() => downloadMutation.mutate({ video, versionType: 'audio' })}
             className="flex items-center justify-between p-4 bg-tvp-bg-secondary border border-tvp-border-subtle hover:border-tvp-accent-cyan rounded-xl transition-colors group"
           >
             <div>

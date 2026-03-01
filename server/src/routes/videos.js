@@ -277,17 +277,18 @@ router.post(
   [
     param("id").isInt({ min: 1 }).toInt(),
     body("quality")
+      .optional()
       .isIn(["4k", "1080p", "720p", "480p"])
       .withMessage("Invalid quality"),
     body("version")
-      .isIn(["clean", "explicit", "extended", "intro", "outro", "quickhit"])
+      .isIn(["clean", "explicit", "extended", "intro", "outro", "quickhit", "audio"])
       .withMessage("Invalid version"),
   ],
   handleValidationErrors,
   async (req, res, next) => {
     try {
       const videoId = req.params.id;
-      const { quality, version } = req.body;
+      const { quality = "1080p", version } = req.body;
       const userId = req.user.id;
 
       // Check if video exists
@@ -298,14 +299,16 @@ router.post(
         });
       }
 
-      // Verify the requested version exists
-      const versionExists = video.versions.some(
-        v => v.quality === quality && v.versionType === version,
-      );
-      if (!versionExists) {
-        return res.status(404).json({
-          error: "Requested video version not available",
-        });
+      // Verify the requested version exists (audio lives in S3 audio/ prefix, not video_versions)
+      if (version !== "audio") {
+        const versionExists = video.versions.some(
+          v => v.quality === quality && v.versionType === version,
+        );
+        if (!versionExists) {
+          return res.status(404).json({
+            error: "Requested video version not available",
+          });
+        }
       }
 
       // Check download limit AND record atomically (prevents race condition)
@@ -334,7 +337,8 @@ router.post(
       );
 
       res.json({
-        downloadUrl: downloadInfo.downloadUrl,
+        signedUrl: downloadInfo.downloadUrl,      // frontend expects signedUrl
+        downloadUrl: downloadInfo.downloadUrl,    // also keep original key for compat
         expiresIn: downloadInfo.expiresIn,
         fileName: downloadInfo.fileName,
         fileSize: downloadInfo.fileSize,
@@ -430,30 +434,30 @@ router.get("/:id/preview-url", async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    // 1. Try video_versions.preview_url first (populated for newly-added videos)
     const result = await pool.query(
-      `SELECT vv.preview_url, v.title, v.artist
+      `SELECT vv.preview_url
          FROM video_versions vv
-         JOIN videos v ON v.id = vv.video_id
          WHERE vv.video_id = $1
            AND vv.preview_url IS NOT NULL
          LIMIT 1`,
       [id],
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Preview not available" });
+    // 2. Fall back to Wasabi previews/ prefix — 44K preview clips known to exist there
+    const previewKey = result.rows[0]?.preview_url ?? `previews/${id}.mp4`;
+
+    if (!isStorageConfigured()) {
+      return res.json({ url: previewKey });
     }
 
-    const { preview_url } = result.rows[0];
-
-    // Graceful fallback when storage is not configured or preview_url is absent
-    if (!isStorageConfigured() || !preview_url) {
-      return res.json({ url: preview_url || null });
-    }
-
-    const url = await getPresignedPreviewUrl(preview_url);
+    const url = await getPresignedPreviewUrl(previewKey);
     res.json({ url, expires: Math.floor(Date.now() / 1000) + 3600 });
   } catch (error) {
+    // S3 NoSuchKey = preview clip doesn't exist for this video — return 404 gracefully
+    if (error.$metadata?.httpStatusCode === 404 || error.name === "NoSuchKey") {
+      return res.status(404).json({ error: "Preview not available" });
+    }
     next(error);
   }
 });

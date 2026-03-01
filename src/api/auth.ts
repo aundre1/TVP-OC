@@ -65,6 +65,39 @@ interface TwoFactorStatusResponse {
   backupCodesRemaining: number;
 }
 
+// ============================================
+// USER NORMALIZATION
+// Maps either backend's user object to our User type.
+//   Our backend:    camelCase fields, success wrapper
+//   Steve's backend: may use snake_case, flat response, different field names
+// ============================================
+function normalizeUser(raw: Record<string, unknown>): User {
+  const membershipType = (raw.membershipType ?? raw.membership_type ?? 'free') as string;
+  const validTiers = ['free', 'starter', 'pro', 'elite'] as const;
+  const resolvedTier = validTiers.includes(membershipType as typeof validTiers[number])
+    ? (membershipType as typeof validTiers[number])
+    : 'free';
+
+  return {
+    id: (raw.id as number),
+    username: (raw.username ?? raw.name ?? (raw.email as string)?.split('@')[0] ?? '') as string,
+    email: (raw.email ?? '') as string,
+    membershipId: (raw.membershipId ?? raw.membership_id ?? null) as number | null,
+    membershipType: resolvedTier,
+    isAdmin: Boolean(raw.isAdmin ?? raw.is_admin ?? (raw.role === 'admin')),
+    emailVerified: Boolean(raw.emailVerified ?? raw.email_verified ?? raw.email_verified_at != null),
+    phoneVerified: Boolean(raw.phoneVerified ?? raw.phone_verified ?? false),
+    twoFactorEnabled: Boolean(raw.twoFactorEnabled ?? raw.two_factor_enabled ?? false),
+    profileImage: (raw.profileImage ?? raw.profile_image ?? raw.avatar_url ?? undefined) as string | undefined,
+    createdAt: (raw.createdAt ?? raw.created_at ?? new Date().toISOString()) as string,
+    downloadsThisMonth: (raw.downloadsThisMonth ?? raw.downloads_this_month ?? 0) as number,
+    downloadLimit: (raw.downloadLimit ?? raw.monthly_download_limit ?? raw.download_limit ?? null) as number | null,
+    bonusCredits: (raw.bonusCredits ?? raw.bonus_credits ?? 0) as number,
+    freeTrialStartedAt: (raw.freeTrialStartedAt ?? raw.free_trial_started_at ?? undefined) as string | undefined,
+    freeTrialExpiresAt: (raw.freeTrialExpiresAt ?? raw.free_trial_expires_at ?? undefined) as string | undefined,
+  };
+}
+
 export const authApi = {
   // Login with email/password
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
@@ -81,7 +114,10 @@ export const authApi = {
     const response = await post<LoginResponse>('/auth/login', credentials);
 
     // Tokens are now set as HttpOnly cookies by backend
-    // No need to call setAuthToken/setRefreshToken
+    // Normalize user object to handle both our format and Steve's format
+    if (response.user) {
+      response.user = normalizeUser(response.user as unknown as Record<string, unknown>);
+    }
 
     return response;
   },
@@ -107,6 +143,9 @@ export const authApi = {
     const response = await post<GoogleLoginResponse>('/auth/google', { accessToken });
 
     // Tokens are now set as HttpOnly cookies by backend
+    if (response.user) {
+      response.user = normalizeUser(response.user as unknown as Record<string, unknown>);
+    }
 
     return response;
   },
@@ -131,6 +170,9 @@ export const authApi = {
     const response = await post<FacebookLoginResponse>('/auth/facebook', { accessToken });
 
     // Tokens are now set as HttpOnly cookies by backend
+    if (response.user) {
+      response.user = normalizeUser(response.user as unknown as Record<string, unknown>);
+    }
 
     return response;
   },
@@ -150,6 +192,9 @@ export const authApi = {
     const response = await post<LoginResponse>('/auth/login/2fa', data);
 
     // Tokens are now set as HttpOnly cookies by backend
+    if (response.user) {
+      response.user = normalizeUser(response.user as unknown as Record<string, unknown>);
+    }
 
     return response;
   },
@@ -200,11 +245,18 @@ export const authApi = {
 
     try {
       // GET /auth/me reads tvp_token from HttpOnly cookie automatically
-      // If cookie exists and is valid, returns current user
-      // If cookie missing or invalid, returns 401 (caught below)
-      const response = await get<{ success: boolean; user: User }>('/auth/me');
-      return response.user ?? null;
-    } catch (error) {
+      // Handles two response shapes:
+      //   Our backend:    { success: true, user: { ...fields } }
+      //   Steve's backend: { ...fields } (flat) or { user: { ...fields } }
+      const response = await get<Record<string, unknown>>('/auth/me');
+      if (!response) return null;
+
+      // Prefer the nested user object; fall back to the response itself if it has an id
+      const raw = (response.user as Record<string, unknown>) ?? (response.id ? response : null);
+      if (!raw) return null;
+
+      return normalizeUser(raw);
+    } catch {
       // 401 (no valid token) returns null
       // This allows app to show landing page instead of hanging
       // Expected on first load when no session cookie exists
@@ -350,6 +402,9 @@ export const authApi = {
     const response = await post<SpotifyLoginResponse>('/auth/spotify', { accessToken });
 
     // Tokens are now set as HttpOnly cookies by backend
+    if (response.user) {
+      response.user = normalizeUser(response.user as unknown as Record<string, unknown>);
+    }
 
     return response;
   },
@@ -376,6 +431,9 @@ export const authApi = {
     });
 
     // Tokens are now set as HttpOnly cookies by backend
+    if (response.user) {
+      response.user = normalizeUser(response.user as unknown as Record<string, unknown>);
+    }
 
     return response;
   },

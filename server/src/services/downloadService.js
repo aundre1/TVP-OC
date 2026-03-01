@@ -418,6 +418,32 @@ export async function recordDownload(userId, videoId, quality, version) {
  * @returns {Object} - { downloadUrl, expiresIn, fileName }
  */
 export async function generateSignedUrl(videoId, quality, version) {
+  // Audio files live in Wasabi audio/ prefix — not tracked in video_versions table
+  if (version === "audio") {
+    const videoQuery = `SELECT title, artist FROM videos WHERE id = $1`;
+    try {
+      const videoResult = await pool.query(videoQuery, [videoId]);
+      if (videoResult.rows.length === 0) {
+        throw new Error("Video not found");
+      }
+      const { title, artist } = videoResult.rows[0];
+      const s3Key = `audio/${videoId}.mp3`;
+      const expiresIn = 3600;
+      const downloadUrl = await getSignedDownloadUrl(s3Key, expiresIn);
+      const sanitizedTitle = (title || "audio").replace(/[^a-zA-Z0-9-_]/g, "_");
+      const sanitizedArtist = (artist || "unknown").replace(/[^a-zA-Z0-9-_]/g, "_");
+      return {
+        downloadUrl,
+        expiresIn,
+        fileName: `${sanitizedArtist}-${sanitizedTitle}_audio.mp3`,
+        fileSize: null,
+      };
+    } catch (error) {
+      console.error("Error in generateSignedUrl (audio):", error);
+      throw error;
+    }
+  }
+
   const query = `
     SELECT
       vv.file_url,
