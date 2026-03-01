@@ -13,7 +13,7 @@ export const DEV_CONFIG = {
   // Skip auto-login to test landing page (set to true to see landing page)
   // When true: shows landing page, user must click "login" to authenticate
   // When false: auto-logs in with mock user for testing authenticated views
-  skipAutoLogin: false,
+  skipAutoLogin: true,
 
   // Mock user for development (matches User interface)
   mockUser: {
