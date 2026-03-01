@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-02-27T14:41:56.971Z",
+  "timestamp": "2026-03-01T18:13:02.722Z",
   "url": "https://dev.thevideopool.com",
   "summary": {
-    "passed": 26,
-    "failed": 0,
-    "warnings": 3
+    "passed": 8,
+    "failed": 9,
+    "warnings": 11
   },
   "results": [
     {
@@ -15,62 +15,62 @@
     {
       "status": "PASS",
       "label": "Hero heading present",
-      "detail": "Level Up YourDJ Sets"
+      "detail": "Find the perfect track in natural language"
     },
     {
-      "status": "PASS",
+      "status": "WARN",
       "label": "Auth CTAs visible",
-      "detail": "found 11"
+      "detail": "found 0"
     },
     {
-      "status": "PASS",
+      "status": "FAIL",
       "label": "Email input present",
       "detail": ""
     },
     {
-      "status": "PASS",
+      "status": "FAIL",
       "label": "Password input present",
       "detail": ""
     },
     {
-      "status": "PASS",
+      "status": "FAIL",
       "label": "Submit button present",
       "detail": ""
     },
     {
       "status": "PASS",
       "label": "Social login grid (8 icon buttons)",
-      "detail": "9 SVG buttons"
+      "detail": "50 SVG buttons"
     },
     {
-      "status": "PASS",
+      "status": "WARN",
       "label": "Social grid renders",
-      "detail": "8 buttons in grid"
+      "detail": "0 buttons in grid"
     },
     {
-      "status": "PASS",
+      "status": "WARN",
       "label": "\"or continue with\" divider present",
       "detail": ""
     },
     {
-      "status": "PASS",
-      "label": "Login redirect successful",
-      "detail": "→ /home"
+      "status": "FAIL",
+      "label": "Email login",
+      "detail": "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[type=\"email\"], input[name=\"email\"]')\n"
     },
     {
-      "status": "PASS",
+      "status": "FAIL",
       "label": "Images found on page",
-      "detail": "76 total"
+      "detail": "0 total"
     },
     {
-      "status": "PASS",
+      "status": "WARN",
       "label": "Thumbnails loading",
-      "detail": "76/76 loaded"
+      "detail": "0/0 loaded"
     },
     {
-      "status": "PASS",
+      "status": "WARN",
       "label": "Wasabi thumbnails",
-      "detail": "39 from Wasabi"
+      "detail": "0 from Wasabi"
     },
     {
       "status": "PASS",
@@ -78,14 +78,14 @@
       "detail": "0 broken"
     },
     {
-      "status": "WARN",
+      "status": "PASS",
       "label": "Placeholder images",
-      "detail": "36 placeholders"
+      "detail": "0 placeholders"
     },
     {
       "status": "PASS",
       "label": "Video cards rendered",
-      "detail": "160 elements"
+      "detail": "4 elements"
     },
     {
       "status": "WARN",
@@ -98,19 +98,19 @@
       "detail": "Expected — home page loads catalog correctly"
     },
     {
-      "status": "PASS",
-      "label": "Terms of Service",
-      "detail": "Terms of Service"
+      "status": "FAIL",
+      "label": "Terms of Service — redirected",
+      "detail": "→ /login"
     },
     {
-      "status": "PASS",
-      "label": "Privacy Policy",
-      "detail": "Privacy Policy"
+      "status": "FAIL",
+      "label": "Privacy Policy — redirected",
+      "detail": "→ /login"
     },
     {
-      "status": "PASS",
-      "label": "Contact Page",
-      "detail": "Contact Us"
+      "status": "FAIL",
+      "label": "Contact Page — redirected",
+      "detail": "→ /login"
     },
     {
       "status": "PASS",
@@ -120,37 +120,32 @@
     {
       "status": "PASS",
       "label": "Membership page renders",
-      "detail": "Choose Your Plan"
+      "detail": "Sign In"
     },
     {
-      "status": "PASS",
+      "status": "WARN",
       "label": "Pricing plans (4 tiers visible)",
-      "detail": "30 price elements"
+      "detail": "0 price elements"
     },
     {
-      "status": "PASS",
+      "status": "WARN",
       "label": "Plan cards rendered",
-      "detail": "4 card elements"
+      "detail": "1 card elements"
     },
     {
-      "status": "PASS",
-      "label": "Admin page loads",
-      "detail": "Admin Dashboard"
+      "status": "FAIL",
+      "label": "Admin page — redirected",
+      "detail": "→ /login"
     },
     {
-      "status": "PASS",
-      "label": "Admin tabs rendered",
-      "detail": "Overview/Users/Videos tabs: 3/3 found"
+      "status": "WARN",
+      "label": "Search input not visible",
+      "detail": ""
     },
     {
-      "status": "PASS",
-      "label": "Search works",
-      "detail": "\"Drake\" → 75 results shown"
-    },
-    {
-      "status": "PASS",
+      "status": "WARN",
       "label": "Settings page",
-      "detail": "Settings"
+      "detail": "Sign In"
     }
   ]
 }

@@ -83,7 +83,7 @@ const mockMemberships: Membership[] = [
   {
     id: 2,
     name: 'Video Pool Pro',
-    slug: 'paid',
+    slug: 'pro',  // Updated from 'paid' to actual tier
     price: 34.99,
     quarterlyPrice: 99.99,  // ~$33.33/mo
     annualPrice: 299.99,    // ~$25/mo
@@ -167,7 +167,7 @@ export const subscriptionsApi = {
     const currentMembership: Membership = {
       id: 0,
       name: raw.membershipName || raw.membershipType || 'Free',
-      slug: (raw.membershipType === 'free' || !raw.membershipType ? 'free' : 'paid') as 'free' | 'paid',
+      slug: ((raw.membershipType || 'free') as 'free' | 'starter' | 'pro' | 'elite'),
       price: 0,
       quarterlyPrice: 0,
       annualPrice: 0,
