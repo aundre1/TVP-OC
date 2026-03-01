@@ -34,6 +34,7 @@ interface AuthActions {
   loginWithGoogle: (accessToken: string) => Promise<boolean>;
   loginWithFacebook: (accessToken: string) => Promise<boolean>;
   loginWithApple: (identityToken: string) => Promise<boolean>;
+  loginWithSpotify: (accessToken: string) => Promise<boolean>;
   verify2FA: (code: string) => Promise<boolean>;
   register: (data: RegisterData) => Promise<RegisterResult | null>;
   logout: () => Promise<void>;
@@ -148,6 +149,28 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error: unknown) {
           set({
             error: extractError(error, 'Apple sign-in is temporarily unavailable. Please use email/password.'),
+            isLoading: false,
+          });
+          return false;
+        }
+      },
+
+      loginWithSpotify: async (accessToken: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await authApi.loginWithSpotify(accessToken);
+
+          set({
+            user: response.user,
+            isAuthenticated: true,
+            requires2FA: false,
+            tempToken: null,
+            isLoading: false,
+          });
+          return true;
+        } catch (error: unknown) {
+          set({
+            error: extractError(error, 'Spotify sign-in is temporarily unavailable. Please use email/password.'),
             isLoading: false,
           });
           return false;

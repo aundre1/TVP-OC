@@ -46,6 +46,12 @@ const isAppleConfigured: boolean = !!(
   OAUTH_CONFIG.apple.keyId !== 'your-key-id-here'
 );
 
+// Check if Spotify OAuth is properly configured
+const isSpotifyConfigured: boolean = !!(
+  OAUTH_CONFIG.spotify.clientId &&
+  OAUTH_CONFIG.spotify.clientId !== 'your-client-id-here'
+);
+
 // ── Icon Components ──────────────────────────────────────────
 
 function GoogleIcon() {
@@ -98,7 +104,7 @@ const PROVIDERS: Provider[] = [
   { id: 'google',    label: 'Google',    icon: <GoogleIcon />,    available: isGoogleConfigured,   bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#4285F4]/60' },
   { id: 'facebook',  label: 'Facebook',  icon: <FacebookIcon />,  available: isFacebookConfigured, bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#1877F2]/60' },
   { id: 'apple',     label: 'Apple',     icon: <AppleIcon />,     available: isAppleConfigured,    bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-white/30'     },
-  { id: 'spotify',   label: 'Spotify',   icon: <SpotifyIcon />,   available: false,                bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#1DB954]/60' },
+  { id: 'spotify',   label: 'Spotify',   icon: <SpotifyIcon />,   available: isSpotifyConfigured,  bg: 'bg-white/5 hover:bg-white/10', border: 'border-white/10 hover:border-[#1DB954]/60' },
 ];
 
 // ── Facebook Login Hook ───────────────────────────────────────
@@ -202,6 +208,7 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
   const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
   const loginWithFacebook = useAuthStore((state) => state.loginWithFacebook);
   const loginWithApple = useAuthStore((state) => state.loginWithApple);
+  const loginWithSpotify = useAuthStore((state) => state.loginWithSpotify);
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -320,6 +327,95 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
     }
   }, [loginWithApple, navigate, toast, isAppleConfigured]);
 
+  // ── Spotify handlers (PKCE Authorization Code Flow) ──────────
+  const handleSpotifyClick = useCallback(async () => {
+    if (!isSpotifyConfigured) {
+      toast.error('Spotify Sign In is not configured. Please use email/password.');
+      return;
+    }
+
+    setLoadingProvider('spotify');
+
+    try {
+      // Generate PKCE code_verifier
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      const codeVerifier = btoa(String.fromCharCode(...array))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+
+      // Generate code_challenge = base64url(sha256(codeVerifier))
+      const encoder = new TextEncoder();
+      const data = encoder.encode(codeVerifier);
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+
+      // Persist verifier so callback page can use it
+      sessionStorage.setItem('spotify_code_verifier', codeVerifier);
+
+      const redirectUri = `${window.location.origin}/auth/spotify/callback`;
+      const params = new URLSearchParams({
+        client_id: OAUTH_CONFIG.spotify.clientId,
+        response_type: 'code',
+        redirect_uri: redirectUri,
+        code_challenge_method: 'S256',
+        code_challenge: codeChallenge,
+        scope: 'user-read-email user-read-private',
+      });
+
+      // Open popup — Spotify will redirect back to /auth/spotify/callback
+      const popup = window.open(
+        `https://accounts.spotify.com/authorize?${params}`,
+        'spotify-oauth',
+        'width=500,height=700,left=200,top=100'
+      );
+
+      // Listen for access token posted back by callback page
+      const handleMessage = async (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) return;
+        if (event.data?.type !== 'spotify-oauth-token') return;
+
+        window.removeEventListener('message', handleMessage);
+        if (popup && !popup.closed) popup.close();
+
+        const { accessToken } = event.data;
+        if (!accessToken) {
+          toast.error('Spotify sign-in failed. Please try again.');
+          setLoadingProvider(null);
+          return;
+        }
+
+        try {
+          const success = await loginWithSpotify(accessToken);
+          if (success) {
+            toast.success('Signed in with Spotify');
+            redirectAfterOAuth();
+          } else {
+            toast.error('Spotify sign-in failed. Please try again.');
+          }
+        } catch {
+          toast.error('Spotify sign-in failed. Please try again.');
+        } finally {
+          setLoadingProvider(null);
+        }
+      };
+
+      window.addEventListener('message', handleMessage);
+
+      // Cleanup if popup is closed without completing
+      const checkClosed = setInterval(() => {
+        if (popup && popup.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+          setLoadingProvider(null);
+        }
+      }, 500);
+    } catch {
+      toast.error('Spotify sign-in is unavailable. Please use email/password.');
+      setLoadingProvider(null);
+    }
+  }, [loginWithSpotify, redirectAfterOAuth, toast]);
+
   const handleProviderClick = (provider: Provider) => {
     if (!provider.available) return;
 
@@ -339,6 +435,8 @@ export default function SocialLoginGrid({ mode = 'login' }: SocialLoginGridProps
       facebookLoginFn();
     } else if (provider.id === 'apple') {
       handleAppleClick();
+    } else if (provider.id === 'spotify') {
+      handleSpotifyClick();
     }
   };
 
