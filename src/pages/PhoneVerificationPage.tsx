@@ -15,20 +15,23 @@ export default function PhoneVerificationPage() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
 
+  const [phone, setPhone] = useState(user?.phone || '');
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [codeSent, setCodeSent] = useState(false);
+  const [codeSent, setCodeSent] = useState(!!user?.phone);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Auto-send SMS on mount
+  // Auto-send SMS only if phone already set
   useEffect(() => {
-    sendCode();
-  }, []);
+    if (user?.phone) {
+      sendCode();
+    }
+  }, [user?.phone]);
 
   // Countdown timer
   useEffect(() => {
@@ -161,6 +164,39 @@ export default function PhoneVerificationPage() {
         </div>
 
         <div className="bg-tvp-bg-secondary border border-tvp-border-subtle rounded-2xl p-8">
+          {/* Phone input — only show if no phone set */}
+          {!codeSent && !isSending && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-tvp-text-secondary mb-1.5">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+1 (555) 000-0000"
+                  className="w-full px-4 py-3 bg-tvp-bg-tertiary border border-tvp-border-default rounded-xl text-tvp-text-primary focus:border-tvp-accent-cyan focus:ring-2 focus:ring-tvp-accent-cyan/20 outline-none transition-all"
+                />
+                {error && <p className="text-tvp-error text-xs mt-1.5">{error}</p>}
+              </div>
+              <button
+                onClick={async () => {
+                  if (!phone || phone.length < 10) {
+                    setError('Valid phone number required');
+                    return;
+                  }
+                  setUser({ ...user, phone } as any);
+                  setCodeSent(true);
+                  sendCode();
+                }}
+                className="w-full py-3 bg-tvp-accent-cyan hover:bg-tvp-accent-cyan-hover text-tvp-bg-primary font-semibold rounded-xl transition-colors"
+              >
+                Send Verification Code
+              </button>
+            </div>
+          )}
+
           {/* Sending state */}
           {isSending && (
             <div className="flex flex-col items-center gap-3 py-6">
