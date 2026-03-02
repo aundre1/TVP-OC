@@ -5,8 +5,10 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import type { ApiError } from '@/types';
 
-// API Base URL - uses Vite proxy in development
-const API_BASE_URL = '/api';
+// API Base URL - uses Vite proxy in development, env var in production
+const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api';
 
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
