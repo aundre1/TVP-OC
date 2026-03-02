@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-03-01T18:13:02.722Z",
+  "timestamp": "2026-03-01T20:07:04.089Z",
   "url": "https://dev.thevideopool.com",
   "summary": {
-    "passed": 8,
-    "failed": 9,
-    "warnings": 11
+    "passed": 14,
+    "failed": 6,
+    "warnings": 9
   },
   "results": [
     {
@@ -15,47 +15,52 @@
     {
       "status": "PASS",
       "label": "Hero heading present",
-      "detail": "Find the perfect track in natural language"
+      "detail": "Level Up YourDJ Sets"
     },
     {
-      "status": "WARN",
+      "status": "PASS",
       "label": "Auth CTAs visible",
-      "detail": "found 0"
+      "detail": "found 11"
     },
     {
-      "status": "FAIL",
+      "status": "PASS",
       "label": "Email input present",
       "detail": ""
     },
     {
-      "status": "FAIL",
+      "status": "PASS",
       "label": "Password input present",
       "detail": ""
     },
     {
-      "status": "FAIL",
+      "status": "PASS",
       "label": "Submit button present",
       "detail": ""
     },
     {
       "status": "PASS",
-      "label": "Social login grid (8 icon buttons)",
-      "detail": "50 SVG buttons"
+      "label": "Social login grid container",
+      "detail": "found"
+    },
+    {
+      "status": "PASS",
+      "label": "Social login buttons (4 providers)",
+      "detail": "4 buttons"
     },
     {
       "status": "WARN",
-      "label": "Social grid renders",
-      "detail": "0 buttons in grid"
+      "label": "Active OAuth providers (3+ enabled)",
+      "detail": "2 enabled, 2 disabled"
     },
     {
-      "status": "WARN",
+      "status": "PASS",
       "label": "\"or continue with\" divider present",
       "detail": ""
     },
     {
       "status": "FAIL",
-      "label": "Email login",
-      "detail": "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[type=\"email\"], input[name=\"email\"]')\n"
+      "label": "Login redirect successful",
+      "detail": "→ /login"
     },
     {
       "status": "FAIL",

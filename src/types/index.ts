@@ -183,6 +183,7 @@ export interface Video {
   key?: string;
   genre: string;
   subGenre?: string;
+  recordLabel?: string;
   quality: '720p' | '1080p' | '4K';
   releaseDate: string;
   downloadCount: number;

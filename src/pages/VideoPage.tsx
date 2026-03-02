@@ -277,6 +277,15 @@ export default function VideoPage() {
             {new Date(video.releaseDate).toLocaleDateString()}
           </p>
         </div>
+        {video.recordLabel && (
+          <div className="p-4 bg-tvp-bg-secondary border border-tvp-border-subtle rounded-xl">
+            <div className="flex items-center gap-2 text-tvp-text-muted text-xs mb-1">
+              <Tag className="w-4 h-4" />
+              Label
+            </div>
+            <p className="text-xl font-semibold text-tvp-text-primary truncate">{video.recordLabel}</p>
+          </div>
+        )}
       </div>
 
       {/* Download Versions */}
