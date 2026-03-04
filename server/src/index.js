@@ -66,6 +66,7 @@ import couponsRoutes from "./routes/coupons.js";
 import supportRoutes from "./routes/support.js";
 import marketingRoutes from "./routes/marketing.js";
 import contentQueueRoutes from "./routes/content-queue.js";
+import campaignRoutes from "./routes/campaigns.js";
 import { getDetailedHealth } from "./services/healthService.js";
 
 // Import middleware
@@ -195,6 +196,7 @@ app.use("/api", couponsRoutes);
 app.use("/api", supportRoutes);
 app.use("/api", marketingRoutes);
 app.use("/api", contentQueueRoutes);
+app.use("/api", campaignRoutes);
 
 // ===========================================
 // ERROR HANDLING
