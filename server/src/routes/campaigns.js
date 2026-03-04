@@ -12,7 +12,7 @@
 
 import express from 'express';
 import { Resend } from 'resend';
-import { supabase } from '../config/supabase.js';
+import pool from '../db/pool.js';
 
 const router = express.Router();
 
@@ -54,15 +54,12 @@ router.post('/campaigns/send', async (req, res) => {
     console.log(`📧 Starting campaign: limit=${limit}, delay=${delayMs}ms, dryRun=${dryRun}`);
 
     // Fetch valid emails (not sent, not unsubscribed, verification=valid)
-    const { data: subscribers, error } = await supabase
-      .from('tvp_subscribers')
-      .select('id, email, name')
-      .eq('email_sent', false)
-      .eq('unsubscribed', false)
-      .eq('verification_status', 'valid')
-      .limit(limit);
+    const result = await pool.query(
+      'SELECT id, email, name FROM tvp_subscribers WHERE email_sent = false AND unsubscribed = false AND verification_status = $1 LIMIT $2',
+      ['valid', limit]
+    );
 
-    if (error) throw error;
+    const subscribers = result.rows;
 
     if (subscribers.length === 0) {
       return res.json({ message: 'No valid emails to send', sent: 0 });
@@ -114,13 +111,10 @@ router.post('/campaigns/send', async (req, res) => {
         }
 
         // Update database
-        await supabase
-          .from('tvp_subscribers')
-          .update({
-            email_sent: true,
-            email_sent_at: new Date().toISOString()
-          })
-          .eq('id', subscriber.id);
+        await pool.query(
+          'UPDATE tvp_subscribers SET email_sent = true, email_sent_at = $1 WHERE id = $2',
+          [new Date().toISOString(), subscriber.id]
+        );
 
         results.sent.push(subscriber.email);
         console.log(`✅ Sent to: ${subscriber.email} (${i + 1}/${subscribers.length})`);
@@ -172,21 +166,22 @@ router.get('/unsubscribe', async (req, res) => {
     }
 
     // Find subscriber by email
-    const { data: subscriber, error } = await supabase
-      .from('tvp_subscribers')
-      .select('id')
-      .eq('email', email)
-      .single();
+    const result = await pool.query(
+      'SELECT id FROM tvp_subscribers WHERE email = $1',
+      [email]
+    );
 
-    if (error || !subscriber) {
+    const subscriber = result.rows[0];
+
+    if (!subscriber) {
       return res.status(404).json({ error: 'Subscriber not found' });
     }
 
     // Mark as unsubscribed
-    await supabase
-      .from('tvp_subscribers')
-      .update({ unsubscribed: true })
-      .eq('id', subscriber.id);
+    await pool.query(
+      'UPDATE tvp_subscribers SET unsubscribed = true WHERE id = $1',
+      [subscriber.id]
+    );
 
     // Return success page
     res.send(`
@@ -234,11 +229,12 @@ router.get('/email-preferences', async (req, res) => {
       return res.status(400).json({ error: 'Missing email' });
     }
 
-    const { data: subscriber } = await supabase
-      .from('tvp_subscribers')
-      .select('id, email, unsubscribed')
-      .eq('email', email)
-      .single();
+    const result = await pool.query(
+      'SELECT id, email, unsubscribed FROM tvp_subscribers WHERE email = $1',
+      [email]
+    );
+
+    const subscriber = result.rows[0];
 
     res.send(`
       <!DOCTYPE html>
