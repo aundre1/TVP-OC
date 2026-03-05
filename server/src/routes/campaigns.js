@@ -29,6 +29,104 @@ if (RESEND_API_KEY) {
 }
 
 // ====================================
+// SIMPLE TRIGGER ENDPOINT (for testing/admin)
+// ====================================
+
+/**
+ * POST /api/campaigns/trigger
+ * Simple endpoint without CSRF for testing
+ */
+router.post('/campaigns/trigger', async (req, res) => {
+  try {
+    if (!RESEND_API_KEY) {
+      return res.status(400).json({ error: 'Resend not configured' });
+    }
+
+    const limit = 500;
+    const delayMs = 2000;
+
+    console.log(`📧 TRIGGER: Starting campaign send (${limit} emails)`);
+
+    // Query emails
+    const result = await pool.query(
+      `SELECT id, email, name FROM tvp_subscribers
+       WHERE (email_sent = false OR email_sent IS NULL)
+       AND (unsubscribed = false OR unsubscribed IS NULL)
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit]
+    );
+
+    const subscribers = result.rows;
+
+    if (subscribers.length === 0) {
+      return res.json({ message: 'No emails found', sent: 0 });
+    }
+
+    console.log(`✅ Found ${subscribers.length} subscribers to send`);
+
+    // Send asynchronously (don't wait for response)
+    res.json({
+      status: 'sending',
+      queued: subscribers.length,
+      message: 'Batch send initiated. Check logs for progress.'
+    });
+
+    // Send emails in background
+    (async () => {
+      let sent = 0, failed = 0;
+      const fs = await import('fs');
+      const emailHtml = fs.readFileSync('./email/tvp-welcome-back.html', 'utf8');
+
+      for (let i = 0; i < subscribers.length; i++) {
+        const sub = subscribers[i];
+        try {
+          const token = Buffer.from(`${sub.id}:${Date.now()}`).toString('base64');
+          const html = emailHtml
+            .replace(/{{EMAIL}}/g, sub.email)
+            .replace(/{{UNSUBSCRIBE_TOKEN}}/g, token)
+            .replace(/{{NAME}}/g, sub.name || 'DJ');
+
+          const response = await resend.emails.send({
+            from: 'The Video Pool <info@thevideopool.com>',
+            to: sub.email,
+            subject: 'The Video Pool — 30% Off For Life',
+            html,
+            reply_to: 'support@thevideopool.com'
+          });
+
+          if (response.error) throw new Error(response.error.message);
+
+          await pool.query(
+            'UPDATE tvp_subscribers SET email_sent = true, email_sent_at = $1 WHERE id = $2',
+            [new Date().toISOString(), sub.id]
+          );
+
+          sent++;
+          if ((i + 1) % 50 === 0) {
+            console.log(`📊 Progress: ${i + 1}/${subscribers.length} sent`);
+          }
+
+        } catch (error) {
+          failed++;
+          console.error(`❌ Failed ${sub.email}: ${error.message}`);
+        }
+
+        if (i < subscribers.length - 1) {
+          await new Promise(r => setTimeout(r, delayMs + Math.random() * 1000));
+        }
+      }
+
+      console.log(`✅ BATCH COMPLETE: ${sent} sent, ${failed} failed`);
+    })();
+
+  } catch (error) {
+    console.error('Trigger error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ====================================
 // CAMPAIGN SEND ENDPOINT
 // ====================================
 
