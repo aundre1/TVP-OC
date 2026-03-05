@@ -75,8 +75,14 @@ router.post('/campaigns/trigger', async (req, res) => {
     // Send emails in background
     (async () => {
       let sent = 0, failed = 0;
-      const fs = await import('fs');
-      const emailHtml = fs.readFileSync('./email/tvp-welcome-back.html', 'utf8');
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const { fileURLToPath } = await import('url');
+
+        const __dirname = path.dirname(fileURLToPath(import.meta.url));
+        const emailPath = path.join(__dirname, '../../email/tvp-welcome-back.html');
+        const emailHtml = fs.readFileSync(emailPath, 'utf8');
 
       for (let i = 0; i < subscribers.length; i++) {
         const sub = subscribers[i];
@@ -117,7 +123,10 @@ router.post('/campaigns/trigger', async (req, res) => {
         }
       }
 
-      console.log(`✅ BATCH COMPLETE: ${sent} sent, ${failed} failed`);
+        console.log(`✅ BATCH COMPLETE: ${sent} sent, ${failed} failed`);
+      } catch (backgroundError) {
+        console.error('❌ Background task error:', backgroundError.message);
+      }
     })();
 
   } catch (error) {
