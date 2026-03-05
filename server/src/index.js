@@ -92,6 +92,9 @@ app.use(
       includeSubDomains: true,
       preload: true,
     },
+    frameguard: {
+      action: "deny", // Prevent clickjacking (X-Frame-Options: DENY)
+    },
   }),
 );
 
