@@ -9,6 +9,7 @@ const { Pool } = pg;
 
 // Create connection pool
 // Force pool to pick up DATABASE_URL from environment at runtime
+// Pooler port: 6543 (not 5432)
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   // Pool configuration
