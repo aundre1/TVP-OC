@@ -546,6 +546,78 @@ router.get(
 );
 
 // ===========================================
+// GET /admin/audit-verification - Verify audit fix migrations
+// Checks that migrations 020, 021, 022 applied correctly
+// NOTE: No auth bypass intended — router-level requireAuth + requireAdmin applies.
+// ===========================================
+router.get(
+  "/audit-verification",
+  asyncHandler(async (req, res) => {
+    // Run all verification queries in parallel for performance
+    const [
+      totalResult,
+      invalidResolutionsResult,
+      nullResolutionsResult,
+      resolutionValuesResult,
+      missingYearsResult,
+      corruptedResult,
+    ] = await Promise.all([
+      // Total video count
+      query("SELECT COUNT(*) AS total_videos FROM videos"),
+
+      // Any resolution value that is NOT in the allowed set and NOT NULL
+      query(`
+        SELECT COUNT(*) AS invalid_resolutions
+        FROM videos
+        WHERE resolution IS NOT NULL
+          AND resolution NOT IN ('1080p', '720p', '480p', '360p')
+      `),
+
+      // Videos whose resolution is NULL (corrupted records set to NULL by migration 020)
+      query("SELECT COUNT(*) AS null_resolutions FROM videos WHERE resolution IS NULL"),
+
+      // All distinct non-NULL resolution values for spot-checking
+      query(`
+        SELECT STRING_AGG(DISTINCT resolution, ', ' ORDER BY resolution) AS resolution_values
+        FROM videos
+        WHERE resolution IS NOT NULL
+      `),
+
+      // Videos still missing a valid release_year (should be 0 after migration 022)
+      query(`
+        SELECT COUNT(*) AS missing_years
+        FROM videos
+        WHERE release_year IS NULL OR release_year = 0
+      `),
+
+      // Corrupted records flagged by migration 021 — use COALESCE to survive a
+      // missing video_resolution_issues table on environments that skipped migration 021
+      query(`
+        SELECT COALESCE(
+          (SELECT COUNT(*) FROM video_resolution_issues),
+          0
+        ) AS flagged_corrupted
+      `),
+    ]);
+
+    const audit = {
+      total_videos: parseInt(totalResult.rows[0].total_videos, 10),
+      invalid_resolutions: parseInt(invalidResolutionsResult.rows[0].invalid_resolutions, 10),
+      null_resolutions: parseInt(nullResolutionsResult.rows[0].null_resolutions, 10),
+      resolution_values: resolutionValuesResult.rows[0].resolution_values ?? null,
+      missing_years: parseInt(missingYearsResult.rows[0].missing_years, 10),
+      flagged_corrupted: parseInt(corruptedResult.rows[0].flagged_corrupted, 10),
+    };
+
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      audit,
+    });
+  }),
+);
+
+// ===========================================
 // POST /admin/run-migrations - Run pending DB migrations
 // One-time use endpoint for safe, idempotent migration runs
 // ===========================================
