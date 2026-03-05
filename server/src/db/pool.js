@@ -8,6 +8,7 @@ import pg from 'pg';
 const { Pool } = pg;
 
 // Create connection pool
+// Force pool to pick up DATABASE_URL from environment at runtime
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   // Pool configuration
