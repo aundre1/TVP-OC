@@ -34,29 +34,35 @@ if (RESEND_API_KEY) {
 
 /**
  * GET /api/campaigns/debug
- * Check database status and subscriber count
+ * Check database status and available tables
  */
 router.get('/campaigns/debug', async (req, res) => {
   try {
     const dbUrl = process.env.DATABASE_URL || 'NOT SET';
     const urlWithoutPassword = dbUrl.replace(/:([^@]+)@/, ':***@');
 
-    const countResult = await pool.query('SELECT COUNT(*) as count FROM tvp_subscribers');
-    const totalCount = countResult.rows[0]?.count || 0;
-
-    const unsentResult = await pool.query(
-      'SELECT COUNT(*) as count FROM tvp_subscribers WHERE (email_sent = false OR email_sent IS NULL) AND (unsubscribed = false OR unsubscribed IS NULL)'
+    // List all tables in public schema
+    const tableResult = await pool.query(
+      `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name`
     );
-    const unsentCount = unsentResult.rows[0]?.count || 0;
+    const tables = tableResult.rows.map(r => r.table_name);
+
+    // Try to query tvp_subscribers if it exists
+    let subscriberCount = 0;
+    if (tables.includes('tvp_subscribers')) {
+      const countResult = await pool.query('SELECT COUNT(*) as count FROM tvp_subscribers');
+      subscriberCount = countResult.rows[0]?.count || 0;
+    }
 
     res.json({
       databaseUrl: urlWithoutPassword,
-      totalSubscribers: totalCount,
-      unsentEmails: unsentCount,
+      tablesInDatabase: tables,
+      tvpSubscribersFound: tables.includes('tvp_subscribers'),
+      subscriberCount: subscriberCount,
       resendConfigured: !!RESEND_API_KEY
     });
   } catch (error) {
-    res.status(500).json({ error: error.message, code: error.code });
+    res.status(500).json({ error: error.message, code: error.code, stack: error.stack });
   }
 });
 
