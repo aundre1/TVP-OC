@@ -53,10 +53,10 @@ router.post('/campaigns/send', async (req, res) => {
 
     console.log(`📧 Starting campaign: limit=${limit}, delay=${delayMs}ms, dryRun=${dryRun}`);
 
-    // Fetch valid emails (not sent, not unsubscribed, verification=valid)
+    // Fetch emails (not sent, not unsubscribed, any verification status)
     const result = await pool.query(
-      'SELECT id, email, name FROM tvp_subscribers WHERE email_sent = false AND unsubscribed = false AND verification_status = $1 LIMIT $2',
-      ['valid', limit]
+      'SELECT id, email, name FROM tvp_subscribers WHERE (email_sent = false OR email_sent IS NULL) AND (unsubscribed = false OR unsubscribed IS NULL) LIMIT $1',
+      [limit]
     );
 
     const subscribers = result.rows;
