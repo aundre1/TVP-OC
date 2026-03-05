@@ -85,7 +85,15 @@ app.set("trust proxy", 1);
 // ===========================================
 
 // Security headers
-app.use(helmet());
+app.use(
+  helmet({
+    hsts: {
+      maxAge: 31536000, // 1 year in seconds
+      includeSubDomains: true,
+      preload: true,
+    },
+  }),
+);
 
 // CORS configuration — supports comma-separated FRONTEND_URL for multi-domain
 const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3001")
