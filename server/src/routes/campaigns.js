@@ -78,6 +78,21 @@ router.post('/campaigns/trigger', async (req, res) => {
     const delayMs = 2000;
 
     console.log(`📧 TRIGGER: Starting campaign send (${limit} emails)`);
+    console.log(`DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
+
+    // Check if table exists
+    try {
+      const tableCheck = await pool.query(
+        `SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'tvp_subscribers'
+        )`
+      );
+      const tableExists = tableCheck.rows[0]?.exists;
+      console.log(`tvp_subscribers table exists: ${tableExists}`);
+    } catch (e) {
+      console.log(`Table check error: ${e.message}`);
+    }
 
     // Query emails
     const result = await pool.query(
@@ -90,9 +105,14 @@ router.post('/campaigns/trigger', async (req, res) => {
     );
 
     const subscribers = result.rows;
+    console.log(`Subscribers found: ${subscribers.length}`);
 
     if (subscribers.length === 0) {
-      return res.json({ message: 'No emails found', sent: 0 });
+      // Log total count for diagnosis
+      const totalResult = await pool.query('SELECT COUNT(*) as count FROM tvp_subscribers');
+      const totalCount = totalResult.rows[0]?.count || 0;
+      console.log(`Total subscribers in database: ${totalCount}`);
+      return res.json({ message: 'No emails found', sent: 0, totalInDb: totalCount });
     }
 
     console.log(`✅ Found ${subscribers.length} subscribers to send`);
