@@ -54,10 +54,24 @@ try {
   }
 
   if (!cachedEmailTemplate) {
-    console.warn(`[EMAIL] Warning: Email template not found at startup`);
+    console.warn(`[EMAIL] Email template file not found, using fallback`);
+    // Fallback template - minimal but functional
+    cachedEmailTemplate = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; color: #333;">
+<h2>The Video Pool — 30% Off For Life</h2>
+<p>Hi {{NAME}},</p>
+<p>Your exclusive offer is ready: <strong>30% off for life</strong> on any Video Pool membership.</p>
+<p><a href="https://tvp-redesign-2026.vercel.app/checkout?promo=WELCOME30" style="background: #00d4ff; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Claim Your 30% Discount</a></p>
+<p style="color: #666; font-size: 12px;">Email: {{EMAIL}}</p>
+<p style="color: #666; font-size: 12px;"><a href="https://tvp-redesign-2026.vercel.app/api/unsubscribe?email={{EMAIL}}&token={{UNSUBSCRIBE_TOKEN}}">Unsubscribe</a></p>
+</body>
+</html>`;
   }
 } catch (e) {
-  console.warn(`[EMAIL] Failed to cache template at startup: ${e.message}`);
+  console.warn(`[EMAIL] Failed to load template at startup: ${e.message}`);
 }
 
 // ====================================
