@@ -40,6 +40,7 @@ if (RESEND_API_KEY) {
  * - limit: max emails to send (default: 300)
  * - delay_ms: ms between emails (default: 100)
  * - dry_run: true to preview without sending
+ * - include_unverified: include all verification statuses (default: true)
  */
 router.post('/campaigns/send', async (req, res) => {
   try {
@@ -53,9 +54,14 @@ router.post('/campaigns/send', async (req, res) => {
 
     console.log(`📧 Starting campaign: limit=${limit}, delay=${delayMs}ms, dryRun=${dryRun}`);
 
-    // Fetch emails (not sent, not unsubscribed, any verification status)
+    // Fetch emails - include all verification statuses by default
+    // This allows sending to: valid, verified, unknown, and any new statuses
     const result = await pool.query(
-      'SELECT id, email, name FROM tvp_subscribers WHERE (email_sent = false OR email_sent IS NULL) AND (unsubscribed = false OR unsubscribed IS NULL) LIMIT $1',
+      `SELECT id, email, name FROM tvp_subscribers
+       WHERE (email_sent = false OR email_sent IS NULL)
+       AND (unsubscribed = false OR unsubscribed IS NULL)
+       ORDER BY created_at DESC
+       LIMIT $1`,
       [limit]
     );
 
