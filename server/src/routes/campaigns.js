@@ -54,19 +54,423 @@ try {
   }
 
   if (!cachedEmailTemplate) {
-    console.warn(`[EMAIL] Email template file not found, using fallback`);
-    // Fallback template - minimal but functional
-    cachedEmailTemplate = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
-<body style="font-family: Arial, sans-serif; color: #333;">
-<h2>The Video Pool — 30% Off For Life</h2>
-<p>Hi {{NAME}},</p>
-<p>Your exclusive offer is ready: <strong>30% off for life</strong> on any Video Pool membership.</p>
-<p><a href="https://tvp-redesign-2026.vercel.app/checkout?promo=WELCOME30" style="background: #00d4ff; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Claim Your 30% Discount</a></p>
-<p style="color: #666; font-size: 12px;">Email: {{EMAIL}}</p>
-<p style="color: #666; font-size: 12px;"><a href="https://tvp-redesign-2026.vercel.app/api/unsubscribe?email={{EMAIL}}&token={{UNSUBSCRIBE_TOKEN}}">Unsubscribe</a></p>
+    console.warn(`[EMAIL] Email template file not found, using production fallback`);
+    // Production template fallback (tvp-welcome-back-v3-production.html)
+    // This ensures Railway always sends the correct, professional template
+    cachedEmailTemplate = `<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>The Video Pool — 30% Off For Life</title>
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+  <![endif]-->
+  <style>
+    body, table, td, p, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    img { -ms-interpolation-mode:bicubic; border:0; outline:none; text-decoration:none; }
+    body { margin:0; padding:0; width:100%!important; background-color:#040406; }
+    a { color:#00d4ff; text-decoration:none; }
+
+    /* Animated gradient border shimmer */
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .shimmer-border {
+      background: linear-gradient(90deg, rgba(0,212,255,0.0) 0%, rgba(0,212,255,0.4) 50%, rgba(0,212,255,0.0) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 3s infinite;
+    }
+
+    /* Pulsing glow on CTA */
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(0,212,255,0.3); }
+      50% { box-shadow: 0 0 35px rgba(0,212,255,0.6), 0 0 60px rgba(0,212,255,0.2); }
+    }
+    .cta-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+    /* Countdown urgency pulse */
+    @keyframes urgency-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .urgency-blink { animation: urgency-pulse 1.8s ease-in-out infinite; }
+
+    @media only screen and (max-width: 620px) {
+      .email-container { width:100%!important; }
+      .fluid { max-width:100%!important; height:auto!important; }
+      .mp { padding-left:16px!important; padding-right:16px!important; }
+      .price-card { display:block!important; width:100%!important; margin-bottom:8px!important; }
+      .hero-h1 { font-size:34px!important; }
+      .hero-sub { font-size:15px!important; }
+      .feat-icon { width:48px!important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#040406; font-family:Helvetica,Arial,sans-serif;">
+
+<!-- PREVIEW TEXT — this shows in inbox before opening -->
+<div style="display:none;font-size:1px;color:#040406;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+  You're one of the first 300. 30% off FOREVER. Once they're gone, this offer dies. We rebuilt everything.
+  &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+</div>
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#040406;">
+<tr><td align="center" style="padding:12px 10px;">
+
+<!-- EMAIL CONTAINER — 600px -->
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container" style="max-width:600px; margin:0 auto; border-radius:14px; overflow:hidden; border:1px solid rgba(0,212,255,0.1);">
+
+  <!-- SHIMMER TOP ACCENT LINE -->
+  <tr>
+    <td style="height:3px; font-size:0; line-height:0;" class="shimmer-border">&nbsp;</td>
+  </tr>
+
+  <!-- HEADER — Logo (linked) + Urgency -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:14px 24px; border-bottom:1px solid rgba(255,255,255,0.06);" class="mp">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td style="vertical-align:middle;">
+            <a href="https://www.thevideopool.com/welcome-back" target="_blank">
+              <img src="https://welcomebackpromo.b-cdn.net/The%20Video%20Pool%20Logo%202.0.png" alt="The Video Pool" width="200" style="display:block; width:200px; height:auto;" class="fluid">
+            </a>
+          </td>
+          <td style="vertical-align:middle; text-align:right;">
+            <span class="urgency-blink" style="display:inline-block; background:rgba(255,71,87,0.15); border:1px solid rgba(255,71,87,0.3); color:#ff4757; font-size:11px; font-weight:bold; padding:5px 12px; border-radius:14px; letter-spacing:0.5px; font-family:Helvetica,Arial,sans-serif;">&#9679; SPOTS FILLING</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- PERSONAL NOTE — Why you're getting this -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:20px 28px 0 28px;" class="mp">
+      <p style="font-family:Helvetica,Arial,sans-serif; font-size:14px; color:#d0d0d4; line-height:1.6; margin:0;">
+        You're receiving this because you were once part of The Video Pool — whether as a free or paid member. That means something to us. So before we open this to the public, we wanted to give <strong style="color:#ffffff;">you</strong> first access to something we've been building for the last year.
+      </p>
+    </td>
+  </tr>
+
+  <!-- HERO — DJ Background + Overlay -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-image:url('https://welcomebackpromo.b-cdn.net/djbackground.jpeg'); background-size:cover; background-position:center top;">
+        <tr>
+          <td style="background:linear-gradient(180deg, rgba(10,10,15,0.5) 0%, rgba(10,10,15,0.82) 45%, rgba(10,10,15,0.98) 100%); padding:44px 32px 40px 32px; text-align:center;" class="mp">
+
+            <!-- Headline -->
+            <h1 class="hero-h1" style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:42px; font-weight:bold; color:#ffffff; line-height:1.08; margin:0 0 14px 0; letter-spacing:-0.5px; text-shadow:0 2px 24px rgba(0,0,0,0.6);">
+              We Rebuilt<br><span style="color:#00d4ff;">Everything.</span>
+            </h1>
+
+            <p class="hero-sub" style="font-family:Helvetica,Arial,sans-serif; font-size:17px; color:#c8c8cc; line-height:1.5; margin:0 auto 30px auto; max-width:430px; text-shadow:0 1px 10px rgba(0,0,0,0.5);">
+              30,000+ videos. Up to 4K quality. Instant downloads.<br>No approvals. No DRM. Built by DJs who get it.
+            </p>
+
+            <!-- CTA #1 — with glow animation -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+              <tr>
+                <td class="cta-glow" style="border-radius:12px; background-color:#00d4ff;">
+                  <a href="https://www.thevideopool.com/welcome-back" target="_blank" style="display:inline-block; padding:16px 48px; font-family:Helvetica,Arial,sans-serif; font-size:18px; font-weight:bold; color:#000000; text-decoration:none; border-radius:12px; letter-spacing:0.3px;">CLAIM YOUR 30% OFF</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align:center; padding-top:6px;">
+                  <span style="font-family:Helvetica,Arial,sans-serif; font-size:13px; font-weight:bold; color:#00d4ff; letter-spacing:2px;">FOREVER</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- SCARCITY COUNTER BAR -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:4px 24px 0 24px;" class="mp">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:rgba(255,71,87,0.08); border:1px solid rgba(255,71,87,0.15); border-radius:10px; padding:0;">
+        <tr>
+          <td style="padding:14px 20px; text-align:center;">
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:14px; color:#f5f5f7; margin:0; font-weight:600;">
+              Only <span style="color:#ff4757; font-size:20px; font-weight:bold;">300</span> lifetime rate spots available
+            </p>
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:12px; color:#a1a1aa; margin:4px 0 0 0;">
+              When they're gone, this offer is dead. No exceptions. No extensions.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- PLATFORM SCREENSHOT — Brightened, linked -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:20px 20px 4px 20px; text-align:center;" class="mp">
+      <a href="https://www.thevideopool.com/welcome-back" target="_blank" style="display:block; text-decoration:none;">
+        <div style="border-radius:10px; overflow:hidden; border:1px solid rgba(0,212,255,0.15); box-shadow:0 8px 32px rgba(0,0,0,0.3), 0 0 24px rgba(0,212,255,0.06);">
+          <img src="https://welcomebackpromo.b-cdn.net/site.jpeg" alt="Browse 30,000+ DJ Videos on The Video Pool" width="560" style="display:block; width:100%; max-width:560px; height:auto;" class="fluid">
+        </div>
+      </a>
+      <p style="font-family:Helvetica,Arial,sans-serif; font-size:11px; color:#6b6b76; margin:8px 0 0 0;">&#8593; Actual platform &mdash; genre filters, BPM, key, version type, instant download</p>
+    </td>
+  </tr>
+
+  <!-- FEATURES — 4 cards, lighter bg -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:28px 24px 8px 24px;" class="mp">
+      <p style="font-family:Helvetica,Arial,sans-serif; font-size:11px; font-weight:bold; color:#00d4ff; letter-spacing:2px; text-transform:uppercase; text-align:center; margin:0 0 6px 0;">WHAT'S NEW</p>
+      <h2 style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:22px; font-weight:bold; color:#f5f5f7; text-align:center; margin:0 0 20px 0;">Not a refresh. A ground up rebuild.</h2>
+    </td>
+  </tr>
+
+  <!-- Feature 1 — Instant Downloads -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:0 24px 8px 24px;" class="mp">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#14141c; border:1px solid rgba(0,212,255,0.08); border-radius:10px;">
+        <tr>
+          <td class="feat-icon" width="56" style="padding:16px 0 16px 14px; vertical-align:top; text-align:center;">
+            <div style="width:38px; height:38px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.2); border-radius:10px; line-height:38px; font-size:17px; text-align:center;">&#9889;</div>
+          </td>
+          <td style="padding:16px 14px 16px 8px; vertical-align:top;">
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:14px; font-weight:bold; color:#f5f5f7; margin:0 0 3px 0;">Instant Downloads. Zero Gatekeeping.</p>
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:12px; color:#b0b0b8; line-height:1.5; margin:0;">Every version available the moment you find it. Clean, dirty, extended intro, quick edit. No approvals. No DRM. Download it, own it, use it anywhere.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Feature 2 — BPM + Key -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:0 24px 8px 24px;" class="mp">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#14141c; border:1px solid rgba(0,212,255,0.08); border-radius:10px;">
+        <tr>
+          <td class="feat-icon" width="56" style="padding:16px 0 16px 14px; vertical-align:top; text-align:center;">
+            <div style="width:38px; height:38px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.2); border-radius:10px; line-height:38px; font-size:17px; text-align:center;">&#127911;</div>
+          </td>
+          <td style="padding:16px 14px 16px 8px; vertical-align:top;">
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:14px; font-weight:bold; color:#f5f5f7; margin:0 0 3px 0;">BPM, Key, Genre on Every Track</p>
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:12px; color:#b0b0b8; line-height:1.5; margin:0;">Camelot wheel keys and BPM visible at a glance. Filter by genre, era, version type, and label. Build harmonic sets in seconds.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Feature 3 — Discovery + Batch -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:0 24px 8px 24px;" class="mp">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#14141c; border:1px solid rgba(0,212,255,0.08); border-radius:10px;">
+        <tr>
+          <td class="feat-icon" width="56" style="padding:16px 0 16px 14px; vertical-align:top; text-align:center;">
+            <div style="width:38px; height:38px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.2); border-radius:10px; line-height:38px; font-size:17px; text-align:center;">&#127916;</div>
+          </td>
+          <td style="padding:16px 14px 16px 8px; vertical-align:top;">
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:14px; font-weight:bold; color:#f5f5f7; margin:0 0 3px 0;">AI Discovery + Batch Downloads</p>
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:12px; color:#b0b0b8; line-height:1.5; margin:0;">Weekly Discovery Packs curated to your taste. Batch download up to 10 videos at once. Your library, built smarter.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Feature 4 — Customizable Interface -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:0 24px 8px 24px;" class="mp">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#1c1c28; border:1px solid rgba(0,212,255,0.12); border-radius:10px;">
+        <tr>
+          <td class="feat-icon" width="56" style="padding:16px 0 16px 14px; vertical-align:top; text-align:center;">
+            <div style="width:38px; height:38px; background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.25); border-radius:10px; line-height:38px; font-size:17px; text-align:center;">&#9881;&#65039;</div>
+          </td>
+          <td style="padding:16px 14px 16px 8px; vertical-align:top;">
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:14px; font-weight:bold; color:#f5f5f7; margin:0 0 3px 0;">Fully Customizable Interface</p>
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:12px; color:#b0b0b8; line-height:1.5; margin:0;">Drag and drop sections, collapsible panels, grid or list view, custom genre nav. Set it up once, work faster every session.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- STATS BAR -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:16px 24px;" class="mp">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(255,107,74,0.05) 100%); border:1px solid rgba(0,212,255,0.1); border-radius:10px;">
+        <tr>
+          <td width="33%" style="padding:16px 6px; text-align:center; border-right:1px solid rgba(255,255,255,0.05);">
+            <p style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:22px; font-weight:bold; color:#00d4ff; margin:0;">30K+</p>
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; color:#a1a1aa; margin:2px 0 0 0; text-transform:uppercase; letter-spacing:0.5px;">Videos</p>
+          </td>
+          <td width="34%" style="padding:16px 6px; text-align:center; border-right:1px solid rgba(255,255,255,0.05);">
+            <p style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:22px; font-weight:bold; color:#00d4ff; margin:0;">Up to 4K</p>
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; color:#a1a1aa; margin:2px 0 0 0; text-transform:uppercase; letter-spacing:0.5px;">Quality</p>
+          </td>
+          <td width="33%" style="padding:16px 6px; text-align:center;">
+            <p style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:22px; font-weight:bold; color:#00d4ff; margin:0;">Instant</p>
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; color:#a1a1aa; margin:2px 0 0 0; text-transform:uppercase; letter-spacing:0.5px;">Downloads</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- PRICING BLOCK -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:8px 24px 20px 24px;" class="mp">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#111118; border:2px solid rgba(0,212,255,0.18); border-radius:14px; overflow:hidden;">
+        <!-- Gradient header -->
+        <tr>
+          <td style="background:linear-gradient(135deg, #00d4ff 0%, #00e676 100%); padding:12px 20px; text-align:center;">
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:13px; font-weight:bold; color:#000000; margin:0; letter-spacing:0.5px;">&#127881; 30% OFF EVERY PLAN &mdash; YOUR RATE IS LOCKED FOR LIFE</p>
+          </td>
+        </tr>
+        <!-- Pricing body -->
+        <tr>
+          <td style="padding:24px 12px 12px 12px; text-align:center;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <!-- MONTHLY -->
+                <td width="33%" class="price-card" style="padding:4px; vertical-align:top;">
+                  <a href="https://www.thevideopool.com/checkout" target="_blank" style="display:block; text-decoration:none; color:inherit;">
+                  <div style="background-color:#1a1a24; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px 4px; text-align:center; cursor:pointer;">
+                    <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; font-weight:bold; color:#a1a1aa; margin:0; text-transform:uppercase; letter-spacing:1px;">Monthly</p>
+                    <p style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:12px; color:#6b6b76; margin:6px 0 0 0; text-decoration:line-through;">$34.99</p>
+                    <p style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:26px; font-weight:bold; color:#f5f5f7; margin:2px 0 0 0; line-height:1;">$24.49</p>
+                    <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; color:#a1a1aa; margin:2px 0 0 0;">/month</p>
+                    <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+                      <p style="font-family:Helvetica,Arial,sans-serif; font-size:11px; color:#b0b0b8; margin:0; font-weight:600;">200</p>
+                      <p style="font-family:Helvetica,Arial,sans-serif; font-size:9px; color:#6b6b76; margin:1px 0 0 0;">downloads/mo</p>
+                    </div>
+                  </div>
+                  </a>
+                </td>
+                <!-- QUARTERLY (BEST VALUE) -->
+                <td width="34%" class="price-card" style="padding:4px; vertical-align:top;">
+                  <a href="https://www.thevideopool.com/checkout" target="_blank" style="display:block; text-decoration:none; color:inherit;">
+                  <div style="background-color:#1a1a24; border:2px solid #00d4ff; border-radius:10px; padding:14px 4px; text-align:center; position:relative; cursor:pointer;">
+                    <p style="font-family:Helvetica,Arial,sans-serif; font-size:9px; font-weight:bold; color:#000; background:#00d4ff; display:inline-block; padding:2px 10px; border-radius:8px; margin:0 0 4px 0; letter-spacing:0.5px;">BEST VALUE</p>
+                    <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; font-weight:bold; color:#a1a1aa; margin:0; text-transform:uppercase; letter-spacing:1px;">Quarterly</p>
+                    <p style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:12px; color:#6b6b76; margin:6px 0 0 0; text-decoration:line-through;">$99.99</p>
+                    <p style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:26px; font-weight:bold; color:#f5f5f7; margin:2px 0 0 0; line-height:1;">$69.99</p>
+                    <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; color:#00d4ff; margin:2px 0 0 0; font-weight:600;">/quarter</p>
+                    <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(0,212,255,0.15);">
+                      <p style="font-family:Helvetica,Arial,sans-serif; font-size:11px; color:#00d4ff; margin:0; font-weight:600;">250</p>
+                      <p style="font-family:Helvetica,Arial,sans-serif; font-size:9px; color:#a1a1aa; margin:1px 0 0 0;">downloads/mo</p>
+                    </div>
+                  </div>
+                  </a>
+                </td>
+                <!-- ANNUAL -->
+                <td width="33%" class="price-card" style="padding:4px; vertical-align:top;">
+                  <a href="https://www.thevideopool.com/checkout" target="_blank" style="display:block; text-decoration:none; color:inherit;">
+                  <div style="background-color:#1a1a24; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px 4px; text-align:center; cursor:pointer;">
+                    <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; font-weight:bold; color:#a1a1aa; margin:0; text-transform:uppercase; letter-spacing:1px;">Annual</p>
+                    <p style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:12px; color:#6b6b76; margin:6px 0 0 0; text-decoration:line-through;">$359.99</p>
+                    <p style="font-family:'Trebuchet MS',Helvetica,sans-serif; font-size:26px; font-weight:bold; color:#f5f5f7; margin:2px 0 0 0; line-height:1;">$251.99</p>
+                    <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; color:#a1a1aa; margin:2px 0 0 0;">/year</p>
+                    <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+                      <p style="font-family:Helvetica,Arial,sans-serif; font-size:11px; color:#b0b0b8; margin:0; font-weight:600;">300</p>
+                      <p style="font-family:Helvetica,Arial,sans-serif; font-size:9px; color:#6b6b76; margin:1px 0 0 0;">downloads/mo</p>
+                    </div>
+                  </div>
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Rollover + quality note -->
+            <p style="font-family:Helvetica,Arial,sans-serif; font-size:11px; color:#a1a1aa; margin:14px 0 0 0; line-height:1.6;">
+              All plans: up to <strong style="color:#f5f5f7;">4K quality</strong> &bull; <strong style="color:#f5f5f7;">50 rollover downloads</strong>/mo &bull; <strong style="color:#f5f5f7;">Cancel anytime</strong><br>
+              <span style="color:#6b6b76;">Your locked rate never increases. Period.</span>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- FINAL CTA — Big, glowing, with FOREVER -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:16px 24px 12px 24px; text-align:center;" class="mp">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto;">
+        <tr>
+          <td class="cta-glow" style="border-radius:12px; background-color:#00d4ff;">
+            <a href="https://www.thevideopool.com/welcome-back" target="_blank" style="display:inline-block; padding:17px 56px; font-family:Helvetica,Arial,sans-serif; font-size:18px; font-weight:bold; color:#000000; text-decoration:none; border-radius:12px; letter-spacing:0.3px;">WELCOME BACK &rarr;</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:center; padding-top:6px;">
+            <span style="font-family:Helvetica,Arial,sans-serif; font-size:13px; font-weight:bold; color:#00d4ff; letter-spacing:2px;">LOCK YOUR RATE FOREVER</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- URGENCY CLOSER -->
+  <tr>
+    <td style="background-color:#0a0a0f; padding:8px 28px 28px 28px; text-align:center;" class="mp">
+      <p style="font-family:Helvetica,Arial,sans-serif; font-size:13px; color:#a1a1aa; line-height:1.6; margin:0;">
+        This is a one time offer for former members only.<br>
+        Once all 300 spots are claimed, this rate is <strong style="color:#ff4757;">gone forever</strong>.<br>
+        <span style="color:#6b6b76;">No waitlist. No second chances. No exceptions.</span>
+      </p>
+    </td>
+  </tr>
+
+  <!-- FOOTER — Social (your icons) + Legal -->
+  <tr>
+    <td style="background-color:#0a0a0f; border-top:1px solid rgba(255,255,255,0.06); padding:24px 24px 16px 24px; text-align:center;" class="mp">
+      <!-- Logo -->
+      <a href="https://www.thevideopool.com/welcome-back" target="_blank">
+        <img src="https://welcomebackpromo.b-cdn.net/The%20Video%20Pool%20Logo%202.0.png" alt="The Video Pool" width="150" style="display:inline-block; width:150px; height:auto; margin-bottom:6px;" class="fluid">
+      </a>
+      <p style="font-family:Helvetica,Arial,sans-serif; font-size:12px; color:#6b6b76; margin:0 0 14px 0;">Built by DJs. For DJs.</p>
+
+      <!-- Social Icons -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto 14px auto;">
+        <tr>
+          <td style="padding:0 5px;">
+            <a href="https://www.facebook.com/TheVideoPool" target="_blank" style="display:inline-block; text-decoration:none;">
+              <img src="https://welcomebackpromo.b-cdn.net/social-facebook.png" alt="Facebook" width="28" height="28" style="display:block; width:28px; height:28px; border-radius:6px;">
+            </a>
+          </td>
+          <td style="padding:0 5px;">
+            <a href="https://www.instagram.com/thevideopool" target="_blank" style="display:inline-block; text-decoration:none;">
+              <img src="https://welcomebackpromo.b-cdn.net/social-instagram.png" alt="Instagram" width="28" height="28" style="display:block; width:28px; height:28px; border-radius:6px;">
+            </a>
+          </td>
+          <td style="padding:0 5px;">
+            <a href="mailto:info@thevideopool.com" style="display:inline-block; text-decoration:none;">
+              <img src="https://welcomebackpromo.b-cdn.net/social-email.png" alt="Email Us" width="28" height="28" style="display:block; width:28px; height:28px; border-radius:6px;">
+            </a>
+          </td>
+        </tr>
+      </table>
+
+      <p style="font-family:Helvetica,Arial,sans-serif; font-size:10px; color:#4a4a54; line-height:1.6; margin:0;">
+        &copy; 2026 The Video Pool. All rights reserved.<br>
+        <a href="mailto:unsubscribe@thevideopool.com?subject=Unsubscribe%20from%20Video%20Pool%20emails" style="color:#4a4a54; text-decoration:underline;">Unsubscribe</a> &nbsp;&bull;&nbsp;
+        <a href="https://www.thevideopool.com/preferences" style="color:#4a4a54; text-decoration:underline;">Manage Preferences</a> &nbsp;&bull;&nbsp;
+        <a href="https://www.thevideopool.com/privacy" style="color:#4a4a54; text-decoration:underline;">Privacy</a>
+      </p>
+    </td>
+  </tr>
+
+  <!-- Bottom shimmer accent -->
+  <tr>
+    <td style="height:3px; font-size:0; line-height:0;" class="shimmer-border">&nbsp;</td>
+  </tr>
+
+</table>
+<!-- /EMAIL CONTAINER -->
+
+</td></tr></table>
 </body>
 </html>`;
   }
