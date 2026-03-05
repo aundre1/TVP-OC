@@ -13,6 +13,9 @@
 import express from 'express';
 import { Resend } from 'resend';
 import pool from '../db/pool.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
 
@@ -26,6 +29,35 @@ if (RESEND_API_KEY) {
   console.log('[EMAIL] Resend configured');
 } else {
   console.warn('[EMAIL] RESEND_API_KEY not set — email sending disabled');
+}
+
+// Cache email template at startup
+let cachedEmailTemplate = null;
+try {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const possiblePaths = [
+    path.join(__dirname, '../../email/tvp-welcome-back.html'),
+    path.join(__dirname, '../../../email/tvp-welcome-back.html'),
+    '/app/email/tvp-welcome-back.html',
+  ];
+
+  for (const emailPath of possiblePaths) {
+    try {
+      if (fs.existsSync(emailPath)) {
+        cachedEmailTemplate = fs.readFileSync(emailPath, 'utf8');
+        console.log(`[EMAIL] Cached template from: ${emailPath}`);
+        break;
+      }
+    } catch (e) {
+      // Try next path
+    }
+  }
+
+  if (!cachedEmailTemplate) {
+    console.warn(`[EMAIL] Warning: Email template not found at startup`);
+  }
+} catch (e) {
+  console.warn(`[EMAIL] Failed to cache template at startup: ${e.message}`);
 }
 
 // ====================================
@@ -134,35 +166,11 @@ router.post('/campaigns/trigger', async (req, res) => {
     (async () => {
       let sent = 0, failed = 0;
       try {
-        const fs = await import('fs');
-        const path = await import('path');
-        const { fileURLToPath } = await import('url');
-
-        const __dirname = path.dirname(fileURLToPath(import.meta.url));
-        // Try multiple possible paths for the email template
-        const possiblePaths = [
-          path.join(__dirname, '../../email/tvp-welcome-back.html'),
-          path.join(__dirname, '../../../email/tvp-welcome-back.html'),
-          '/app/email/tvp-welcome-back.html',
-          process.env.PWD ? path.join(process.env.PWD, 'email/tvp-welcome-back.html') : null
-        ].filter(Boolean);
-
-        let emailHtml = null;
-        for (const emailPath of possiblePaths) {
-          try {
-            if (fs.existsSync(emailPath)) {
-              emailHtml = fs.readFileSync(emailPath, 'utf8');
-              console.log(`✅ Loaded email template from: ${emailPath}`);
-              break;
-            }
-          } catch (e) {
-            // Try next path
-          }
+        if (!cachedEmailTemplate) {
+          throw new Error('Email template not loaded');
         }
 
-        if (!emailHtml) {
-          throw new Error(`Email template not found. Tried paths: ${possiblePaths.join(', ')}`);
-        }
+        const emailHtml = cachedEmailTemplate;
 
       for (let i = 0; i < subscribers.length; i++) {
         const sub = subscribers[i];
