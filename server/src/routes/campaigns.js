@@ -139,8 +139,30 @@ router.post('/campaigns/trigger', async (req, res) => {
         const { fileURLToPath } = await import('url');
 
         const __dirname = path.dirname(fileURLToPath(import.meta.url));
-        const emailPath = path.join(__dirname, '../../email/tvp-welcome-back.html');
-        const emailHtml = fs.readFileSync(emailPath, 'utf8');
+        // Try multiple possible paths for the email template
+        const possiblePaths = [
+          path.join(__dirname, '../../email/tvp-welcome-back.html'),
+          path.join(__dirname, '../../../email/tvp-welcome-back.html'),
+          '/app/email/tvp-welcome-back.html',
+          process.env.PWD ? path.join(process.env.PWD, 'email/tvp-welcome-back.html') : null
+        ].filter(Boolean);
+
+        let emailHtml = null;
+        for (const emailPath of possiblePaths) {
+          try {
+            if (fs.existsSync(emailPath)) {
+              emailHtml = fs.readFileSync(emailPath, 'utf8');
+              console.log(`✅ Loaded email template from: ${emailPath}`);
+              break;
+            }
+          } catch (e) {
+            // Try next path
+          }
+        }
+
+        if (!emailHtml) {
+          throw new Error(`Email template not found. Tried paths: ${possiblePaths.join(', ')}`);
+        }
 
       for (let i = 0; i < subscribers.length; i++) {
         const sub = subscribers[i];
