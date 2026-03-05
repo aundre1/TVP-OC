@@ -29,6 +29,38 @@ if (RESEND_API_KEY) {
 }
 
 // ====================================
+// DEBUG ENDPOINT (check database connection)
+// ====================================
+
+/**
+ * GET /api/campaigns/debug
+ * Check database status and subscriber count
+ */
+router.get('/campaigns/debug', async (req, res) => {
+  try {
+    const dbUrl = process.env.DATABASE_URL || 'NOT SET';
+    const urlWithoutPassword = dbUrl.replace(/:([^@]+)@/, ':***@');
+
+    const countResult = await pool.query('SELECT COUNT(*) as count FROM tvp_subscribers');
+    const totalCount = countResult.rows[0]?.count || 0;
+
+    const unsentResult = await pool.query(
+      'SELECT COUNT(*) as count FROM tvp_subscribers WHERE (email_sent = false OR email_sent IS NULL) AND (unsubscribed = false OR unsubscribed IS NULL)'
+    );
+    const unsentCount = unsentResult.rows[0]?.count || 0;
+
+    res.json({
+      databaseUrl: urlWithoutPassword,
+      totalSubscribers: totalCount,
+      unsentEmails: unsentCount,
+      resendConfigured: !!RESEND_API_KEY
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message, code: error.code });
+  }
+});
+
+// ====================================
 // SIMPLE TRIGGER ENDPOINT (for testing/admin)
 // ====================================
 
