@@ -530,7 +530,7 @@ router.post('/campaigns/trigger', async (req, res) => {
       return res.status(400).json({ error: 'Resend not configured' });
     }
 
-    const limit = 500;
+    const limit = parseInt(req.query.limit) || 500;
     const delayMs = 2000;
 
     console.log(`📧 TRIGGER: Starting campaign send (${limit} emails)`);
