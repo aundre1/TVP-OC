@@ -1076,8 +1076,9 @@ router.post('/campaigns/webhook', async (req, res) => {
     }
 
     const eventType = type.split('.')[1]; // 'email.delivered' -> 'delivered'
-    const emailAddress = data.email;
-    const resendId = data.id;
+    // Resend sends `to` as array and uses `email_id` (not `id` or `email`)
+    const emailAddress = Array.isArray(data.to) ? data.to[0] : (data.to || data.email);
+    const resendId = data.email_id || data.id;
 
     // Store event in database
     await pool.query(
