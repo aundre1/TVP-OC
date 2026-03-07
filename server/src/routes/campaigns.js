@@ -1087,6 +1087,21 @@ router.post('/campaigns/webhook', async (req, res) => {
       [emailAddress, eventType, resendId, JSON.stringify(data)]
     );
 
+    // Mirror bounce/complaint/unsubscribe status to dj_core_contacts if present
+    if (emailAddress) {
+      if (eventType === 'bounced') {
+        await pool.query(
+          `UPDATE dj_core_contacts SET bounced = true, bounce_type = 'hard' WHERE LOWER(email) = LOWER($1)`,
+          [emailAddress]
+        );
+      } else if (eventType === 'complained') {
+        await pool.query(
+          `UPDATE dj_core_contacts SET complained = true WHERE LOWER(email) = LOWER($1)`,
+          [emailAddress]
+        );
+      }
+    }
+
     console.log(`[WEBHOOK] ${eventType}: ${emailAddress}`);
     res.json({ success: true });
   } catch (err) {
@@ -1155,6 +1170,153 @@ router.get('/campaigns/stats', async (req, res) => {
     });
   } catch (err) {
     console.error('Stats error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================================
+// DJ CORE CAMPAIGN TRIGGER
+// ====================================
+
+/**
+ * POST /api/campaigns/trigger-dj-core
+ * Send to external dj_core_contacts list (separate from tvp_subscribers).
+ * 2-3 second randomized delay between each send for deliverability.
+ *
+ * Query params:
+ *   limit  — max to send this run (default: 500)
+ *   dry_run — true to preview without sending
+ */
+router.post('/campaigns/trigger-dj-core', async (req, res) => {
+  try {
+    if (!RESEND_API_KEY) {
+      return res.status(400).json({ error: 'Resend not configured' });
+    }
+
+    const limit = parseInt(req.query.limit) || 500;
+    const dryRun = req.query.dry_run === 'true';
+
+    // Totals for status response
+    const countResult = await pool.query(
+      `SELECT COUNT(*) as total FROM dj_core_contacts
+       WHERE email_sent = false AND (unsubscribed = false OR unsubscribed IS NULL)
+       AND (bounced = false OR bounced IS NULL)`
+    );
+    const totalUnsent = parseInt(countResult.rows[0]?.total || 0);
+
+    const result = await pool.query(
+      `SELECT id, email FROM dj_core_contacts
+       WHERE email_sent = false
+       AND (unsubscribed = false OR unsubscribed IS NULL)
+       AND (bounced = false OR bounced IS NULL)
+       ORDER BY created_at ASC
+       LIMIT $1`,
+      [limit]
+    );
+
+    const contacts = result.rows;
+    console.log(`[DJ-CORE] ${dryRun ? 'DRY RUN — ' : ''}Found ${contacts.length} contacts (${totalUnsent} total unsent)`);
+
+    if (contacts.length === 0) {
+      return res.json({ status: 'done', queued: 0, totalUnsent, message: 'All contacts sent.' });
+    }
+
+    if (dryRun) {
+      return res.json({
+        status: 'dry_run',
+        wouldSend: contacts.length,
+        totalUnsent,
+        sample: contacts.slice(0, 5).map(c => c.email)
+      });
+    }
+
+    // Respond immediately — send in background
+    res.json({
+      status: 'sending',
+      queued: contacts.length,
+      totalUnsent,
+      message: `Sending ${contacts.length} emails. Check /api/campaigns/stats for progress.`
+    });
+
+    // Background send loop — 2-3 second jitter delay
+    (async () => {
+      let sent = 0, failed = 0;
+      try {
+        if (!cachedEmailTemplate) throw new Error('Email template not loaded');
+
+        for (let i = 0; i < contacts.length; i++) {
+          const contact = contacts[i];
+          try {
+            const token = Buffer.from(`djcore:${contact.id}:${Date.now()}`).toString('base64');
+            const html = cachedEmailTemplate
+              .replace(/{{EMAIL}}/g, contact.email)
+              .replace(/{{UNSUBSCRIBE_TOKEN}}/g, token)
+              .replace(/{{NAME}}/g, 'DJ');
+
+            const response = await resend.emails.send({
+              from: 'The Video Pool <info@thevideopool.com>',
+              to: contact.email,
+              subject: 'The Video Pool — 30% Off For Life',
+              html,
+              reply_to: 'support@thevideopool.com'
+            });
+
+            if (response.error) throw new Error(response.error.message);
+
+            const emailId = response.data?.id || null;
+            await pool.query(
+              `UPDATE dj_core_contacts
+               SET email_sent = true, email_sent_at = NOW(), email_id = $1
+               WHERE id = $2`,
+              [emailId, contact.id]
+            );
+
+            sent++;
+            if ((i + 1) % 50 === 0) {
+              console.log(`[DJ-CORE] Progress: ${i + 1}/${contacts.length} sent`);
+            }
+          } catch (err) {
+            failed++;
+            console.error(`[DJ-CORE] Failed ${contact.email}: ${err.message}`);
+          }
+
+          if (i < contacts.length - 1) {
+            // 2-3 second jitter delay for deliverability
+            const delay = 2000 + Math.floor(Math.random() * 1000);
+            await new Promise(r => setTimeout(r, delay));
+          }
+        }
+
+        console.log(`[DJ-CORE] COMPLETE: ${sent} sent, ${failed} failed`);
+      } catch (bgErr) {
+        console.error('[DJ-CORE] Background error:', bgErr.message);
+      }
+    })();
+
+  } catch (err) {
+    console.error('[DJ-CORE] Trigger error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/campaigns/dj-core-status
+ * How many contacts remain, sent, bounced in dj_core_contacts
+ */
+router.get('/campaigns/dj-core-status', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE email_sent = true) as sent,
+        COUNT(*) FILTER (WHERE email_sent = false AND (unsubscribed IS NOT TRUE) AND (bounced IS NOT TRUE)) as ready,
+        COUNT(*) FILTER (WHERE bounced = true) as bounced,
+        COUNT(*) FILTER (WHERE unsubscribed = true) as unsubscribed,
+        COUNT(*) FILTER (WHERE complained = true) as complained
+      FROM dj_core_contacts
+    `);
+    res.json({ ...result.rows[0], timestamp: new Date().toISOString() });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
