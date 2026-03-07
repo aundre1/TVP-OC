@@ -1062,4 +1062,100 @@ router.get('/email-preferences', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/campaigns/webhook
+ * Resend webhook receiver for real-time email events
+ * Tracks: delivered, bounced, opened, clicked, complained
+ */
+router.post('/webhook', async (req, res) => {
+  try {
+    const { type, data } = req.body;
+
+    if (!type || !data) {
+      return res.status(400).json({ error: 'Missing type or data' });
+    }
+
+    const eventType = type.split('.')[1]; // 'email.delivered' -> 'delivered'
+    const emailAddress = data.email;
+    const resendId = data.id;
+
+    // Store event in database
+    await pool.query(
+      `INSERT INTO email_events (email_address, event_type, resend_id, event_data, timestamp)
+       VALUES ($1, $2, $3, $4, NOW())`,
+      [emailAddress, eventType, resendId, JSON.stringify(data)]
+    );
+
+    console.log(`[WEBHOOK] ${eventType}: ${emailAddress}`);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Webhook error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/campaigns/stats
+ * Real-time campaign statistics from email_events
+ * Returns: sent, delivered, bounced, opened, clicked, complained counts and rates
+ */
+router.get('/stats', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        COUNT(DISTINCT email_address) as total_recipients,
+        COUNT(CASE WHEN event_type = 'delivered' THEN 1 END) as delivered,
+        COUNT(CASE WHEN event_type = 'bounced' THEN 1 END) as bounced,
+        COUNT(CASE WHEN event_type = 'opened' THEN 1 END) as opened,
+        COUNT(CASE WHEN event_type = 'clicked' THEN 1 END) as clicked,
+        COUNT(CASE WHEN event_type = 'complained' THEN 1 END) as complained,
+        COUNT(CASE WHEN event_type = 'sent' THEN 1 END) as sent
+      FROM email_events
+    `);
+
+    const stats = result.rows[0];
+    const totalSent = stats.sent || 0;
+    const delivered = stats.delivered || 0;
+    const bounced = stats.bounced || 0;
+    const opened = stats.opened || 0;
+    const clicked = stats.clicked || 0;
+    const complained = stats.complained || 0;
+
+    res.json({
+      summary: {
+        total_sent: totalSent,
+        total_recipients: stats.total_recipients,
+        sent: {
+          count: totalSent,
+          percent: 100
+        },
+        delivered: {
+          count: delivered,
+          percent: totalSent > 0 ? ((delivered / totalSent) * 100).toFixed(1) : 0
+        },
+        bounced: {
+          count: bounced,
+          percent: totalSent > 0 ? ((bounced / totalSent) * 100).toFixed(1) : 0
+        },
+        opened: {
+          count: opened,
+          percent: totalSent > 0 ? ((opened / totalSent) * 100).toFixed(1) : 0
+        },
+        clicked: {
+          count: clicked,
+          percent: totalSent > 0 ? ((clicked / totalSent) * 100).toFixed(1) : 0
+        },
+        complained: {
+          count: complained,
+          percent: totalSent > 0 ? ((complained / totalSent) * 100).toFixed(1) : 0
+        }
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Stats error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
