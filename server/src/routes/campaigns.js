@@ -1067,7 +1067,7 @@ router.get('/email-preferences', async (req, res) => {
  * Resend webhook receiver for real-time email events
  * Tracks: delivered, bounced, opened, clicked, complained
  */
-router.post('/webhook', async (req, res) => {
+router.post('/campaigns/webhook', async (req, res) => {
   try {
     const { type, data } = req.body;
 
@@ -1099,7 +1099,7 @@ router.post('/webhook', async (req, res) => {
  * Real-time campaign statistics from email_events
  * Returns: sent, delivered, bounced, opened, clicked, complained counts and rates
  */
-router.get('/stats', async (req, res) => {
+router.get('/campaigns/stats', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT
