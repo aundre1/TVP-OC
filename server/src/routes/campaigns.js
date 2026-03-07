@@ -1158,4 +1158,54 @@ router.get('/campaigns/stats', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/campaigns/register-webhook
+ * One-time setup endpoint to register Resend webhook with admin API key
+ * Body: { adminApiKey: "re_..." }
+ * Registers webhook for: delivered, bounced, opened, clicked, complained events
+ */
+router.post('/campaigns/register-webhook', async (req, res) => {
+  try {
+    const { adminApiKey } = req.body;
+
+    if (!adminApiKey) {
+      return res.status(400).json({ error: 'adminApiKey required in request body' });
+    }
+
+    const webhookUrl = process.env.WEBHOOK_URL || 'https://tvp-oc-production.up.railway.app/api/campaigns/webhook';
+    const events = ['email.delivered', 'email.bounced', 'email.opened', 'email.clicked', 'email.complained'];
+
+    const response = await fetch('https://api.resend.com/webhooks', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${adminApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: webhookUrl,
+        events: events
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Webhook registration failed:', data);
+      return res.status(response.status).json({ error: data.message || 'Failed to register webhook' });
+    }
+
+    console.log('[WEBHOOK] Successfully registered with Resend:', data);
+    res.json({
+      success: true,
+      message: 'Webhook registered successfully',
+      webhook_id: data.id,
+      webhook_url: webhookUrl,
+      events: events
+    });
+  } catch (err) {
+    console.error('Webhook registration error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
