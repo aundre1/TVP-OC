@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/stores/appStore';
+import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useLibrary';
 
 // Navigation item component
@@ -132,11 +133,17 @@ function DownloadsWidget({
 export default function SidebarNav() {
   const location = useLocation();
   const { toggleSetBuilder, setBuilderTracks, openRecentPanel } = useAppStore();
+  const { user } = useAuth();
   const { data: favorites = [] } = useFavorites();
 
   // Determine active section based on current route/state
   const isHome = location.pathname === '/';
   const activeSection = location.pathname.split('/')[1] || 'browse';
+
+  // Get download quota from user object or API
+  const downloadsRemaining = user?.downloadsRemaining ?? 150;
+  const downloadsTotal = user?.downloadLimit ?? 200;
+  const membershipPlan = user?.membershipTier?.name ?? 'Pro';
 
   return (
     <aside
@@ -231,9 +238,9 @@ export default function SidebarNav() {
       {/* Downloads Widget - Pushed to bottom */}
       <div className="mt-auto px-4">
         <DownloadsWidget
-          downloadsRemaining={150}
-          downloadsTotal={200}
-          plan="Pro"
+          downloadsRemaining={downloadsRemaining}
+          downloadsTotal={downloadsTotal}
+          plan={membershipPlan}
           onClick={openRecentPanel}
         />
       </div>

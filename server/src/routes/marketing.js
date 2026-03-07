@@ -12,12 +12,12 @@ import { TOTAL_DAILY_CAPACITY } from '../config/emailProviders.js';
 
 const router = Router();
 
-// Segment queries
+// Segment queries (all exclude unsubscribed users for CAN-SPAM/GDPR/CASL compliance)
 const SEGMENT_CONDITIONS = {
-  all: '1=1',
-  subscribers: "membership_type IN ('starter','pro','elite')",
-  free: "membership_type = 'free'",
-  inactive: "last_login < NOW() - INTERVAL '30 days'",
+  all: "email_unsubscribed = false",
+  subscribers: "membership_type IN ('starter','pro','elite') AND email_unsubscribed = false",
+  free: "membership_type = 'free' AND email_unsubscribed = false",
+  inactive: "last_login < NOW() - INTERVAL '30 days' AND email_unsubscribed = false",
 };
 
 // ===========================================
@@ -124,6 +124,37 @@ router.get(
   asyncHandler(async (req, res) => {
     const blasts = await getAllBlastStatuses();
     res.json({ success: true, blasts });
+  })
+);
+
+// ===========================================
+// PUBLIC: Unsubscribe from marketing emails (CAN-SPAM/GDPR/CASL compliant)
+// ===========================================
+router.get(
+  '/unsubscribe',
+  asyncHandler(async (req, res) => {
+    const { email, token } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email parameter required' });
+    }
+
+    // Simple validation: token is optional for now, but in production
+    // you should validate it matches a hash of the email + secret
+    try {
+      await db.query(
+        `UPDATE users SET email_unsubscribed = true, updated_at = NOW() WHERE email = $1`,
+        [email]
+      );
+
+      res.json({
+        success: true,
+        message: `${email} has been unsubscribed from marketing emails. You will no longer receive promotional messages.`,
+      });
+    } catch (err) {
+      console.error('[UNSUBSCRIBE] Database error:', err.message);
+      res.status(500).json({ error: 'Error processing unsubscribe request' });
+    }
   })
 );
 

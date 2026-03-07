@@ -32,6 +32,9 @@ const MembershipSuccessPage = lazy(() => import('@/pages/MembershipSuccessPage')
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const AdminPage = lazy(() => import('@/pages/AdminPage'));
 const InsightsPage = lazy(() => import('@/pages/InsightsPage'));
+const ForYouPage = lazy(() => import('@/pages/ForYouPage'));
+const ChartsPage = lazy(() => import('@/pages/ChartsPage'));
+const PlaylistsPage = lazy(() => import('@/pages/PlaylistsPage'));
 const SharedSetPage = lazy(() => import('@/pages/SharedSetPage'));
 const OG500Page = lazy(() => import('@/pages/OG500Page'));
 const TermsPage = lazy(() => import('@/pages/TermsPage'));
@@ -224,6 +227,9 @@ export default function App() {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="admin" element={<AdminPage />} />
             <Route path="insights" element={<InsightsPage />} />
+            <Route path="for-you" element={<ForYouPage />} />
+            <Route path="charts" element={<ChartsPage />} />
+            <Route path="playlists" element={<PlaylistsPage />} />
           </Route>
 
           {/* Catch all - redirect to welcome/landing page */}

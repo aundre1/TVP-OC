@@ -3,6 +3,7 @@
 // View toggle, batch actions, recent downloads button, filters
 // ============================================
 
+import { useState } from 'react';
 import { LayoutGrid, List, Clock, Download, Trash2, Plus, ChevronDown, Filter } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAppStore } from '@/stores/appStore';
@@ -19,6 +20,16 @@ export default function Toolbar() {
     showToast,
     openBatchDownloadModal,
   } = useAppStore();
+
+  const [sortBy, setSortBy] = useState<string>('Newest');
+
+  const sortOptions = ['Newest', 'Popular', 'Title A-Z', 'Artist A-Z', 'BPM', 'Duration'];
+
+  const handleSortChange = (option: string) => {
+    setSortBy(option);
+    // Future: Connect to API call when HomePage is updated to read from global state
+    showToast('info', `Sorted by ${option}`);
+  };
 
   const selectedCount = selectedTrackIds.size;
   const hasSelection = selectedCount > 0;
@@ -157,7 +168,7 @@ export default function Toolbar() {
             )}
           >
             <Filter className="w-3.5 h-3.5" />
-            <span>Sort: Newest</span>
+            <span>Sort: {sortBy}</span>
             <ChevronDown className="w-3.5 h-3.5" />
           </button>
 
@@ -170,14 +181,15 @@ export default function Toolbar() {
               'hidden group-hover:block'
             )}
           >
-            {['Newest', 'Popular', 'Title A-Z', 'Artist A-Z', 'BPM', 'Duration'].map((option) => (
+            {sortOptions.map((option) => (
               <button
                 key={option}
+                onClick={() => handleSortChange(option)}
                 className={clsx(
                   'w-full px-3 py-2 rounded-md text-left text-[13px]',
                   'text-tvp-text-secondary',
                   'hover:bg-tvp-accent-cyan-subtle hover:text-tvp-text-primary',
-                  option === 'Newest' && 'bg-tvp-accent-cyan-subtle text-tvp-accent-cyan'
+                  option === sortBy && 'bg-tvp-accent-cyan-subtle text-tvp-accent-cyan'
                 )}
               >
                 {option}

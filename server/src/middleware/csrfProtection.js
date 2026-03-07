@@ -21,8 +21,8 @@ export function csrfProtection(req, res, next) {
     return next();
   }
 
-  // Skip CSRF check for webhook endpoints (Stripe sends POST without browser origin)
-  if (req.path.includes("/webhooks/")) {
+  // Skip CSRF check for webhook endpoints (Stripe/Resend send POST without browser origin)
+  if (req.path.includes("/webhooks/") || req.path.includes("/campaigns/webhook")) {
     return next();
   }
 

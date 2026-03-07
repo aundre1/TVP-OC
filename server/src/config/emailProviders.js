@@ -3,29 +3,35 @@
 // ===========================================
 
 export const EMAIL_PROVIDERS = {
+  resend: {
+    name: 'Resend',
+    dailyLimit: 500,
+    envKey: 'RESEND_API_KEY',
+    priority: 1,
+  },
   brevo: {
     name: 'Brevo',
     dailyLimit: 300,
     envKey: 'BREVO_API_KEY',
-    priority: 1,
+    priority: 2,
   },
   mailjet: {
     name: 'Mailjet',
     dailyLimit: 200,
     envKeys: ['MAILJET_API_KEY', 'MAILJET_SECRET_KEY'],
-    priority: 2,
+    priority: 3,
   },
   sendgrid: {
     name: 'SendGrid',
     dailyLimit: 100,
     envKey: 'SENDGRID_API_KEY',
-    priority: 3,
+    priority: 4,
   },
   elasticemail: {
     name: 'Elastic Email',
     dailyLimit: 100,
     envKey: 'ELASTICEMAIL_API_KEY',
-    priority: 4,
+    priority: 5,
   },
   direct: {
     name: 'Direct SMTP',
@@ -36,7 +42,7 @@ export const EMAIL_PROVIDERS = {
       user: 'info@thevideopool.com',
     },
     envKey: 'SUPPORT_EMAIL_PASSWORD',
-    priority: 5,
+    priority: 6,
   },
 };
 

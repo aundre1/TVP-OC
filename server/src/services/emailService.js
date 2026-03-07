@@ -75,15 +75,47 @@ if (process.env.SENDGRID_API_KEY) {
 const elasticEmailEnabled = !!process.env.ELASTICEMAIL_API_KEY;
 if (elasticEmailEnabled) console.log('[EMAIL] Elastic Email configured');
 
+// Resend API (marketing + transactional)
+const resendEnabled = !!process.env.RESEND_API_KEY;
+if (resendEnabled) console.log('[EMAIL] Resend configured');
+
 // ===========================================
 // SEND FUNCTIONS
 // ===========================================
 
 /**
- * Send transactional email via Google SMTP (with Brevo + SendGrid fallbacks)
+ * Send transactional email via Resend → Google SMTP → Brevo → SendGrid
  */
 const sendTransactional = async ({ to, subject, text, html }) => {
-  // Try Google SMTP first
+  // Try Resend first (production-grade transactional service)
+  if (resendEnabled) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `${FROM_NAME} <info@updates.thevideopool.com>`,
+          to,
+          subject,
+          html: html || text,
+          text,
+        }),
+      });
+      if (res.ok) {
+        console.log(`[EMAIL] Sent via Resend: "${subject}" → ${to}`);
+        return true;
+      }
+      const errBody = await res.text();
+      console.warn('[EMAIL] Resend transactional failed:', errBody);
+    } catch (e) {
+      console.warn('[EMAIL] Resend transactional error:', e.message);
+    }
+  }
+
+  // Try Google SMTP second
   if (gmailTransport) {
     try {
       await gmailTransport.sendMail({
@@ -142,10 +174,37 @@ const sendTransactional = async ({ to, subject, text, html }) => {
 };
 
 /**
- * Send marketing blast via Brevo (with SendGrid fallback)
+ * Send marketing blast via Resend (with Brevo fallback)
  */
 const sendMarketing = async ({ to, subject, text, html }) => {
-  // Try Brevo first
+  // Try Resend first (optimal for marketing)
+  if (resendEnabled) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `${FROM_NAME} <info@updates.thevideopool.com>`,
+          to: Array.isArray(to) ? to : [to],
+          subject,
+          html: html || text,
+          text,
+        }),
+      });
+      if (res.ok) {
+        console.log(`[EMAIL] Sent via Resend: "${subject}"`);
+        return true;
+      }
+      console.warn('[EMAIL] Resend marketing failed:', await res.text());
+    } catch (e) {
+      console.warn('[EMAIL] Resend marketing error:', e.message);
+    }
+  }
+
+  // Try Brevo fallback
   if (brevoEnabled) {
     try {
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -162,7 +221,7 @@ const sendMarketing = async ({ to, subject, text, html }) => {
         }),
       });
       if (res.ok) {
-        console.log(`[EMAIL] Sent via Brevo: "${subject}"`);
+        console.log(`[EMAIL] Sent via Brevo (fallback): "${subject}"`);
         return true;
       }
       console.warn('[EMAIL] Brevo failed:', await res.text());
@@ -198,6 +257,26 @@ const sendMarketing = async ({ to, subject, text, html }) => {
 const sendViaProvider = async (provider, { to, subject, text, html }) => {
   try {
     switch (provider) {
+      case 'resend': {
+        if (!resendEnabled) return false;
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: `${FROM_NAME} <info@updates.thevideopool.com>`,
+            to,
+            subject,
+            html: html || text,
+            text,
+          }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return true;
+      }
+
       case 'brevo': {
         if (!brevoEnabled) return false;
         const res = await fetch('https://api.brevo.com/v3/smtp/email', {
