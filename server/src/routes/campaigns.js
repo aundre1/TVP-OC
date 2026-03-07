@@ -1183,7 +1183,7 @@ router.post('/campaigns/register-webhook', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        url: webhookUrl,
+        endpoint: webhookUrl,
         events: events
       })
     });
