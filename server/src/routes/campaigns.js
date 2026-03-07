@@ -1239,6 +1239,11 @@ router.post('/campaigns/trigger-dj-core', async (req, res) => {
     });
 
     // Background send loop — 2-3 second jitter delay
+    // Auto-pauses if bounce rate exceeds BOUNCE_RATE_LIMIT
+    const BOUNCE_RATE_LIMIT = 0.20; // 20%
+    const BOUNCE_CHECK_INTERVAL = 100; // check every N sends
+    const runStartTime = new Date();
+
     (async () => {
       let sent = 0, failed = 0;
       try {
@@ -1278,6 +1283,34 @@ router.post('/campaigns/trigger-dj-core', async (req, res) => {
           } catch (err) {
             failed++;
             console.error(`[DJ-CORE] Failed ${contact.email}: ${err.message}`);
+          }
+
+          // Bounce rate check every BOUNCE_CHECK_INTERVAL sends
+          if (sent > 0 && sent % BOUNCE_CHECK_INTERVAL === 0) {
+            try {
+              const bounceCheck = await pool.query(
+                `SELECT
+                   COUNT(*) FILTER (WHERE email_sent = true AND email_sent_at >= $1) AS sent_this_run,
+                   COUNT(*) FILTER (WHERE bounced = true AND email_sent_at >= $1) AS bounced_this_run
+                 FROM dj_core_contacts`,
+                [runStartTime]
+              );
+              const sentCount = parseInt(bounceCheck.rows[0].sent_this_run) || 0;
+              const bouncedCount = parseInt(bounceCheck.rows[0].bounced_this_run) || 0;
+              const bounceRate = sentCount > 0 ? bouncedCount / sentCount : 0;
+
+              console.log(`[DJ-CORE] Bounce check at ${sent} sent: ${bouncedCount}/${sentCount} = ${(bounceRate * 100).toFixed(1)}%`);
+
+              if (bounceRate > BOUNCE_RATE_LIMIT) {
+                console.error(
+                  `[DJ-CORE] PAUSED — bounce rate ${(bounceRate * 100).toFixed(1)}% exceeds ${BOUNCE_RATE_LIMIT * 100}% limit. ` +
+                  `Sent ${sent} this run, ${bouncedCount} bounced. Halting send.`
+                );
+                break;
+              }
+            } catch (checkErr) {
+              console.error('[DJ-CORE] Bounce check error (continuing):', checkErr.message);
+            }
           }
 
           if (i < contacts.length - 1) {
