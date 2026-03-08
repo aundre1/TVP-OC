@@ -1204,11 +1204,25 @@ router.post('/campaigns/trigger-dj-core', async (req, res) => {
     );
     const totalUnsent = parseInt(countResult.rows[0]?.total || 0);
 
+    const majorOnly = req.query.major_only === 'true';
+    const MAJOR_PROVIDER_DOMAINS = [
+      'gmail.com', 'googlemail.com',
+      'yahoo.com', 'yahoo.co.uk', 'ymail.com',
+      'hotmail.com', 'hotmail.co.uk', 'outlook.com', 'live.com',
+      'icloud.com', 'me.com', 'mac.com',
+      'aol.com',
+      '163.com', '126.com', 'qq.com',
+    ];
+    const domainFilter = majorOnly
+      ? `AND split_part(email, '@', 2) = ANY(ARRAY[${MAJOR_PROVIDER_DOMAINS.map(d => `'${d}'`).join(',')}])`
+      : '';
+
     const result = await pool.query(
       `SELECT id, email FROM dj_core_contacts
        WHERE email_sent = false
        AND (unsubscribed = false OR unsubscribed IS NULL)
        AND (bounced = false OR bounced IS NULL)
+       ${domainFilter}
        ORDER BY created_at ASC
        LIMIT $1`,
       [limit]
