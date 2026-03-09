@@ -61,7 +61,7 @@ export default function PlaylistsPage() {
     e.preventDefault();
 
     if (!newPlaylistName.trim()) {
-      toast?.('Please enter a playlist name', 'error');
+      toast({ title: 'Please enter a playlist name', variant: 'destructive' });
       return;
     }
 
@@ -77,11 +77,11 @@ export default function PlaylistsPage() {
         setNewPlaylistName('');
         setNewPlaylistDesc('');
         setShowCreateModal(false);
-        toast?.('Playlist created!', 'success');
+        toast({ title: 'Playlist created!' });
       }
     } catch (err) {
       console.error('Failed to create playlist:', err);
-      toast?.('Failed to create playlist', 'error');
+      toast({ title: 'Failed to create playlist', variant: 'destructive' });
     } finally {
       setCreatingPlaylist(false);
     }
