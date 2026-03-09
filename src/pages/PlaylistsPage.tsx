@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { get, post } from '@/api/client';
-import { toast } from '@/stores/appStore';
+import { toast } from '@/hooks/use-toast';
 
 interface Playlist {
   id: string;
