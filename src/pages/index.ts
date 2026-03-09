@@ -12,3 +12,6 @@ export { default as DownloadsPage } from './DownloadsPage';
 export { default as MembershipPage } from './MembershipPage';
 export { default as SettingsPage } from './SettingsPage';
 export { default as AdminPage } from './AdminPage';
+export { default as ForYouPage } from './ForYouPage';
+export { default as ChartsPage } from './ChartsPage';
+export { default as PlaylistsPage } from './PlaylistsPage';

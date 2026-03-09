@@ -141,9 +141,9 @@ export default function SidebarNav() {
   const activeSection = location.pathname.split('/')[1] || 'browse';
 
   // Get download quota from user object or API
-  const downloadsRemaining = user?.downloadsRemaining ?? 150;
   const downloadsTotal = user?.downloadLimit ?? 200;
-  const membershipPlan = user?.membershipTier?.name ?? 'Pro';
+  const downloadsRemaining = downloadsTotal - (user?.downloadsThisMonth ?? 0);
+  const membershipPlan = user?.membershipType ?? 'free';
 
   return (
     <aside

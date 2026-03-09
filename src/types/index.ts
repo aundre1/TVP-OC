@@ -141,6 +141,7 @@ export interface User {
   bonusCredits: number;
   freeTrialStartedAt?: string;
   freeTrialExpiresAt?: string;
+  phone?: string;
 }
 
 export interface AuthState {
