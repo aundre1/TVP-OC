@@ -4,6 +4,7 @@
 // ============================================
 
 import { useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { Link } from 'react-router-dom';
 import {
   Play,
@@ -888,6 +889,13 @@ function LandingFooter() {
 // MAIN LANDING PAGE COMPONENT
 // ============================================
 export default function LandingPage() {
+  usePageMeta({
+    title: 'The Video Pool | 26,000+ HD Music Videos for DJs — Since 2007',
+    description:
+      'The #1 video DJ pool since 2007. Download 26,000+ HD & 4K music videos — hip-hop, R&B, EDM, Latin, reggaeton, country & more. New releases daily. Built for professional video DJs. Try free today.',
+    canonical: 'https://thevideopool.com/',
+  });
+
   return (
     <div className="min-h-screen bg-tvp-bg-primary">
       <LandingNavbar />

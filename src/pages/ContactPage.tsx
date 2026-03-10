@@ -5,9 +5,16 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { Send, CheckCircle, Mail, MessageSquare } from 'lucide-react';
 
 export default function ContactPage() {
+  usePageMeta({
+    title: 'Contact Us | The Video Pool',
+    description: 'Get in touch with The Video Pool team. Questions about membership, video downloads, or DJ support — we\'re here to help.',
+    canonical: 'https://thevideopool.com/contact',
+  });
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');

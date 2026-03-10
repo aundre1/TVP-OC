@@ -3,8 +3,16 @@
 // ============================================
 
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function PrivacyPage() {
+  usePageMeta({
+    title: 'Privacy Policy | The Video Pool',
+    description: 'Privacy Policy for The Video Pool — how we collect, use, and protect your data.',
+    canonical: 'https://thevideopool.com/privacy',
+    noIndex: false,
+  });
+
   return (
     <div className="min-h-screen bg-tvp-bg-primary text-tvp-text-primary px-6 py-12">
       <div className="max-w-2xl mx-auto">

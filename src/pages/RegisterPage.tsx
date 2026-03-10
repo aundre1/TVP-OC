@@ -7,8 +7,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import SocialLoginGrid from '@/components/SocialLoginGrid';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function RegisterPage() {
+  usePageMeta({
+    title: 'Start Free Trial | The Video Pool — DJ Music Videos',
+    description: 'Join The Video Pool free. Access 26,000+ HD music videos for DJs. Hip-hop, R&B, EDM, Latin & more. No credit card required to start.',
+    canonical: 'https://thevideopool.com/register',
+  });
+
   const { register, error, isLoading, clearError } = useAuth();
   const navigate = useNavigate();
 

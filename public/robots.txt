@@ -1,0 +1,31 @@
+User-agent: *
+Allow: /
+
+# Public pages - allow full crawl
+Allow: /welcome
+Allow: /login
+Allow: /register
+Allow: /terms
+Allow: /privacy
+Allow: /contact
+Allow: /og500
+Allow: /set/
+Allow: /genres/
+Allow: /blog/
+
+# Block private/authenticated routes
+Disallow: /admin
+Disallow: /settings
+Disallow: /downloads
+Disallow: /membership/success
+Disallow: /verify-phone
+Disallow: /reset-password
+Disallow: /auth/
+
+# Block internal/API paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /cdn-cgi/
+
+# Sitemap location
+Sitemap: https://thevideopool.com/sitemap.xml

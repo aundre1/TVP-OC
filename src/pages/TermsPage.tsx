@@ -3,8 +3,16 @@
 // ============================================
 
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function TermsPage() {
+  usePageMeta({
+    title: 'Terms of Service | The Video Pool',
+    description: 'Terms of Service for The Video Pool — professional music video subscription platform for DJs.',
+    canonical: 'https://thevideopool.com/terms',
+    noIndex: false,
+  });
+
   return (
     <div className="min-h-screen bg-tvp-bg-primary text-tvp-text-primary px-6 py-12">
       <div className="max-w-2xl mx-auto">

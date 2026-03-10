@@ -5,17 +5,16 @@
 // ============================================
 
 import { useEffect } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function OG500Page() {
-  useEffect(() => {
-    // Update page title
-    document.title = 'The Video Pool is Back | OG 500 — 30% Off For Life';
+  usePageMeta({
+    title: 'OG 500 — 30% Off For Life | The Video Pool is Back',
+    description: 'The Video Pool returns! 26,000+ HD music videos across every genre. OG 500 offer: 30% off your membership forever, for the first 500 founding members.',
+    canonical: 'https://thevideopool.com/og500',
+  });
 
-    // Add meta description
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) {
-      meta.setAttribute('content', 'The Video Pool returns! 29,000+ HD music videos, every genre. OG 500 offer: 30% off for life for the first 500 returning subscribers.');
-    }
+  useEffect(() => {
 
     // Scroll to top on mount
     window.scrollTo(0, 0);

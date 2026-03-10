@@ -41,6 +41,8 @@ const TermsPage = lazy(() => import('@/pages/TermsPage'));
 const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
 const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const SpotifyCallbackPage = lazy(() => import('@/pages/SpotifyCallbackPage'));
+const BlogPage = lazy(() => import('@/pages/BlogPage'));
+const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'));
 
 // Loading spinner
 function LoadingScreen() {
@@ -198,6 +200,10 @@ export default function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/auth/spotify/callback" element={<SpotifyCallbackPage />} />
+
+          {/* Blog — public, SEO-optimized */}
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
 
           {/* Main app routes (protected) */}
           <Route

@@ -8,8 +8,15 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/stores/authStore';
 import SocialLoginGrid from '@/components/SocialLoginGrid';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function LoginPage() {
+  usePageMeta({
+    title: 'Member Login | The Video Pool',
+    description: 'Log in to The Video Pool. Access your DJ music video downloads, playlists, and new releases.',
+    canonical: 'https://thevideopool.com/login',
+    noIndex: true,
+  });
   const navigate = useNavigate();
   const { login, verify2FA, requires2FA, error, isLoading, clearError } = useAuth();
 
