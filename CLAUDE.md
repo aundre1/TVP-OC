@@ -3,6 +3,10 @@
 ## Project Overview
 Professional DJ video platform with 30,000+ music videos. React + TypeScript + Vite + TailwindCSS.
 
+## 🖥️ CLI Tools (Use These — NOT MCP)
+- **Google Workspace**: `gws gmail list`, `gws calendar today`, etc. — CLI only, no MCP server
+- **Playwright**: `playwright test` or `playwright codegen <url>` — CLI only, no MCP server
+
 ## Auto-GSD Configuration
 
 ### Project State Detection

@@ -27,7 +27,8 @@ server
 TheVideoPool-v6-Reskin-Demo
 tvp-export
 *.png
-*.html
+# *.html excluded — keep index.html (Vite entry point)
+!index.html
 *.md
 .planning
 .continue-here.md
